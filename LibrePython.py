@@ -733,24 +733,47 @@ def test_123():
 
 
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung im Calc:
-def SList_autoformat(self):
+# Starter für die Bedienung im Calc-Menü:
+def SList_autoformat():
     sli = slist()
     sli.autoformat()
     pass
-def SList_Formeln_edit(self):
+def SList_Formeln_edit():
     sli = slist()
     sli.formeln_edit()
     pass
-def SList_Formeln_Kante(self):
+def SList_Formeln_Kante():
     sli = slist()
     sli.formeln_kante()
     pass
-def SList_Kanteninfo_beraeumen(self):
+def SList_Kanteninfo_beraeumen():
     sli = slist()
     sli.kanteninfo_beraeumen()
     pass
-def SList_Teil_drehen(self):
+def SList_Teil_drehen():
+    sli = slist()
+    sli.teil_drehen()
+    pass
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+# Starter für die Bedienung in der Calc-Symbolleiste:
+def SList_autoformat_BTN(self):
+    sli = slist()
+    sli.autoformat()
+    pass
+def SList_Formeln_edit_BTN(self):
+    sli = slist()
+    sli.formeln_edit()
+    pass
+def SList_Formeln_Kante_BTN(self):
+    sli = slist()
+    sli.formeln_kante()
+    pass
+def SList_Kanteninfo_beraeumen_BTN(self):
+    sli = slist()
+    sli.kanteninfo_beraeumen()
+    pass
+def SList_Teil_drehen_BTN(self):
     sli = slist()
     sli.teil_drehen()
     pass
