@@ -244,7 +244,12 @@ class ol_tabelle:
 class slist:
     def __init__(self):
         self.t = ol_tabelle()
-        self.maxistklen = 999     
+        self.maxistklen = 999   
+        # Farben bestimmen:
+        self.farblos = -1
+        self.rot = RGBTo32bitInt(204, 0, 0)
+        self.gelb = RGBTo32bitInt(255, 255, 0) 
+        self.grau = RGBTo32bitInt(204, 204, 204) 
         pass
     def tabkopf_anlegen(self):
         self.t.set_zelltext_s("A1", "Bezeichnung")
@@ -366,6 +371,10 @@ class slist:
         self.t.set_spaltenbreite_i(12, 3000) # Kante unten
         self.t.set_spaltenbreite_i(13, 900) # KaDi unten
         self.t.set_spaltenbreite_i(14, 5460) # Bemerkung
+        # Tabellenkopf farbig machen:
+        for i in range(0,15):
+            self.t.set_zellfarbe_i(0, i, self.grau)
+            pass
         # Zellausrichtung:
         # self.t.set_zellausrichtungHori_s("B1:B1000", "mi")
         pass
@@ -400,6 +409,7 @@ class slist:
             self.formatieren()
             return True
         elif a == "Bezeichnung" and b == "Anzahl" and c == "Länge": # Tabell ist bereits richtig formartiert
+            self.formatieren()
             return True
         return False
         # Anwendung: self.autoformat()
@@ -409,38 +419,42 @@ class slist:
         # eventuellen vorherigen Inhalt löschen:
         self.t.delelte_spalten_re_i(15, 100)
         # Tabellenkopf ergänzen:
-        self.t.set_zelltext_s("P1", "Anz Fehler")
-        self.t.set_zelltext_s("R1", "PlattenDi")
-        self.t.set_zelltext_s("S1", "KD li")
-        self.t.set_zelltext_s("T1", "KD re")
-        self.t.set_zelltext_s("U1", "KD ob")
-        self.t.set_zelltext_s("V1", "KD un")
-        self.t.set_zelltext_s("W1", "Anz 0")
-        self.t.set_zelltext_s("X1", "L<70")
-        self.t.set_zelltext_s("Y1", "B<70")
-        self.t.set_zelltext_s("Z1", "BC zu lang")
+        self.t.set_zelltext_s("Q1", "Anz Fehler")
+        self.t.set_zelltext_s("S1", "PlattenDi")
+        self.t.set_zelltext_s("T1", "KD li")
+        self.t.set_zelltext_s("U1", "KD re")
+        self.t.set_zelltext_s("V1", "KD ob")
+        self.t.set_zelltext_s("W1", "KD un")
+        self.t.set_zelltext_s("X1", "Anz 0")
+        self.t.set_zelltext_s("Y1", "L<70")
+        self.t.set_zelltext_s("Z1", "B<70")
+        self.t.set_zelltext_s("AA1", "BC zu lang")
+        # --
+        self.t.set_zelltext_s("P1", "Projekt")
+        self.t.set_zelltext_s("P2", "ABC01")
+        self.t.set_zellfarbe_s("P2", self.gelb)
         # Breiten der ergänzten Spalten anpassen:
         for i in range (15, 30):
             self.t.optimale_spaltenbreite_i(i)
-        self.t.set_spaltenbreite_i(16, 700)
+        self.t.set_spaltenbreite_i(17, 700)
         # Nullen in den Feldern der KaDi löschen:
         self.entferneKaDiNull()
         # Formeln einfügen:
         # Es müssen immer die englischen Funktionsnamen für die Calc-Funktionen verwendet werden!
-        for i in range (1, 50):
-            sZellname = "P" + str(i+1)
-            sFormel = "=IF(SUM(R" + str(i+1) + ":AA" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
+        for i in range (1, 25):
+            sZellname = "Q" + str(i+1)
+            sFormel = "=IF(SUM(S" + str(i+1) + ":ZZ" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- Anzahl der Fehler:
-            sZellname = "Q" + str(i+1)
-            sFormel = "=SUM(R" + str(i+1) + ":AA" + str(i+1) + ")"
+            sZellname = "R" + str(i+1)
+            sFormel = "=SUM(S" + str(i+1) + ":ZZ" + str(i+1) + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- PlattenDi:
-            sZellname = "R" + str(i+1)
+            sZellname = "S" + str(i+1)
             sFormel = "=IF(ISBLANK((INDIRECT(" + "\"F\"" + "&ROW())));0;(IF(NUMBERVALUE((CONCATENATE(LEFT((INDIRECT(" + "\"F\"" + "&ROW()));2);" + "\",\"" + ";RIGHT(LEFT((INDIRECT(" + "\"F\"" + "&ROW()));3);1)));" + "\",\"" + ")=(INDIRECT(" + "\"E\"" + "&ROW()));;1)))"
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi links:
-            sZellname = "S" + str(i+1)
+            sZellname = "T" + str(i+1)
             sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
             sFormel += ";" # Dann
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
@@ -458,7 +472,7 @@ class slist:
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi rechts:
-            sZellname = "T" + str(i+1)
+            sZellname = "U" + str(i+1)
             sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
             sFormel += ";" # Dann
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
@@ -476,7 +490,7 @@ class slist:
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi oben:
-            sZellname = "U" + str(i+1)
+            sZellname = "V" + str(i+1)
             sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
             sFormel += ";" # Dann
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
@@ -494,7 +508,7 @@ class slist:
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi unten:
-            sZellname = "V" + str(i+1)
+            sZellname = "W" + str(i+1)
             sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
             sFormel += ";" # Dann
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
@@ -512,8 +526,20 @@ class slist:
             sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- Anz 0:
-            sZellname = "W" + str(i+1)
+            sZellname = "X" + str(i+1)
             sFormel = "=IF(ISBLANK(INDIRECT(" + "\"B\"" + "&ROW()));0;(IF(INDIRECT(" + "\"B\"" + "&ROW())=0;1;0)))" # Wenn Anz leer ist oder 0 dann Fehler
+            self.t.set_zellformel_s(sZellname, sFormel)
+            # --- L < 70:
+            sZellname = "Y" + str(i+1)
+            sFormel = "=IF(INDIRECT(" + "\"C\"" + "&ROW())<70;IF(ISBLANK(INDIRECT(" + "\"C\"" + "&ROW()));0;1);0)" # Wenn L < 70 dann Fehler
+            self.t.set_zellformel_s(sZellname, sFormel)
+            # --- B < 70:
+            sZellname = "Z" + str(i+1)
+            sFormel = "=IF(INDIRECT(" + "\"D\"" + "&ROW())<70;IF(ISBLANK(INDIRECT(" + "\"D\"" + "&ROW()));0;1);0)" # Wenn L < 70 dann Fehler
+            self.t.set_zellformel_s(sZellname, sFormel)
+            # --- BC zu lang:
+            sZellname = "AA" + str(i+1)
+            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>28;1;0)" # Wenn BC > 28 dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
         pass
         # Anwendung: self.formeln_edit()
@@ -522,11 +548,7 @@ class slist:
             return False
         # eventuellen vorherigen Inhalt löschen:
         self.t.delelte_spalten_re_i(15, 100)
-        maxi = 0
-        farblos = -1
-        # Farben bestimmen:
-        rot = RGBTo32bitInt(204, 0, 0)
-        gelb = RGBTo32bitInt(255, 255, 0)
+        maxi = 0        
         # KaDi ausblenden:
         self.t.set_spalte_sichtbar_i(7,False)
         self.t.set_spalte_sichtbar_i(9,False)
@@ -629,13 +651,13 @@ class slist:
             self.t.set_zellformel_i(i, 15, formel)
             sErgebnis = self.t.get_zelltext_i(i, 15)
             if(sErgebnis != "0") and (len(sErgebnis) >0 ):
-                self.t.set_zellfarbe_i(i, 2, rot) # Länge
-                self.t.set_zellfarbe_i(i, 3, rot) # Breite
-                self.t.set_zellfarbe_i(i, 15, rot) # Formel
+                self.t.set_zellfarbe_i(i, 2, self.rot) # Länge
+                self.t.set_zellfarbe_i(i, 3, self.rot) # Breite
+                self.t.set_zellfarbe_i(i, 15, self.rot) # Formel
             else:
-                self.t.set_zellfarbe_i(i, 2, farblos) # Länge
-                self.t.set_zellfarbe_i(i, 3, farblos) # Breite
-                self.t.set_zellfarbe_i(i, 15, farblos) # Formel
+                self.t.set_zellfarbe_i(i, 2, self.farblos) # Länge
+                self.t.set_zellfarbe_i(i, 3, self.farblos) # Breite
+                self.t.set_zellfarbe_i(i, 15, self.farblos) # Formel
             pass
         # Bemerkungen mit Kanteninfo farbig machen:
         for i in range (1, maxi+1):
@@ -652,9 +674,9 @@ class slist:
             if "K08" in sZelltext:
                 iGefunden += 1
             if iGefunden > 0:
-                self.t.set_zellfarbe_i(i, 14, gelb)
+                self.t.set_zellfarbe_i(i, 14, self.gelb)
             else:
-                self.t.set_zellfarbe_i(i, 14, farblos)
+                self.t.set_zellfarbe_i(i, 14, self.farblos)
             pass
         pass
         # Anwendung: self.formeln_kante()
@@ -721,10 +743,10 @@ class slist:
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
-    sli = slist()
+    # sli = slist()
     # sli.tabkopf_anlegen()
     # sli.dicke_aus_artikelnummer_bestimmen()
-    sli.teil_drehen()
+    # sli.teil_drehen()
     pass
 
 
