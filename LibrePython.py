@@ -703,7 +703,7 @@ class slist:
     def teil_drehen(self):
         iZeileStart = self.t.get_selection_zeile_start()
         iZeileEnde  = self.t.get_selection_zeile_ende()
-        tmpPosDiff = 10
+        tmpPosDiff = 1000
         iPosLaenge = 2
         iPosBreite = 3
         iPosKanteLi = 6
@@ -740,13 +740,39 @@ class slist:
             pass
         pass
         # Anwendung: self.teil_drehen()
+    def sortieren(self):
+        rankingList = ["Seite_li", "Seite_re", "Seite", "MS_li", "MS_re", "MS", "OB", "UB", "KB_ob", "KB_mi", "KB_un", "KB", "RW", "Tuer_li", "Tuer_re", "Tuer", "SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF", "Sockel"]
+        rankingNum = []
+        iZeileStart = self.t.get_selection_zeile_start()
+        iZeileEnde  = self.t.get_selection_zeile_ende()
+        tmpPosDiff = 20
+        # Ranking ermitteln
+        for i in range(iZeileStart, iZeileEnde+1):
+            sName = self.t.get_zelltext_i(i, 0)
+            iRanking = 99
+            for ii in range(0, len(rankingList)):
+                if rankingList[ii] in sName:
+                    iRanking = ii
+                    break
+                pass
+            rankingNum.append(iRanking)
+            pass
+        # Zellen nach unten verschieben:
+        source = self.t.sheet.getCellRangeByPosition(0, iZeileStart, 15, iZeileEnde)
+        target = self.t.sheet.getCellByPosition(0, iZeileStart+tmpPosDiff)
+        self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
+        # Zellen in der richtigen Reihenfolge  wieder nach oben verschieben:
+        iAnzZeilen = iZeileEnde - iZeileStart + 1
+        for i in range(0, iAnzZeilen):
+            pass
+        pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
-    # sli = slist()
+    sli = slist()
     # sli.tabkopf_anlegen()
     # sli.dicke_aus_artikelnummer_bestimmen()
-    # sli.teil_drehen()
+    sli.sortieren()
     pass
 
 
