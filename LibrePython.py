@@ -780,13 +780,95 @@ class slist:
                     pass
             pass
         pass
+    def reduzieren(self):
+        iZeileStart = self.t.get_selection_zeile_start()
+        iZeileEnde  = self.t.get_selection_zeile_ende()
+        list_zeiNum = [iZeileStart] # int
+        list_bez = [self.t.get_zelltext_i(iZeileStart, 0)]
+        list_anz = [self.t.get_zellzahl_i(iZeileStart, 1)] # int
+        list_L   = [self.t.get_zelltext_i(iZeileStart, 2)]
+        list_B   = [self.t.get_zelltext_i(iZeileStart, 3)]
+        list_D   = [self.t.get_zelltext_i(iZeileStart, 4)]
+        list_mat = [self.t.get_zelltext_i(iZeileStart, 5)]
+        list_KaLi = [self.t.get_zelltext_i(iZeileStart, 6)]
+        list_KDLi = [self.t.get_zelltext_i(iZeileStart, 7)]
+        list_KaRe = [self.t.get_zelltext_i(iZeileStart, 8)]
+        list_KDRe = [self.t.get_zelltext_i(iZeileStart, 9)]
+        list_KaOb = [self.t.get_zelltext_i(iZeileStart, 10)]
+        list_KDOb = [self.t.get_zelltext_i(iZeileStart, 11)]
+        list_KaUn = [self.t.get_zelltext_i(iZeileStart,12)]
+        list_KDUn = [self.t.get_zelltext_i(iZeileStart, 13)]
+        list_kom = [self.t.get_zelltext_i(iZeileStart, 14)]
+        for i in range(iZeileStart+1, iZeileEnde+1):
+            bez = self.t.get_zelltext_i(i, 0)
+            gefunden = False
+            if bez in list_bez:
+                msg = "Zeile " + str(i) + " | Bez in liste"
+                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                for ii in range(0, len(list_bez)):
+                    if bez == list_bez[ii]:                        
+                        L = self.t.get_zelltext_i(i, 2)
+                        B = self.t.get_zelltext_i(i, 3)
+                        D = self.t.get_zelltext_i(i, 4)
+                        mat = self.t.get_zelltext_i(i, 5)
+                        KaLi = self.t.get_zelltext_i(i, 6)
+                        KDLi = self.t.get_zelltext_i(i, 7)
+                        KaRe = self.t.get_zelltext_i(i, 8)
+                        KDRe = self.t.get_zelltext_i(i, 9)
+                        KaOb = self.t.get_zelltext_i(i, 10)
+                        KDOb = self.t.get_zelltext_i(i, 11)
+                        KaUn = self.t.get_zelltext_i(i, 12)
+                        KDUn = self.t.get_zelltext_i(i, 13)
+                        kom = self.t.get_zelltext_i(i, 14)
+                        if( L == list_L[ii] ):
+                            if( B == list_B[ii] ):
+                                if( D == list_D[ii] ):
+                                    if( mat == list_mat[ii] ):
+                                        if( KaLi == list_KaLi[ii] ):
+                                            if( KDLi == list_KDLi[ii] ):
+                                                if( KaRe == list_KaRe[ii] ):
+                                                    if( KDRe == list_KDRe[ii] ):
+                                                        if( KaOb == list_KaOb[ii] ):
+                                                            if( KDOb == list_KDOb[ii] ):
+                                                                if( KaUn == list_KaUn[ii] ):
+                                                                    if( KDUn == list_KDUn[ii] ):
+                                                                        if( kom == list_kom[ii] ):
+                                                                            msg = "Zeile " + str(i) + "zusammenführen"
+                                                                            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                                                                            gefunden = True
+                                                                            # Zeilen zusammenführen:
+                                                                            neueAnz = list_anz[ii] + self.t.get_zellzahl_i(i, 1)
+                                                                            self.t.set_zellzahl_i(list_zeiNum[ii], 1, neueAnz)
+                                                                            # Zeile löschen:
+                                                                            # ....
+                    pass
+            if gefunden == False:
+                list_zeiNum.append(i)
+                list_bez.append(bez)
+                list_anz.append(self.t.get_zellzahl_i(i, 1)) # int
+                list_L.append(self.t.get_zelltext_i(i, 2))
+                list_B.append(self.t.get_zelltext_i(i, 3))
+                list_D.append(self.t.get_zelltext_i(i, 4))
+                list_mat.append(self.t.get_zelltext_i(i, 5))
+                list_KaLi.append(self.t.get_zelltext_i(i, 6))
+                list_KDLi.append(self.t.get_zelltext_i(i, 7))
+                list_KaRe.append(self.t.get_zelltext_i(i, 8))
+                list_KDRe.append(self.t.get_zelltext_i(i, 9))
+                list_KaOb.append(self.t.get_zelltext_i(i, 10))
+                list_KDOb.append(self.t.get_zelltext_i(i, 11))
+                list_KaUn.append(self.t.get_zelltext_i(i, 12))
+                list_KDUn.append(self.t.get_zelltext_i(i, 13))
+                list_kom.append(self.t.get_zelltext_i(i, 14))
+            pass
+        pass
+        
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
     sli = slist()
     # sli.tabkopf_anlegen()
     # sli.dicke_aus_artikelnummer_bestimmen()
-    sli.sortieren()
+    sli.reduzieren()
     pass
 
 
