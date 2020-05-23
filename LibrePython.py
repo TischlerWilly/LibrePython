@@ -703,7 +703,7 @@ class slist:
     def teil_drehen(self):
         iZeileStart = self.t.get_selection_zeile_start()
         iZeileEnde  = self.t.get_selection_zeile_ende()
-        tmpPosDiff = 1000
+        tmpPosDiff = 5000
         iPosLaenge = 2
         iPosBreite = 3
         iPosKanteLi = 6
@@ -741,19 +741,22 @@ class slist:
         pass
         # Anwendung: self.teil_drehen()
     def sortieren(self):
-        rankingList = ["Seite_li", "Seite_re", "Seite", "MS_li", "MS_re", "MS", "OB", "UB", "KB_ob", "KB_mi", "KB_un", "KB", "RW", "Tuer_li", "Tuer_re", "Tuer", "SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF", "Sockel"]
-        rankingNum = []
+        rankingList = ["Seite_li", "Seite_re", "Seite", "MS_li", "MS_re", "MS", "OB", "UB", "KB_ob", "KB_mi", "KB_un", "KB", "EB", "RW", "Tuer_li", "Tuer_re", "Tuer", "SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF", "Sockel"]
+        rankingNum = [] # Speichert das Ranking für die jeweilige Zeile
+        rankingVonZeile = [] # Speichert die ursprüngliche Zeilennummer
         iZeileStart = self.t.get_selection_zeile_start()
         iZeileEnde  = self.t.get_selection_zeile_ende()
-        tmpPosDiff = 20
+        tmpPosDiff = 5000
         # Ranking ermitteln
         for i in range(iZeileStart, iZeileEnde+1):
             sName = self.t.get_zelltext_i(i, 0)
-            iRanking = 99
+            rankingVonZeile.append(i) # Ursprungszeile merken
+            maxRanking = 99
+            iRanking = maxRanking
             for ii in range(0, len(rankingList)):
                 if rankingList[ii] in sName:
                     iRanking = ii
-                    break
+                    break # for ii
                 pass
             rankingNum.append(iRanking)
             pass
@@ -762,8 +765,19 @@ class slist:
         target = self.t.sheet.getCellByPosition(0, iZeileStart+tmpPosDiff)
         self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
         # Zellen in der richtigen Reihenfolge  wieder nach oben verschieben:
-        iAnzZeilen = iZeileEnde - iZeileStart + 1
-        for i in range(0, iAnzZeilen):
+        naechsteZeile = iZeileStart
+        for i in range(0, maxRanking+1):# vom kleinen == guten Ranking zum schlechten Ranking
+            if i in rankingNum:
+                last_ii = 0
+                for ii in range(last_ii, len(rankingNum)):
+                    if rankingNum[ii] == i:
+                        # Zeile nach oben verschieben
+                        source = self.t.sheet.getCellRangeByPosition(0, rankingVonZeile[ii]+tmpPosDiff, 15, rankingVonZeile[ii]+tmpPosDiff)
+                        target = self.t.sheet.getCellByPosition(0, naechsteZeile)
+                        self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
+                        naechsteZeile += 1
+                        last_ii = ii
+                    pass
             pass
         pass
 #----------------------------------------------------------------------------------
@@ -802,6 +816,10 @@ def SList_Teil_drehen():
     sli = slist()
     sli.teil_drehen()
     pass
+def SList_sortieren():
+    sli = slist()
+    sli.sortieren()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Calc-Symbolleiste:
@@ -824,6 +842,10 @@ def SList_Kanteninfo_beraeumen_BTN(self):
 def SList_Teil_drehen_BTN(self):
     sli = slist()
     sli.teil_drehen()
+    pass
+def SList_sortieren_BTN(self):
+    sli = slist()
+    sli.sortieren()
     pass
 #----------------------------------------------------------------------------------
 
