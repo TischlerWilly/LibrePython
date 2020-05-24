@@ -703,7 +703,7 @@ class slist:
     def teil_drehen(self):
         iZeileStart = self.t.get_selection_zeile_start()
         iZeileEnde  = self.t.get_selection_zeile_ende()
-        tmpPosDiff = 1000
+        tmpPosDiff = 5000
         iPosLaenge = 2
         iPosBreite = 3
         iPosKanteLi = 6
@@ -741,19 +741,22 @@ class slist:
         pass
         # Anwendung: self.teil_drehen()
     def sortieren(self):
-        rankingList = ["Seite_li", "Seite_re", "Seite", "MS_li", "MS_re", "MS", "OB", "UB", "KB_ob", "KB_mi", "KB_un", "KB", "RW", "Tuer_li", "Tuer_re", "Tuer", "SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF", "Sockel"]
-        rankingNum = []
+        rankingList = ["Seite_li", "Seite_re", "Seite", "MS_li", "MS_re", "MS", "OB", "UB", "KB_ob", "KB_mi", "KB_un", "KB", "EB", "RW", "Tuer_li", "Tuer_re", "Tuer", "SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF", "Sockel"]
+        rankingNum = [] # Speichert das Ranking für die jeweilige Zeile
+        rankingVonZeile = [] # Speichert die ursprüngliche Zeilennummer
         iZeileStart = self.t.get_selection_zeile_start()
         iZeileEnde  = self.t.get_selection_zeile_ende()
-        tmpPosDiff = 20
+        tmpPosDiff = 5000
         # Ranking ermitteln
         for i in range(iZeileStart, iZeileEnde+1):
             sName = self.t.get_zelltext_i(i, 0)
-            iRanking = 99
+            rankingVonZeile.append(i) # Ursprungszeile merken
+            maxRanking = 99
+            iRanking = maxRanking
             for ii in range(0, len(rankingList)):
                 if rankingList[ii] in sName:
                     iRanking = ii
-                    break
+                    break # for ii
                 pass
             rankingNum.append(iRanking)
             pass
@@ -762,23 +765,110 @@ class slist:
         target = self.t.sheet.getCellByPosition(0, iZeileStart+tmpPosDiff)
         self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
         # Zellen in der richtigen Reihenfolge  wieder nach oben verschieben:
-        iAnzZeilen = iZeileEnde - iZeileStart + 1
-        for i in range(0, iAnzZeilen):
+        naechsteZeile = iZeileStart
+        for i in range(0, maxRanking+1):# vom kleinen == guten Ranking zum schlechten Ranking
+            if i in rankingNum:
+                last_ii = 0
+                for ii in range(last_ii, len(rankingNum)):
+                    if rankingNum[ii] == i:
+                        # Zeile nach oben verschieben
+                        source = self.t.sheet.getCellRangeByPosition(0, rankingVonZeile[ii]+tmpPosDiff, 15, rankingVonZeile[ii]+tmpPosDiff)
+                        target = self.t.sheet.getCellByPosition(0, naechsteZeile)
+                        self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
+                        naechsteZeile += 1
+                        last_ii = ii
+                    pass
             pass
         pass
+    def reduzieren(self):
+        iZeileStart = self.t.get_selection_zeile_start()
+        iZeileEnde  = self.t.get_selection_zeile_ende()
+        list_zeiNum = [iZeileStart] # int
+        list_bez = [self.t.get_zelltext_i(iZeileStart, 0)]
+        list_anz = [self.t.get_zellzahl_i(iZeileStart, 1)] # int
+        list_L   = [self.t.get_zelltext_i(iZeileStart, 2)]
+        list_B   = [self.t.get_zelltext_i(iZeileStart, 3)]
+        list_D   = [self.t.get_zelltext_i(iZeileStart, 4)]
+        list_mat = [self.t.get_zelltext_i(iZeileStart, 5)]
+        list_KaLi = [self.t.get_zelltext_i(iZeileStart, 6)]
+        list_KDLi = [self.t.get_zelltext_i(iZeileStart, 7)]
+        list_KaRe = [self.t.get_zelltext_i(iZeileStart, 8)]
+        list_KDRe = [self.t.get_zelltext_i(iZeileStart, 9)]
+        list_KaOb = [self.t.get_zelltext_i(iZeileStart, 10)]
+        list_KDOb = [self.t.get_zelltext_i(iZeileStart, 11)]
+        list_KaUn = [self.t.get_zelltext_i(iZeileStart,12)]
+        list_KDUn = [self.t.get_zelltext_i(iZeileStart, 13)]
+        list_kom = [self.t.get_zelltext_i(iZeileStart, 14)]
+        for i in range(iZeileStart+1, iZeileEnde+1):
+            bez = self.t.get_zelltext_i(i, 0)
+            gefunden = False
+            if bez in list_bez:
+                for ii in range(0, len(list_bez)):
+                    if bez == list_bez[ii]:                        
+                        L = self.t.get_zelltext_i(i, 2)
+                        B = self.t.get_zelltext_i(i, 3)
+                        D = self.t.get_zelltext_i(i, 4)
+                        mat = self.t.get_zelltext_i(i, 5)
+                        KaLi = self.t.get_zelltext_i(i, 6)
+                        KDLi = self.t.get_zelltext_i(i, 7)
+                        KaRe = self.t.get_zelltext_i(i, 8)
+                        KDRe = self.t.get_zelltext_i(i, 9)
+                        KaOb = self.t.get_zelltext_i(i, 10)
+                        KDOb = self.t.get_zelltext_i(i, 11)
+                        KaUn = self.t.get_zelltext_i(i, 12)
+                        KDUn = self.t.get_zelltext_i(i, 13)
+                        kom = self.t.get_zelltext_i(i, 14)
+                        if( L == list_L[ii] ):
+                            if( B == list_B[ii] ):
+                                if( D == list_D[ii] ):
+                                    if( mat == list_mat[ii] ):
+                                        if( KaLi == list_KaLi[ii] ):
+                                            if( KDLi == list_KDLi[ii] ):
+                                                if( KaRe == list_KaRe[ii] ):
+                                                    if( KDRe == list_KDRe[ii] ):
+                                                        if( KaOb == list_KaOb[ii] ):
+                                                            if( KDOb == list_KDOb[ii] ):
+                                                                if( KaUn == list_KaUn[ii] ):
+                                                                    if( KDUn == list_KDUn[ii] ):
+                                                                        if( kom == list_kom[ii] ):                                                                            
+                                                                            gefunden = True
+                                                                            # Zeilen zusammenführen:
+                                                                            neueAnz = list_anz[ii] + self.t.get_zellzahl_i(i, 1)
+                                                                            list_anz[ii] = neueAnz
+                                                                            self.t.set_zellzahl_i(list_zeiNum[ii], 1, neueAnz)
+                                                                            # Zeileninhalt überschreiben / Dublette löschen:
+                                                                            source = self.t.sheet.getCellRangeByPosition(0, 9999, 15, 9999)
+                                                                            target = self.t.sheet.getCellByPosition(0, i)
+                                                                            self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
+                    pass
+            if gefunden == False:
+                list_zeiNum.append(i)
+                list_bez.append(bez)
+                list_anz.append(self.t.get_zellzahl_i(i, 1)) # int
+                list_L.append(self.t.get_zelltext_i(i, 2))
+                list_B.append(self.t.get_zelltext_i(i, 3))
+                list_D.append(self.t.get_zelltext_i(i, 4))
+                list_mat.append(self.t.get_zelltext_i(i, 5))
+                list_KaLi.append(self.t.get_zelltext_i(i, 6))
+                list_KDLi.append(self.t.get_zelltext_i(i, 7))
+                list_KaRe.append(self.t.get_zelltext_i(i, 8))
+                list_KDRe.append(self.t.get_zelltext_i(i, 9))
+                list_KaOb.append(self.t.get_zelltext_i(i, 10))
+                list_KDOb.append(self.t.get_zelltext_i(i, 11))
+                list_KaUn.append(self.t.get_zelltext_i(i, 12))
+                list_KDUn.append(self.t.get_zelltext_i(i, 13))
+                list_kom.append(self.t.get_zelltext_i(i, 14))
+            pass
+        pass
+        
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
-    sli = slist()
-    # sli.tabkopf_anlegen()
-    # sli.dicke_aus_artikelnummer_bestimmen()
-    sli.sortieren()
+    # sli = slist()
+    # sli.reduzieren()
+    msg = "Die Testfunktion ist derzeit nicht in Nutzung."
+    msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
-
-
-
-
-
 
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung im Calc-Menü:
@@ -802,6 +892,19 @@ def SList_Teil_drehen():
     sli = slist()
     sli.teil_drehen()
     pass
+def SList_sortieren():
+    sli = slist()
+    sli.sortieren()
+    pass
+def SList_reduzieren():
+    sli = slist()
+    sli.reduzieren()
+    pass
+def SList_sortieren_reduzieren():
+    sli = slist()
+    sli.reduzieren()
+    sli.sortieren()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Calc-Symbolleiste:
@@ -824,6 +927,19 @@ def SList_Kanteninfo_beraeumen_BTN(self):
 def SList_Teil_drehen_BTN(self):
     sli = slist()
     sli.teil_drehen()
+    pass
+def SList_sortieren_BTN(self):
+    sli = slist()
+    sli.sortieren()
+    pass
+def SList_reduzieren_BTN(self):
+    sli = slist()
+    sli.reduzieren()
+    pass
+def SList_sortieren_reduzieren_BTN(self):
+    sli = slist()
+    sli.reduzieren()
+    sli.sortieren()
     pass
 #----------------------------------------------------------------------------------
 
