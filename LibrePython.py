@@ -803,8 +803,6 @@ class slist:
             bez = self.t.get_zelltext_i(i, 0)
             gefunden = False
             if bez in list_bez:
-                msg = "Zeile " + str(i) + " | Bez in liste"
-                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
                 for ii in range(0, len(list_bez)):
                     if bez == list_bez[ii]:                        
                         L = self.t.get_zelltext_i(i, 2)
@@ -832,15 +830,16 @@ class slist:
                                                             if( KDOb == list_KDOb[ii] ):
                                                                 if( KaUn == list_KaUn[ii] ):
                                                                     if( KDUn == list_KDUn[ii] ):
-                                                                        if( kom == list_kom[ii] ):
-                                                                            msg = "Zeile " + str(i) + "zusammenführen"
-                                                                            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                                                                        if( kom == list_kom[ii] ):                                                                            
                                                                             gefunden = True
                                                                             # Zeilen zusammenführen:
                                                                             neueAnz = list_anz[ii] + self.t.get_zellzahl_i(i, 1)
+                                                                            list_anz[ii] = neueAnz
                                                                             self.t.set_zellzahl_i(list_zeiNum[ii], 1, neueAnz)
-                                                                            # Zeile löschen:
-                                                                            # ....
+                                                                            # Zeileninhalt überschreiben / Dublette löschen:
+                                                                            source = self.t.sheet.getCellRangeByPosition(0, 9999, 15, 9999)
+                                                                            target = self.t.sheet.getCellByPosition(0, i)
+                                                                            self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
                     pass
             if gefunden == False:
                 list_zeiNum.append(i)
@@ -865,16 +864,11 @@ class slist:
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
-    sli = slist()
-    # sli.tabkopf_anlegen()
-    # sli.dicke_aus_artikelnummer_bestimmen()
-    sli.reduzieren()
+    # sli = slist()
+    # sli.reduzieren()
+    msg = "Die Testfunktion ist derzeit nicht in Nutzung."
+    msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
-
-
-
-
-
 
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung im Calc-Menü:
@@ -902,6 +896,15 @@ def SList_sortieren():
     sli = slist()
     sli.sortieren()
     pass
+def SList_reduzieren():
+    sli = slist()
+    sli.reduzieren()
+    pass
+def SList_sortieren_reduzieren():
+    sli = slist()
+    sli.reduzieren()
+    sli.sortieren()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Calc-Symbolleiste:
@@ -927,6 +930,15 @@ def SList_Teil_drehen_BTN(self):
     pass
 def SList_sortieren_BTN(self):
     sli = slist()
+    sli.sortieren()
+    pass
+def SList_reduzieren_BTN(self):
+    sli = slist()
+    sli.reduzieren()
+    pass
+def SList_sortieren_reduzieren_BTN(self):
+    sli = slist()
+    sli.reduzieren()
     sli.sortieren()
     pass
 #----------------------------------------------------------------------------------
