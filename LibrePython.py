@@ -260,7 +260,7 @@ class slist:
         self.t.set_zelltext_s("F1", "Material")
         self.t.set_zelltext_s("G1", "Kante links     (vo)") 
         self.t.set_zelltext_s("H1", "KaDi")
-        self.t.set_zelltext_s("I1", "Kante rechts   (hi)")
+        self.t.set_zelltext_s("I1", "Kante rechts   (hi)") 
         self.t.set_zelltext_s("J1", "KaDi")
         self.t.set_zelltext_s("K1", "Kante oben     (li)")
         self.t.set_zelltext_s("L1", "KaDi")
