@@ -741,7 +741,22 @@ class slist:
         pass
         # Anwendung: self.teil_drehen()
     def sortieren(self):
-        rankingList = ["Seite_li", "Seite_re", "Seite", "MS_li", "MS_re", "MS", "OB", "UB", "KB_ob", "KB_mi", "KB_un", "KB", "EB", "RW", "Tuer_li", "Tuer_re", "Tuer", "SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF", "Sockel"]
+        rankingList  = ["Seite_li", "Seite_re", "Seite"]
+        rankingList += ["MS_li", "MS_re", "MS"]
+        rankingList += ["OB_li", "OB_mi", "OB_re", "OB"]
+        rankingList += ["UB_li", "UB_mi", "UB_re", "UB"]
+        rankingList += ["KB_ob", "KB_li", "KB_mi", "KB_un", "KB_re", "KB"]
+        rankingList += ["Traver_ob", "Traver_un", "Traver_vo", "Traver_hi", "Traver"]
+        rankingList += ["EB_ob", "EB_li", "EB_mi", "EB_un", "EB_re", "EB"]
+        rankingList += ["RW_ob", "RW_li", "RW_mi", "RW_un", "RW_re", "RW"]
+        rankingList += ["Tuer_li", "Tuer_re", "Tuer_A", "Tuer_B", "Tuer_C", "Tuer_D", "Tuer_E", "Tuer"]
+        rankingList += ["Front_li", "Front_re", "Front_A", "Front_B", "Front_C", "Front_D", "Front_E", "Front"]
+        rankingList += ["SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF"]
+        rankingList += ["SS_A", "SS_B", "SS_C", "SS_D", "SS_E", "SS"]
+        rankingList += ["SV_A", "SV_B", "SV_C", "SV_D", "SV_E", "SV"]
+        rankingList += ["SH_A", "SH_B", "SH_C", "SH_D", "SH_E", "SH"]
+        rankingList += ["SB_A", "SB_B", "SB_C", "SB_D", "SB_E", "SB"]
+        rankingList += ["Sockel_li", "Sockel_mi", "Sockel_re" ,"Sockel"]
         rankingNum = [] # Speichert das Ranking für die jeweilige Zeile
         rankingVonZeile = [] # Speichert die ursprüngliche Zeilennummer
         iZeileStart = self.t.get_selection_zeile_start()
