@@ -746,6 +746,7 @@ class slist:
         rankingList += ["OB_li", "OB_mi", "OB_re", "OB"]
         rankingList += ["UB_li", "UB_mi", "UB_re", "UB"]
         rankingList += ["KB_ob", "KB_li", "KB_mi", "KB_un", "KB_re", "KB"]
+        rankingList += ["Trav_ob", "Trav_un", "Trav_vo", "Trav_hi", "Trav"]
         rankingList += ["Traver_ob", "Traver_un", "Traver_vo", "Traver_hi", "Traver"]
         rankingList += ["EB_ob", "EB_li", "EB_mi", "EB_un", "EB_re", "EB"]
         rankingList += ["RW_ob", "RW_li", "RW_mi", "RW_un", "RW_re", "RW"]
