@@ -23,9 +23,9 @@ def msgbox(message, title='LibreOffice', buttons=MSG_BUTTONS.BUTTONS_OK, type_ms
     parent = toolkit.getDesktopWindow()
     mb = toolkit.createMessageBox(parent, type_msg, buttons, title, str(message))
     return mb.execute()
-    """ Anwendung:
-    msgbox('Hallo Oliver', 'msgbox', 1, 'QUERYBOX')
-    """
+    # Anwendung:
+    # msgbox('Hallo Oliver', 'msgbox', 1, 'QUERYBOX')
+    # """
 #----------------------------------------------------------------------------------
 def RGBTo32bitInt(r, g, b):
   return int('%02x%02x%02x' % (r, g, b), 16)
@@ -68,6 +68,12 @@ class ol_tabelle:
         self.sheet = self.sheets.getByName(n) # 'Tabelle2 per Namen
         pass
         # Anwendung: t.set_tabname('Tabelle1')  
+    #-----------------------------------------------------------------------------------------------
+    # Tabs:
+    #-----------------------------------------------------------------------------------------------
+    def tab_anlegen(self, sTabname, iTabIndex):
+        self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
+        pass
     #-----------------------------------------------------------------------------------------------
     # Zellen:
     #-----------------------------------------------------------------------------------------------
@@ -878,12 +884,41 @@ class slist:
         pass
         
 #----------------------------------------------------------------------------------
+class WoPlan:
+    def __init__(self):
+        self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
+        self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
+        self.tabGrundlagen = ol_tabelle()
+        self.tabGrundlagen.set_tabindex(0)
+        pass
+    def tabelle_anlegen(self):
+        kw = self.get_tabname_kw()
+        tabNames = self.doc.Sheets.ElementNames
+        bereits_vorhanden = False
+        for i in range(0, len(tabNames)):
+            if(kw == tabNames[i]):
+                bereits_vorhanden = True
+                break # for i
+            pass
+        if(bereits_vorhanden == True):
+            msg = "Für diese KW existiert bereits eine Registerkarte!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        else:
+            tabIndex = 99
+            self.tabGrundlagen.tab_anlegen(kw, tabIndex)
+        pass
+    def get_tabname_kw(self):
+        return self.tabGrundlagen.get_zelltext_s("F2")
+
+#----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
     # sli = slist()
     # sli.reduzieren()
-    msg = "Die Testfunktion ist derzeit nicht in Nutzung."
-    msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+    wplan = WoPlan()
+    wplan.tabelle_anlegen()
+    # msg = "Die Testfunktion ist derzeit nicht in Nutzung."
+    # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
 
 #----------------------------------------------------------------------------------
