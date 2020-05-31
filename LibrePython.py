@@ -8,6 +8,9 @@ from com.sun.star.table.CellHoriJustify import CENTER as AUSRICHTUNG_HORI_MI
 from com.sun.star.table.CellHoriJustify import RIGHT as AUSRICHTUNG_HORI_RE
 from com.sun.star.sheet.CellDeleteMode import LEFT as DEL_LI
 from com.sun.star.table.CellContentType import TEXT as CELLCONTENTTYP_TEXT
+from com.sun.star.table import BorderLine
+from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
+from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 
 #----------------------------------------------------------------------------------msgbox für LibreOffice definieren:
 def msgbox(message, title='LibreOffice', buttons=MSG_BUTTONS.BUTTONS_OK, type_msg='infobox'):
@@ -74,6 +77,14 @@ class ol_tabelle:
     def tab_anlegen(self, sTabname, iTabIndex):
         self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
         pass
+    def set_tabfokus_s(self, sTabname):
+        sheet = self.doc.Sheets[sTabname]
+        self.doc.getCurrentController().setActiveSheet(sheet)
+        pass
+    def set_tabfokus_i(self, iTabindex):
+        sheet = self.doc.Sheets[iTabindex]
+        self.doc.getCurrentController().setActiveSheet(sheet)
+        pass
     #-----------------------------------------------------------------------------------------------
     # Zellen:
     #-----------------------------------------------------------------------------------------------
@@ -127,8 +138,8 @@ class ol_tabelle:
     def get_zellzahl_i(self, zeile, spalte):
         return self.sheet.getCellByPosition(spalte, zeile).Value
         # Anwendung: t.get_zellzahl_i(1, 2)
-    def set_zellfarbe_s(self, zellname, farbe): # farbe ist ein long-wert
-        self.sheet.getCellRangeByName(zellname).CellBackColor = farbe
+    def set_zellfarbe_s(self, sRange, farbe): # farbe ist ein long-wert
+        self.sheet.getCellRangeByName(sRange).CellBackColor = farbe
         pass
         # Anwendung: t.set_zellfarbe_s("A2", farbe)
     def get_zellfarbe_s(self, zellname): # farbe ist ein long-wert
@@ -151,6 +162,27 @@ class ol_tabelle:
             oRange.HoriJustify = AUSRICHTUNG_HORI_RE
         pass
         #Anwendung: t.set_zellausrichtungHori_s("B2:C3", "re")
+    def set_SchriftGroesse_s(self, sRange, iGroesse):
+        self.sheet.getCellRangeByName(sRange).CharHeight = iGroesse
+        pass
+    def set_SchriftFett_s(self, sRange, bIstFett):
+        if(bIstFett == True):
+            self.sheet.getCellRangeByName(sRange).CharWeight = FONT_BOLD
+        else:
+            self.sheet.getCellRangeByName(sRange).CharWeight = FONT_NOT_BOLD
+        pass
+    def set_Rahmen_komplett_s(self, sRange, iLinienbreite):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        tableBorder.VerticalLine = borderLine
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.LeftLine = borderLine
+        tableBorder.RightLine = borderLine
+        tableBorder.TopLine = borderLine
+        tableBorder.BottomLine = borderLine
+        self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
     #-----------------------------------------------------------------------------------------------
     # Spalten:
     #-----------------------------------------------------------------------------------------------
@@ -889,26 +921,122 @@ class WoPlan:
         self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
         self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
         self.tabGrundlagen = ol_tabelle()
-        self.tabGrundlagen.set_tabindex(0)
+        self.tabGrundlagen.set_tabname("Grundlagen")
+        self.grau = RGBTo32bitInt(204, 204, 204) 
+        self.RahLinDi = 25 # entspricht "0,7pt"
+        pass
+    def wochenplan_erstellen(self):
+        anzFehler = self.tabelle_anlegen()
+        if(anzFehler == 0):
+            self.set_fokus_tab_kw()
+            self.set_spaltenbreiten()
+            self.set_tabellenkopf()
         pass
     def tabelle_anlegen(self):
-        kw = self.get_tabname_kw()
+        kw = self.get_kw()
         tabNames = self.doc.Sheets.ElementNames
         bereits_vorhanden = False
+        anzFehler = 0
         for i in range(0, len(tabNames)):
             if(kw == tabNames[i]):
                 bereits_vorhanden = True
                 break # for i
             pass
         if(bereits_vorhanden == True):
-            msg = "Für diese KW existiert bereits eine Registerkarte!"
+            msg = "Für KW" + str(kw) + " existiert bereits eine Registerkarte!"
             msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            anzFehler += 1
         else:
             tabIndex = 99
             self.tabGrundlagen.tab_anlegen(kw, tabIndex)
+        return anzFehler
+    def set_fokus_tab_kw(self):
+        tab = ol_tabelle()
+        tab.set_tabfokus_s(self.get_kw())
+    def get_kw(self):
+        return self.tabGrundlagen.get_zelltext_s("F3")
+    def get_jahr(self):
+        return self.tabGrundlagen.get_zelltext_s("F1")
+    def set_spaltenbreiten(self):
+        t = ol_tabelle()
+        t.set_tabname(self.get_kw())
+        t.set_spaltenbreite_i(0, 4500)
+        t.set_spaltenbreite_i(1, 2400)
+        t.set_spaltenbreite_i(2, 2250)
+        t.set_spaltenbreite_i(3, 5200)
+        t.set_spaltenbreite_i(4, 5200)
+        t.set_spaltenbreite_i(5, 5200)
+        t.set_spaltenbreite_i(6, 5200)
+        t.set_spaltenbreite_i(7, 5200)
+        t.set_spaltenbreite_i(8, 5200)
         pass
-    def get_tabname_kw(self):
-        return self.tabGrundlagen.get_zelltext_s("F2")
+    def set_tabellenkopf(self):
+        t = ol_tabelle()
+        t.set_tabname(self.get_kw())
+        # Zeile 1:
+        t.set_zelltext_s("A1", "Wochenplan")
+        t.set_zelltext_s("D1", str(self.get_kw()))
+        t.set_zellausrichtungHori_s("D1", "re")
+        t.set_zelltext_s("E1", ".KW")
+        t.set_zelltext_s("F1", str(self.get_jahr()))
+        t.set_zeilenhoehe_i(0, 1100)
+        t.set_SchriftGroesse_s("A1:I1", 26)
+        t.set_SchriftFett_s("A1:I1", True)
+        # Zeile 2:
+        t.set_zeilenhoehe_i(1, 300)
+        # Zeile 3:
+        t.set_zellfarbe_s("A3:I3", self.grau)
+        t.set_SchriftFett_s("A3:I3", True)
+        t.set_Rahmen_komplett_s("A3:I3", self.RahLinDi)
+        t.set_zellausrichtungHori_s("A3:I3", "mi")
+        t.set_zelltext_s("B3", "Tätigkeit")
+        t.set_zelltext_s("C3", "KFZ")
+        # Beschriftung Montag:
+        startdatum = "$Grundlagen.F2"
+        formel = "=" + startdatum + "+((D1-1)" + "*7)" # startdatum + ( (KW-1) * 7 )
+        t.set_zellformel_s("D3", formel)
+        tmp = "Montag "
+        tmp += t.get_zelltext_s("D3")
+        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
+        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
+        t.set_zelltext_s("D3", tmp)
+        # Beschriftung Dienstag:
+        startdatum = "$Grundlagen.F2"
+        formel = "=" + startdatum + "+((D1-1)" + "*7)+1" # startdatum + ( (KW-1) * 7 ) + 1 Tag
+        t.set_zellformel_s("E3", formel)
+        tmp = "Dienstag "
+        tmp += t.get_zelltext_s("E3")
+        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
+        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
+        t.set_zelltext_s("E3", tmp)
+        # Beschriftung Mittwoch:
+        startdatum = "$Grundlagen.F2"
+        formel = "=" + startdatum + "+((D1-1)" + "*7)+2" # startdatum + ( (KW-1) * 7 ) + 2 Tage
+        t.set_zellformel_s("F3", formel)
+        tmp = "Mittwoch "
+        tmp += t.get_zelltext_s("F3")
+        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
+        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
+        t.set_zelltext_s("F3", tmp)
+        # Beschriftung Donnerstag:
+        startdatum = "$Grundlagen.F2"
+        formel = "=" + startdatum + "+((D1-1)" + "*7)+3" # startdatum + ( (KW-1) * 7 ) + 3 Tage
+        t.set_zellformel_s("G3", formel)
+        tmp = "Donnerstag "
+        tmp += t.get_zelltext_s("G3")
+        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
+        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
+        t.set_zelltext_s("G3", tmp)
+        # Beschriftung Freitag:
+        startdatum = "$Grundlagen.F2"
+        formel = "=" + startdatum + "+((D1-1)" + "*7)+4" # startdatum + ( (KW-1) * 7 ) + 4 Tage
+        t.set_zellformel_s("H3", formel)
+        tmp = "Freitag "
+        tmp += t.get_zelltext_s("H3")
+        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
+        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
+        t.set_zelltext_s("H3", tmp)
+        pass
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -916,7 +1044,7 @@ def test_123():
     # sli = slist()
     # sli.reduzieren()
     wplan = WoPlan()
-    wplan.tabelle_anlegen()
+    wplan.wochenplan_erstellen()
     # msg = "Die Testfunktion ist derzeit nicht in Nutzung."
     # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
