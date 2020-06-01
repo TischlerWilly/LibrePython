@@ -86,7 +86,7 @@ class ol_tabelle:
         self.doc.getCurrentController().setActiveSheet(sheet)
         pass
     #-----------------------------------------------------------------------------------------------
-    # Zellen:
+    # Zellen / Ranges(Bereiche):
     #-----------------------------------------------------------------------------------------------
     def get_zelle_i(self, zeile, spalte):
         return self.sheet.getCellByPosition(spalte, zeile)
@@ -176,11 +176,17 @@ class ol_tabelle:
         borderLine  = BorderLine() # Objekt anlegen
         borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
         tableBorder.VerticalLine = borderLine
+        tableBorder.IsVerticalLineValid = True
         tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
         tableBorder.LeftLine = borderLine
+        tableBorder.IsLeftLineValid = True
         tableBorder.RightLine = borderLine
+        tableBorder.IsRightLineValid = True
         tableBorder.TopLine = borderLine
+        tableBorder.IsTopLineValid = True
         tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
         self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
         pass
     #-----------------------------------------------------------------------------------------------
@@ -920,35 +926,36 @@ class WoPlan:
     def __init__(self):
         self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
         self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
-        self.tabGrundlagen = ol_tabelle()
-        self.tabGrundlagen.set_tabname("Grundlagen")
-        self.grau = RGBTo32bitInt(204, 204, 204) 
         self.RahLinDi = 25 # entspricht "0,7pt"
+        self.grau = RGBTo32bitInt(204, 204, 204)  
+        self.tabGrundlagen = ol_tabelle()
+        self.setup_tab_grundlagen()
+        self.tabGrundlagen.set_tabname("Grundlagen")               
         pass
     def wochenplan_erstellen(self):
-        anzFehler = self.tabelle_anlegen()
+        anzFehler = self.tabelle_anlegen(self.get_kw())
         if(anzFehler == 0):
             self.set_fokus_tab_kw()
             self.set_spaltenbreiten()
             self.set_tabellenkopf()
         pass
-    def tabelle_anlegen(self):
-        kw = self.get_kw()
+    def tabelle_anlegen(self, sTabname, bIgnoreError = False):
         tabNames = self.doc.Sheets.ElementNames
         bereits_vorhanden = False
         anzFehler = 0
         for i in range(0, len(tabNames)):
-            if(kw == tabNames[i]):
+            if(sTabname == tabNames[i]):
                 bereits_vorhanden = True
                 break # for i
             pass
         if(bereits_vorhanden == True):
-            msg = "Für KW" + str(kw) + " existiert bereits eine Registerkarte!"
-            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            if(bIgnoreError == False):
+                msg = "Die Registerkarte \"" + str(sTabname) + "\" existiert bereits!"
+                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
             anzFehler += 1
         else:
             tabIndex = 99
-            self.tabGrundlagen.tab_anlegen(kw, tabIndex)
+            self.tabGrundlagen.tab_anlegen(sTabname, tabIndex)
         return anzFehler
     def set_fokus_tab_kw(self):
         tab = ol_tabelle()
@@ -1037,14 +1044,45 @@ class WoPlan:
         tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
         t.set_zelltext_s("H3", tmp)
         pass
-
+    def setup_tab_grundlagen(self):
+        anzFehler = self.tabelle_anlegen("Grundlagen", True)
+        if(anzFehler == 0):
+            t = ol_tabelle()
+            t.set_tabname("Grundlagen")
+            t.set_zelltext_s("A1", "Mitarbeiter")
+            t.set_zelltext_s("B1", "Gruppe")
+            t.set_zelltext_s("C1", "Tätigkeit")
+            t.set_zelltext_s("B2", "Halle1")
+            t.set_zelltext_s("B3", "Halle2")
+            t.set_zelltext_s("B4", "Halle3")
+            t.set_zelltext_s("B5", "Kraftfahrer")
+            t.set_zelltext_s("B6", "Lehrlinge")
+            t.set_zelltext_s("B7", "Büro")
+            t.set_zelltext_s("E1", "Kalender-Jahr")
+            t.set_zelltext_s("E2", "KW1 beginnt am")
+            t.set_zelltext_s("E3", "KW")
+            t.set_zelltext_s("F1", "2020")
+            # t.set_zelltext_s("F2", "30.12.19") # Dies mitt mit der Formartierung "Datum" eingefügt werden
+            t.set_zelltext_s("F3", "1")
+            t.set_SchriftFett_s("A1:C1", True)
+            t.set_SchriftFett_s("E1:E3", True)
+            t.set_zellfarbe_s("A1:C1", self.grau)
+            t.set_zellfarbe_s("E1:E3", self.grau)
+            t.set_Rahmen_komplett_s("A1:C20", self.RahLinDi)
+            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
+            t.set_spaltenbreite_i(0, 4100)
+            t.set_spaltenbreite_i(1, 2260)
+            t.set_spaltenbreite_i(2, 2260)
+            t.set_spaltenbreite_i(4, 3250)      
+            t.set_tabfokus_s("Grundlagen")      
+        pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
     # sli = slist()
     # sli.reduzieren()
     wplan = WoPlan()
-    wplan.wochenplan_erstellen()
+    # wplan.wochenplan_erstellen()
     # msg = "Die Testfunktion ist derzeit nicht in Nutzung."
     # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
@@ -1084,6 +1122,14 @@ def SList_sortieren_reduzieren():
     sli.reduzieren()
     sli.sortieren()
     pass
+#---------
+def WoPlan_tab_Grundlagen():
+    wpl = WoPlan()
+    pass
+def WoPlan_tab_KW():
+    wpl = WoPlan()
+    wpl.wochenplan_erstellen()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Calc-Symbolleiste:
@@ -1119,6 +1165,14 @@ def SList_sortieren_reduzieren_BTN(self):
     sli = slist()
     sli.reduzieren()
     sli.sortieren()
+    pass
+#---------
+def WoPlan_tab_Grundlagen_BTN(self):
+    wpl = WoPlan()
+    pass
+def WoPlan_tab_KW_BTN(self):
+    wpl = WoPlan()
+    wpl.wochenplan_erstellen()
     pass
 #----------------------------------------------------------------------------------
 
