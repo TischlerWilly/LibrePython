@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import uno
+import datetime
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.sheet.CellInsertMode import RIGHT as INSERT_RE
 from com.sun.star.sheet.CellInsertMode import DOWN as INSERT_UN
@@ -11,7 +12,21 @@ from com.sun.star.table.CellContentType import TEXT as CELLCONTENTTYP_TEXT
 from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+"""
+ToDo:
+- WoPlan:
+    -> Seitenformartierung zum Ausdrucken einstellen
+        -->A3
+        -->Querformat
+        -->Seitenränder 0,5cm
+        -->ohne Kopfzeile
+        -->ohne Fußzeile
+        -->evtl. Drucker einstellen
 
+"""
+#----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------msgbox für LibreOffice definieren:
 def msgbox(message, title='LibreOffice', buttons=MSG_BUTTONS.BUTTONS_OK, type_msg='infobox'):
     """ Create message box
@@ -96,10 +111,29 @@ class ol_tabelle:
         target = self.sheet.getCellByPosition(iSpalteNach, iZeileNach)
         self.sheet.moveRange(target.CellAddress, source.RangeAddress)
         pass
-    def set_zelltext_s(self, zellname, text): # self muss immer als erster Parameter übergeben werden
-        self.sheet.getCellRangeByName(zellname).String = text
+    def set_zelltext_s(self, sRange, text): # self muss immer als erster Parameter übergeben werden
+        self.sheet.getCellRangeByName(sRange).String = text
         pass
         # Anwendung: t.set_zelltext_s('A1', 'Hallo 1')
+    def set_zelltext_datum_s(self, sRange, jjjj, mm, tt): # self muss immer als erster Parameter übergeben werden        
+        numberformats = self.doc.NumberFormats
+        Locale = uno.createUnoStruct("com.sun.star.lang.Locale")
+        dateformat = numberformats.queryKey('TT.MM.JJJJ', Locale, True )
+        if dateformat == -1:
+            dateformat = numberformats.addNew('TT.MM.JJJJ', Locale)
+        datum = datetime.date(int(jjjj), int(mm), int(tt))
+        d = datum.isoformat()
+        self.sheet.getCellRangeByName(sRange).Formula = d
+        self.sheet.getCellRangeByName(sRange).NumberFormat = dateformat
+        pass
+    def set_zellformat_s(self, sRange, sFormatcode):
+        numberformats = self.doc.NumberFormats
+        Locale = uno.createUnoStruct("com.sun.star.lang.Locale")
+        myformat = numberformats.queryKey(sFormatcode, Locale, True )
+        if myformat == -1:
+            myformat = numberformats.addNew(sFormatcode, Locale)
+        self.sheet.getCellRangeByName(sRange).NumberFormat = myformat
+        pass
     def get_zelltext_s(self, zellname):
         return self.sheet.getCellRangeByName(zellname).String
         # Anwendung: text = t.get_zelltext_s("B2")
@@ -170,6 +204,11 @@ class ol_tabelle:
             self.sheet.getCellRangeByName(sRange).CharWeight = FONT_BOLD
         else:
             self.sheet.getCellRangeByName(sRange).CharWeight = FONT_NOT_BOLD
+        pass
+    def set_SchriftFarbe_s(self, sZelle, farbe): # farbe ist ein long-wert
+        zelle = self.sheet.getCellRangeByName(sZelle) # Range ist nich möglich nur eine Zelle siehe nächste Zeile
+        cursor = zelle.createTextCursor() # funktioniert nur mit je einer Zelle
+        cursor.setPropertyValue( "CharColor", farbe )
         pass
     def set_Rahmen_komplett_s(self, sRange, iLinienbreite):
         tableBorder = self.sheet.getPropertyValue("TableBorder")
@@ -928,6 +967,7 @@ class WoPlan:
         self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
         self.RahLinDi = 25 # entspricht "0,7pt"
         self.grau = RGBTo32bitInt(204, 204, 204)  
+        self.blau = RGBTo32bitInt(0, 102, 204) 
         self.tabGrundlagen = ol_tabelle()
         self.setup_tab_grundlagen()
         self.tabGrundlagen.set_tabname("Grundlagen")               
@@ -938,6 +978,7 @@ class WoPlan:
             self.set_fokus_tab_kw()
             self.set_spaltenbreiten()
             self.set_tabellenkopf()
+            self.set_tabellenrumpf()
         pass
     def tabelle_anlegen(self, sTabname, bIgnoreError = False):
         tabNames = self.doc.Sheets.ElementNames
@@ -1002,78 +1043,188 @@ class WoPlan:
         startdatum = "$Grundlagen.F2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)" # startdatum + ( (KW-1) * 7 )
         t.set_zellformel_s("D3", formel)
+        t.set_zellformat_s("D3", "TT.MM.JJJJ")
         tmp = "Montag "
         tmp += t.get_zelltext_s("D3")
-        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
-        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
         t.set_zelltext_s("D3", tmp)
         # Beschriftung Dienstag:
         startdatum = "$Grundlagen.F2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+1" # startdatum + ( (KW-1) * 7 ) + 1 Tag
         t.set_zellformel_s("E3", formel)
+        t.set_zellformat_s("E3", "TT.MM.JJJJ")
         tmp = "Dienstag "
         tmp += t.get_zelltext_s("E3")
-        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
-        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
         t.set_zelltext_s("E3", tmp)
         # Beschriftung Mittwoch:
         startdatum = "$Grundlagen.F2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+2" # startdatum + ( (KW-1) * 7 ) + 2 Tage
         t.set_zellformel_s("F3", formel)
+        t.set_zellformat_s("F3", "TT.MM.JJJJ")
         tmp = "Mittwoch "
         tmp += t.get_zelltext_s("F3")
-        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
-        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
         t.set_zelltext_s("F3", tmp)
         # Beschriftung Donnerstag:
         startdatum = "$Grundlagen.F2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+3" # startdatum + ( (KW-1) * 7 ) + 3 Tage
         t.set_zellformel_s("G3", formel)
+        t.set_zellformat_s("G3", "TT.MM.JJJJ")
         tmp = "Donnerstag "
         tmp += t.get_zelltext_s("G3")
-        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
-        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
         t.set_zelltext_s("G3", tmp)
         # Beschriftung Freitag:
         startdatum = "$Grundlagen.F2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+4" # startdatum + ( (KW-1) * 7 ) + 4 Tage
         t.set_zellformel_s("H3", formel)
+        t.set_zellformat_s("H3", "TT.MM.JJJJ")
         tmp = "Freitag "
         tmp += t.get_zelltext_s("H3")
-        tmp = tmp[:-2] # Jahreszahl abschnieden (2 Ziffern)
-        tmp += self.get_jahr() # Jahreszahl anhängen (4 Ziffern) 
         t.set_zelltext_s("H3", tmp)
+        pass
+    def set_tabellenrumpf(self):
+        t = ol_tabelle()
+        t.set_tabname("Grundlagen")
+        # Namen und Anzahl der Gruppen ermitteln:
+        gruppenNamen = []
+        idZeile = 5
+        idSpalte = 4
+        for i in range(0, 10):
+            tmp = t.get_zelltext_i(idZeile+i, idSpalte)
+            if(len(tmp) > 0):
+                tmp2 = [tmp] # Kapselung nötig da sonst jeder einzelne Buchstabe als Einzelwert gedeutet wird
+                gruppenNamen += tmp2
+            pass
+        # Mitarbeiter, Gruppe und Tätigkeit ermitteln:
+        mitarb = []
+        gruppe = []
+        taetig = []
+        idZeile = 1
+        idSpalte = 0
+        for i in range(0, 50):
+            tmp_mitarb = t.get_zelltext_i(idZeile+i, idSpalte)
+            tmp_gruppe = t.get_zelltext_i(idZeile+i, idSpalte+1)
+            tmp_taetig = t.get_zelltext_i(idZeile+i, idSpalte+2)
+            if(len(tmp_gruppe) > 0):
+                mitarb += [tmp_mitarb] # Kapselung nötig da sonst jeder einzelne Buchstabe als Einzelwert gedeutet wird
+                gruppe += [tmp_gruppe]
+                taetig += [tmp_taetig]
+            pass
+        # Tabellenrumpf füllen:
+        t.set_tabname(self.get_kw()) # ab jetzt tab der KW ansprechen
+        aktZeile = 3
+        for i in range(0, len(gruppenNamen)):
+            if(gruppenNamen[i] != "Büro"):
+                # Gruppenname:
+                t.set_zelltext_i(aktZeile, 0, gruppenNamen[i])            
+                zellname = "A" + str(aktZeile+1)
+                t.set_zellausrichtungHori_s(zellname, "mi")
+                t.set_SchriftFett_s(zellname, True)
+                zellname += ":I" + str(aktZeile+1)
+                t.set_zellfarbe_s(zellname, self.grau)
+                t.set_Rahmen_komplett_s(zellname, self.RahLinDi)
+                t.set_SchriftGroesse_s(zellname, 8)
+                aktZeile += 1
+                # Gruppenmitglieder:
+                for ii in range(0, len(gruppe)):
+                    zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+1)
+                    t.set_Rahmen_komplett_s(zellname, self.RahLinDi)
+                    t.set_SchriftGroesse_s(zellname, 8)
+                    if(gruppe[ii] == gruppenNamen[i]):
+                        t.set_zelltext_i(aktZeile, 0, mitarb[ii])
+                        t.set_zelltext_i(aktZeile, 1, taetig[ii])
+                        aktZeile += 1
+                    pass
+                zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+1)
+                t.set_Rahmen_komplett_s(zellname, self.RahLinDi)
+                t.set_SchriftGroesse_s(zellname, 8)
+                aktZeile += 1
+            pass
+        zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+1)
+        t.set_Rahmen_komplett_s(zellname, 0)
+        t.set_zeilenhoehe_i(aktZeile, 260)
+        aktZeile += 1
+        # Wochenziele
+        zeilenmengeWochenziele = 6
+        zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+zeilenmengeWochenziele)
+        t.set_SchriftGroesse_s(zellname, 12)
+        t.set_SchriftFett_s(zellname, True)
+        t.set_zelltext_i(aktZeile, 3, "Wochenziele:")
+        for i in range(1, zeilenmengeWochenziele+1):
+            zellname = "E" + str(aktZeile+i)
+            t.set_SchriftFarbe_s(zellname, self.blau)
+            # t.set_zelltext_s(zellname, "alles schaffen :-)")
+            pass
+        aktZeile += zeilenmengeWochenziele
+        # Arbeitszeiten:
+        t.set_zelltext_i(aktZeile, 0, "     Werte Kollegen  es gelten bis auf weiteres folgende Arbeitszeiten:                           Frühschicht von 6.00 bis 15.00 Uhr")
+        zellname = "A" + str(aktZeile+1)
+        t.set_SchriftGroesse_s(zellname, 18)
+        t.set_SchriftFett_s(zellname, True)
+        aktZeile += 1
+        # Bereich Büro:
+        aktZeile += 1 # Leerzeile
+        for i in range(0, len(gruppenNamen)):
+            if(gruppenNamen[i] == "Büro"):
+                # Gruppenname:
+                t.set_zelltext_i(aktZeile, 0, gruppenNamen[i])            
+                zellname = "A" + str(aktZeile+1)
+                t.set_zellausrichtungHori_s(zellname, "mi")
+                t.set_SchriftFett_s(zellname, True)
+                zellname += ":I" + str(aktZeile+1)
+                t.set_zellfarbe_s(zellname, self.grau)
+                t.set_Rahmen_komplett_s(zellname, self.RahLinDi)
+                t.set_SchriftGroesse_s(zellname, 8)
+                aktZeile += 1
+                # Gruppenmitglieder:
+                for ii in range(0, len(gruppe)):
+                    zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+1)
+                    t.set_Rahmen_komplett_s(zellname, self.RahLinDi)
+                    t.set_SchriftGroesse_s(zellname, 8)
+                    if(gruppe[ii] == gruppenNamen[i]):
+                        t.set_zelltext_i(aktZeile, 0, mitarb[ii])
+                        t.set_zelltext_i(aktZeile, 1, taetig[ii])
+                        aktZeile += 1
+                    pass
+                aktZeile += 1
+            pass
         pass
     def setup_tab_grundlagen(self):
         anzFehler = self.tabelle_anlegen("Grundlagen", True)
         if(anzFehler == 0):
             t = ol_tabelle()
             t.set_tabname("Grundlagen")
+            #---
             t.set_zelltext_s("A1", "Mitarbeiter")
             t.set_zelltext_s("B1", "Gruppe")
-            t.set_zelltext_s("C1", "Tätigkeit")
-            t.set_zelltext_s("B2", "Halle1")
-            t.set_zelltext_s("B3", "Halle2")
-            t.set_zelltext_s("B4", "Halle3")
-            t.set_zelltext_s("B5", "Kraftfahrer")
-            t.set_zelltext_s("B6", "Lehrlinge")
-            t.set_zelltext_s("B7", "Büro")
-            t.set_zelltext_s("E1", "Kalender-Jahr")
-            t.set_zelltext_s("E2", "KW1 beginnt am")
-            t.set_zelltext_s("E3", "KW")
-            t.set_zelltext_s("F1", "2020")
-            # t.set_zelltext_s("F2", "30.12.19") # Dies mitt mit der Formartierung "Datum" eingefügt werden
-            t.set_zelltext_s("F3", "1")
+            t.set_zelltext_s("C1", "Tätigkeit")   
             t.set_SchriftFett_s("A1:C1", True)
-            t.set_SchriftFett_s("E1:E3", True)
             t.set_zellfarbe_s("A1:C1", self.grau)
-            t.set_zellfarbe_s("E1:E3", self.grau)
             t.set_Rahmen_komplett_s("A1:C20", self.RahLinDi)
-            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
             t.set_spaltenbreite_i(0, 4100)
             t.set_spaltenbreite_i(1, 2260)
             t.set_spaltenbreite_i(2, 2260)
-            t.set_spaltenbreite_i(4, 3250)      
+            #---
+            t.set_zelltext_s("E1", "Kalender-Jahr")
+            t.set_zelltext_s("F1", "2020")
+            t.set_zelltext_s("E2", "KW1 beginnt am")
+            t.set_zelltext_datum_s("F2", "2019", "12", "30")
+            t.set_zelltext_s("E3", "KW")
+            t.set_zelltext_s("F3", "1")
+            t.set_SchriftFett_s("E1:E3", True)            
+            t.set_zellfarbe_s("E1:E3", self.grau)            
+            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
+            t.set_spaltenbreite_i(4, 3250) 
+            #---
+            t.set_zelltext_s("E5", "Gruppen")
+            t.set_SchriftFett_s("E5", True)            
+            t.set_zellfarbe_s("E5", self.grau)            
+            t.set_Rahmen_komplett_s("E5:E15", self.RahLinDi)
+            t.set_zelltext_s("E6", "Halle1")
+            t.set_zelltext_s("E7", "Halle2")
+            t.set_zelltext_s("E8", "Halle3")
+            t.set_zelltext_s("E9", "Kraftfahrer")
+            t.set_zelltext_s("E10", "Lehrlinge")
+            t.set_zelltext_s("E11", "Büro")
+            #---    
             t.set_tabfokus_s("Grundlagen")      
         pass
 #----------------------------------------------------------------------------------
@@ -1081,10 +1232,10 @@ class WoPlan:
 def test_123():
     # sli = slist()
     # sli.reduzieren()
-    wplan = WoPlan()
+    # wplan = WoPlan()
     # wplan.wochenplan_erstellen()
-    # msg = "Die Testfunktion ist derzeit nicht in Nutzung."
-    # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+    msg = "Die Testfunktion ist derzeit nicht in Nutzung."
+    msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
 
 #----------------------------------------------------------------------------------
