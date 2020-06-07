@@ -131,6 +131,7 @@ class ol_tabelle:
     def set_tabfokus_s(self, sTabname):
         sheet = self.doc.Sheets[sTabname]
         self.doc.getCurrentController().setActiveSheet(sheet)
+        self.set_tabname(sTabname)
         pass
     def set_tabfokus_i(self, iTabindex):
         sheet = self.doc.Sheets[iTabindex]
@@ -1004,10 +1005,54 @@ class WoPlan:
         self.RahLinDi = 25 # entspricht "0,7pt"
         self.grau = RGBTo32bitInt(204, 204, 204)  
         self.blau = RGBTo32bitInt(0, 102, 204) 
+        self.tab = ol_tabelle()
         self.tabGrundlagen = ol_tabelle()
         self.setup_tab_grundlagen()
-        self.tabGrundlagen.set_tabname("Grundlagen")     
-        self.tabGrundlagen.set_tabfokus_s("Grundlagen")           
+        self.tabGrundlagen.set_tabname("Grundlagen")              
+        pass
+    def setup_tab_grundlagen(self):
+        anzFehler = self.tabelle_anlegen("Grundlagen", True)
+        if(anzFehler == 0):
+            t = ol_tabelle()
+            t.set_tabname("Grundlagen")
+            #---
+            t.set_zelltext_s("A1", "Mitarbeiter")
+            t.set_zelltext_s("B1", "Gruppe")
+            t.set_zelltext_s("C1", "Tätigkeit")   
+            t.set_SchriftFett_s("A1:C1", True)
+            t.set_zellfarbe_s("A1:C1", self.grau)
+            t.set_Rahmen_komplett_s("A1:C20", self.RahLinDi)
+            t.set_spaltenbreite_i(0, 4100)
+            t.set_spaltenbreite_i(1, 2260)
+            t.set_spaltenbreite_i(2, 2260)
+            #---
+            t.set_zelltext_s("E1", "Kalender-Jahr")
+            t.set_zelltext_s("F1", "2020")
+            t.set_zelltext_s("E2", "KW1 beginnt am")
+            t.set_zelltext_datum_s("F2", "2019", "12", "30")
+            t.set_zelltext_s("E3", "KW")
+            t.set_zelltext_s("F3", "1")
+            t.set_SchriftFett_s("E1:E3", True)            
+            t.set_zellfarbe_s("E1:E3", self.grau)            
+            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
+            t.set_spaltenbreite_i(4, 3250) 
+            #---
+            t.set_zelltext_s("E5", "Gruppen")
+            t.set_SchriftFett_s("E5", True)            
+            t.set_zellfarbe_s("E5", self.grau)            
+            t.set_Rahmen_komplett_s("E5:E15", self.RahLinDi)
+            t.set_zelltext_s("E6", "Halle1")
+            t.set_zelltext_s("E7", "Halle2")
+            t.set_zelltext_s("E8", "Halle3")
+            t.set_zelltext_s("E9", "Kraftfahrer")
+            t.set_zelltext_s("E10", "Lehrlinge")
+            t.set_zelltext_s("E11", "Büro")
+            #---
+        pass
+    def tab_Grundlagen(self):
+        self.setup_tab_grundlagen()
+        t = ol_tabelle()
+        t.set_tabfokus_s("Grundlagen")
         pass
     def wochenplan_erstellen(self):
         anzFehler = self.tabelle_anlegen(self.get_kw())
@@ -1035,11 +1080,10 @@ class WoPlan:
             anzFehler += 1
         else:
             tabIndex = 99
-            self.tabGrundlagen.tab_anlegen(sTabname, tabIndex)
+            self.tab.tab_anlegen(sTabname, tabIndex)
         return anzFehler
     def set_fokus_tab_kw(self):
-        tab = ol_tabelle()
-        tab.set_tabfokus_s(self.get_kw())
+        self.tab.set_tabfokus_s(self.get_kw())
     def get_kw(self):
         return self.tabGrundlagen.get_zelltext_s("F3")
     def get_jahr(self):
@@ -1225,47 +1269,7 @@ class WoPlan:
                     pass
                 aktZeile += 1
             pass
-        pass
-    def setup_tab_grundlagen(self):
-        anzFehler = self.tabelle_anlegen("Grundlagen", True)
-        if(anzFehler == 0):
-            t = ol_tabelle()
-            t.set_tabname("Grundlagen")
-            #---
-            t.set_zelltext_s("A1", "Mitarbeiter")
-            t.set_zelltext_s("B1", "Gruppe")
-            t.set_zelltext_s("C1", "Tätigkeit")   
-            t.set_SchriftFett_s("A1:C1", True)
-            t.set_zellfarbe_s("A1:C1", self.grau)
-            t.set_Rahmen_komplett_s("A1:C20", self.RahLinDi)
-            t.set_spaltenbreite_i(0, 4100)
-            t.set_spaltenbreite_i(1, 2260)
-            t.set_spaltenbreite_i(2, 2260)
-            #---
-            t.set_zelltext_s("E1", "Kalender-Jahr")
-            t.set_zelltext_s("F1", "2020")
-            t.set_zelltext_s("E2", "KW1 beginnt am")
-            t.set_zelltext_datum_s("F2", "2019", "12", "30")
-            t.set_zelltext_s("E3", "KW")
-            t.set_zelltext_s("F3", "1")
-            t.set_SchriftFett_s("E1:E3", True)            
-            t.set_zellfarbe_s("E1:E3", self.grau)            
-            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
-            t.set_spaltenbreite_i(4, 3250) 
-            #---
-            t.set_zelltext_s("E5", "Gruppen")
-            t.set_SchriftFett_s("E5", True)            
-            t.set_zellfarbe_s("E5", self.grau)            
-            t.set_Rahmen_komplett_s("E5:E15", self.RahLinDi)
-            t.set_zelltext_s("E6", "Halle1")
-            t.set_zelltext_s("E7", "Halle2")
-            t.set_zelltext_s("E8", "Halle3")
-            t.set_zelltext_s("E9", "Kraftfahrer")
-            t.set_zelltext_s("E10", "Lehrlinge")
-            t.set_zelltext_s("E11", "Büro")
-            #---    
-            t.set_tabfokus_s("Grundlagen")      
-        pass
+        pass  
     def setup_for_printing(self):
         tab = ol_tabelle()
         tab.set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
@@ -1417,6 +1421,7 @@ def SList_sortieren_reduzieren():
 #---------
 def WoPlan_tab_Grundlagen():
     wpl = WoPlan()
+    wpl.tab_Grundlagen()
     pass
 def WoPlan_tab_KW():
     wpl = WoPlan()
@@ -1489,6 +1494,7 @@ def SList_sortieren_reduzieren_BTN(self):
 #---------
 def WoPlan_tab_Grundlagen_BTN(self):
     wpl = WoPlan()
+    wpl.tab_Grundlagen()
     pass
 def WoPlan_tab_KW_BTN(self):
     wpl = WoPlan()
