@@ -18,11 +18,6 @@ from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 ToDo:
 - WoPlan:
     -> Seitenformartierung zum Ausdrucken einstellen
-        -->A3
-        -->Querformat
-        -->Seitenränder 0,5cm
-        -->ohne Kopfzeile
-        -->ohne Fußzeile
         -->evtl. Drucker einstellen
 
 """
@@ -86,6 +81,47 @@ class ol_tabelle:
         self.sheet = self.sheets.getByName(n) # 'Tabelle2 per Namen
         pass
         # Anwendung: t.set_tabname('Tabelle1')  
+    #-----------------------------------------------------------------------------------------------
+    # Seite:
+    #-----------------------------------------------------------------------------------------------
+    def set_setenformat(self, sPapierformat, IstQuerformat, iRandLi, iRandRe, iRandOb, iRandUn, hatKopfzeile, hatFusszeile):
+        pageStyle = self.doc.getStyleFamilies().getByName("PageStyles")
+        page = pageStyle.getByName("Default")
+        # Seitenränder:
+        # 500 == 5mm
+        page.LeftMargin = iRandLi
+        page.RightMargin = iRandRe
+        page.TopMargin = iRandOb
+        page.BottomMargin = iRandUn 
+        # Kopfzeile an/aus:
+        page.HeaderOn = hatKopfzeile
+        # Fußzeile an/aus:
+        page.FooterOn = hatFusszeile
+        # Seitenformat:
+        if(sPapierformat == "A4"):
+            if(IstQuerformat == False):
+                # A4 hoch:
+                page.IsLandscape = False
+                page.Width = 21000
+                page.Height = 29700
+            else:
+                # A4 quer:
+                page.IsLandscape = False
+                page.Width = 29700
+                page.Height = 21000
+        elif(sPapierformat == "A3"):
+            if(IstQuerformat == False):
+                # A3 hoch:
+                page.IsLandscape = False
+                page.Width = 29700
+                page.Height = 42000
+            else:
+                # A3 quer:
+                page.IsLandscape = True
+                page.Width = 42000
+                page.Height = 29700        
+        pass
+        # Anwendung: set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
     #-----------------------------------------------------------------------------------------------
     # Tabs:
     #-----------------------------------------------------------------------------------------------
@@ -979,6 +1015,7 @@ class WoPlan:
             self.set_spaltenbreiten()
             self.set_tabellenkopf()
             self.set_tabellenrumpf()
+            self.setup_for_printing()
         pass
     def tabelle_anlegen(self, sTabname, bIgnoreError = False):
         tabNames = self.doc.Sheets.ElementNames
@@ -1227,6 +1264,108 @@ class WoPlan:
             #---    
             t.set_tabfokus_s("Grundlagen")      
         pass
+    def setup_for_printing(self):
+        tab = ol_tabelle()
+        tab.set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
+        pass
+    def ist_Urlaub(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Urlaub")
+                farbe = RGBTo32bitInt(153, 204, 0) # grün
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
+    def ist_Zeitausgleich(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Zeitausgleich")
+                farbe = RGBTo32bitInt(153, 204, 0) # grün
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
+    def ist_Lieferung(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Lieferung")
+                farbe = RGBTo32bitInt(153, 204, 0) # grün
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
+    def ist_Kurzarbeit(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Kurzarbeit")
+                farbe = RGBTo32bitInt(153, 204, 0) # grün
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
+    def ist_Montage(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Montage")
+                farbe = RGBTo32bitInt(255, 102, 0) # orange
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
+    def ist_krank(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "krank")
+                farbe = RGBTo32bitInt(255, 0, 0) # rot
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
+    def ist_Berufsschule(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Berufsschule")
+                farbe = RGBTo32bitInt(153, 204, 255) # blau
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
@@ -1281,6 +1420,34 @@ def WoPlan_tab_KW():
     wpl = WoPlan()
     wpl.wochenplan_erstellen()
     pass
+def WoPlan_ist_Urlaub():
+    wpl = WoPlan()
+    wpl.ist_Urlaub()
+    pass
+def WoPlan_ist_Zeitausgleich():
+    wpl = WoPlan()
+    wpl.ist_Zeitausgleich()
+    pass
+def WoPlan_ist_Lieferung():
+    wpl = WoPlan()
+    wpl.ist_Lieferung()
+    pass
+def WoPlan_ist_Kurzarbeit():
+    wpl = WoPlan()
+    wpl.ist_Kurzarbeit()
+    pass
+def WoPlan_ist_Montage():
+    wpl = WoPlan()
+    wpl.ist_Montage()
+    pass
+def WoPlan_ist_krank():
+    wpl = WoPlan()
+    wpl.ist_krank()
+    pass
+def WoPlan_ist_Berufsschule():
+    wpl = WoPlan()
+    wpl.ist_Berufsschule()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Calc-Symbolleiste:
@@ -1324,6 +1491,34 @@ def WoPlan_tab_Grundlagen_BTN(self):
 def WoPlan_tab_KW_BTN(self):
     wpl = WoPlan()
     wpl.wochenplan_erstellen()
+    pass
+def WoPlan_ist_Urlaub_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Urlaub()
+    pass
+def WoPlan_ist_Zeitausgleich_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Zeitausgleich()
+    pass
+def WoPlan_ist_Lieferung_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Lieferung()
+    pass
+def WoPlan_ist_Kurzarbeit_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Kurzarbeit()
+    pass
+def WoPlan_ist_Montage_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Montage()
+    pass
+def WoPlan_ist_krank_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_krank()
+    pass
+def WoPlan_ist_Berufsschule_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Berufsschule()
     pass
 #----------------------------------------------------------------------------------
 
