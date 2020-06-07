@@ -1006,7 +1006,8 @@ class WoPlan:
         self.blau = RGBTo32bitInt(0, 102, 204) 
         self.tabGrundlagen = ol_tabelle()
         self.setup_tab_grundlagen()
-        self.tabGrundlagen.set_tabname("Grundlagen")               
+        self.tabGrundlagen.set_tabname("Grundlagen")     
+        self.tabGrundlagen.set_tabfokus_s("Grundlagen")           
         pass
     def wochenplan_erstellen(self):
         anzFehler = self.tabelle_anlegen(self.get_kw())
@@ -1016,6 +1017,7 @@ class WoPlan:
             self.set_tabellenkopf()
             self.set_tabellenrumpf()
             self.setup_for_printing()
+        self.set_fokus_tab_kw()
         pass
     def tabelle_anlegen(self, sTabname, bIgnoreError = False):
         tabNames = self.doc.Sheets.ElementNames
