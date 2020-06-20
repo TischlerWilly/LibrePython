@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+import os
+from os.path import expanduser
 import uno
 import datetime
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
@@ -17,8 +19,8 @@ from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 """
 ToDo:
 - WoPlan:
-    -> Seitenformartierung zum Ausdrucken einstellen
-        -->evtl. Drucker einstellen
+    -> Tagesplan erstellen lassen
+        -->Datei mit Inhalt füllen
 
 """
 #----------------------------------------------------------------------------------
@@ -42,6 +44,15 @@ def msgbox(message, title='LibreOffice', buttons=MSG_BUTTONS.BUTTONS_OK, type_ms
 #----------------------------------------------------------------------------------
 def RGBTo32bitInt(r, g, b):
   return int('%02x%02x%02x' % (r, g, b), 16)
+def create_file(full_path):
+    # Pfadtrenner ist auf Windows das \\
+    # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    new_file = open(full_path, "w")
+    new_file.close()
+    pass
+def get_userpath():
+    return expanduser("~")
 #----------------------------------------------------------------------------------
 
 class ol_tabelle:
@@ -81,10 +92,12 @@ class ol_tabelle:
         self.sheet = self.sheets.getByName(n) # 'Tabelle2 per Namen
         pass
         # Anwendung: t.set_tabname('Tabelle1')  
+    def get_tabname(self):
+        return self.sheet.getName()
     #-----------------------------------------------------------------------------------------------
     # Seite:
     #-----------------------------------------------------------------------------------------------
-    def set_setenformat(self, sPapierformat, IstQuerformat, iRandLi, iRandRe, iRandOb, iRandUn, hatKopfzeile, hatFusszeile):
+    def set_seitenformat(self, sPapierformat, IstQuerformat, iRandLi, iRandRe, iRandOb, iRandUn, hatKopfzeile, hatFusszeile):
         pageStyle = self.doc.getStyleFamilies().getByName("PageStyles")
         page = pageStyle.getByName("Default")
         # Seitenränder:
@@ -122,6 +135,12 @@ class ol_tabelle:
                 page.Height = 29700        
         pass
         # Anwendung: set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
+    def set_pageScaling(self, iSkaling):
+        pageStyle = self.doc.getStyleFamilies().getByName("PageStyles")
+        page = pageStyle.getByName("Default")
+        # page.PageScale = 25 # 25%
+        page.PageScale = iSkaling
+        pass
     #-----------------------------------------------------------------------------------------------
     # Tabs:
     #-----------------------------------------------------------------------------------------------
@@ -359,6 +378,15 @@ class ol_tabelle:
         pass
         #Anwendung: t.set_zeilenhoehe_i(5, 1000)
     #-----------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
+class ol_textdatei:
+    def __init__(self):
+        self.doc = XSCRIPTCONTEXT.getDocument()
+        self.text = self.doc.getText()
+        self.text.setString('Hello World in Python in Writer')
 
 #----------------------------------------------------------------------------------
 class slist:
@@ -710,7 +738,8 @@ class slist:
                             bBekannt = True
                             break # für For-Schleife ii
                     if bBekannt == False:
-                        aKanten.append(sKaLi)
+                        if len(sKaLi) > 0:
+                            aKanten.append(sKaLi)
                 if (len(sKaRe) > 0):
                     bBekannt = False
                     for ii in range (0, len(aKanten)):
@@ -718,7 +747,8 @@ class slist:
                             bBekannt = True
                             break # für For-Schleife ii
                     if bBekannt == False:
-                        aKanten.append(sKaRe)
+                        if len(sKaRe) > 0:
+                            aKanten.append(sKaRe)
                 if (len(sKaOb) > 0):
                     bBekannt = False
                     for ii in range (0, len(aKanten)):
@@ -726,15 +756,17 @@ class slist:
                             bBekannt = True
                             break # für For-Schleife ii
                     if bBekannt == False:
-                        aKanten.append(sKaOb)
+                        if len(sKaOb) > 0:
+                            aKanten.append(sKaOb)
                 if (len(sKaUn) > 0):
                     bBekannt = False
                     for ii in range (0, len(aKanten)):
-                        if aKanten[ii] == sKaOb:
+                        if aKanten[ii] == sKaUn:
                             bBekannt = True
                             break # für For-Schleife ii
                     if bBekannt == False:
-                        aKanten.append(sKaOb)
+                        if len(sKaUn) > 0:
+                            aKanten.append(sKaUn)
                 maxi += 1
             else: 
                 break # für For-Schleife i
@@ -1272,7 +1304,8 @@ class WoPlan:
         pass  
     def setup_for_printing(self):
         tab = ol_tabelle()
-        tab.set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
+        tab.set_seitenformat("A3", True, 3000, 3000, 500 , 500, False, False)
+        tab.set_pageScaling(85)
         pass
     def ist_Urlaub(self):
         tab = ol_tabelle()
@@ -1372,6 +1405,27 @@ class WoPlan:
                 pass
             pass
         pass
+    def get_tagesplan(self):
+        tab = ol_tabelle()
+        kw = tab.get_tabname()
+        gesund = True
+        try:
+            val = int(kw) # versuche ob der string kw in einen int umgewandelt werden kann
+        except ValueError:
+            msg = "Bitte zuerst in einen konkreten Wochenplan wechseln!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            gesund = False
+
+        if gesund == True:
+            path = get_userpath()
+            path += "\\Desktop\\Tagesplan_"
+            path += self.get_jahr()
+            path += "_KW"
+            # path += self.get_kw()
+            path += kw
+            path += ".odt"
+            create_file(path)
+        pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def test_123():
@@ -1379,6 +1433,16 @@ def test_123():
     # sli.reduzieren()
     # wplan = WoPlan()
     # wplan.wochenplan_erstellen()
+    # create_file("C:\\Users\\AV6\\Desktop\\Unbekannt123.odt")
+    # path = get_userpath()
+    # path += "\\Desktop\\Unbekannt123.odt"
+    # create_file(path)
+    # os.system('notepad.exe')
+    # os.system("swriter.exe")
+    # os.system("C:\\Users\\AV6\\Desktop\\Unbekannt123.odt")
+    # t = ol_textdatei()
+    # wpl = WoPlan()
+    # wpl.get_tagesplan()
     msg = "Die Testfunktion ist derzeit nicht in Nutzung."
     msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
@@ -1455,6 +1519,10 @@ def WoPlan_ist_Berufsschule():
     wpl = WoPlan()
     wpl.ist_Berufsschule()
     pass
+def WoPlan_Tagesplan():
+    wpl = WoPlan()
+    wpl.get_tagesplan()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Calc-Symbolleiste:
@@ -1527,6 +1595,10 @@ def WoPlan_ist_krank_BTN(self):
 def WoPlan_ist_Berufsschule_BTN(self):
     wpl = WoPlan()
     wpl.ist_Berufsschule()
+    pass
+def WoPlan_Tagesplan_BTN(self):
+    wpl = WoPlan()
+    wpl.get_tagesplan()
     pass
 #----------------------------------------------------------------------------------
 
