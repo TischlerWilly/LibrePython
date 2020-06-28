@@ -15,13 +15,12 @@ from com.sun.star.table.CellContentType import TEXT as CELLCONTENTTYP_TEXT
 from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
+from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 """
 ToDo:
-- WoPlan:
-    -> Tagesplan erstellen lassen
-        -->Datei mit Inhalt füllen
+- 
 
 """
 #----------------------------------------------------------------------------------
@@ -952,7 +951,7 @@ class slist: # Calc
             rankingNum.append(iRanking)
             pass
         # Zellen nach unten verschieben:
-        source = self.t.sheet.getCellRangeByPosition(0, iZeileStart, 15, iZeileEnde)
+        source = self.t.sheet.getCellRangeByPosition(0, iZeileStart, 14, iZeileEnde)
         target = self.t.sheet.getCellByPosition(0, iZeileStart+tmpPosDiff)
         self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
         # Zellen in der richtigen Reihenfolge  wieder nach oben verschieben:
@@ -963,7 +962,7 @@ class slist: # Calc
                 for ii in range(last_ii, len(rankingNum)):
                     if rankingNum[ii] == i:
                         # Zeile nach oben verschieben
-                        source = self.t.sheet.getCellRangeByPosition(0, rankingVonZeile[ii]+tmpPosDiff, 15, rankingVonZeile[ii]+tmpPosDiff)
+                        source = self.t.sheet.getCellRangeByPosition(0, rankingVonZeile[ii]+tmpPosDiff, 14, rankingVonZeile[ii]+tmpPosDiff)
                         target = self.t.sheet.getCellByPosition(0, naechsteZeile)
                         self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
                         naechsteZeile += 1
@@ -1510,6 +1509,7 @@ class WoPlan: # Calc
                 taplan += " "
                 taplan += trenner
                 taplan += "\n"
+                taplan += "\n"
                 # 
                 bemerkung = "    - "
                 # Montag:
@@ -1589,6 +1589,10 @@ class TaPlan: # Writer
         self.desktop = XSCRIPTCONTEXT.getDesktop()
         self.model = self.desktop.getCurrentComponent()        
         pass
+    def formartieren(self):
+        self.set_text_hoehe(12)
+        self.set_text_fett()
+        pass
     def set_text_hoehe(self, iHoehe):
         oSel = self.doc.CurrentSelection.getByIndex(0) # get the current selection
         oTC = self.text.createTextCursorByRange(oSel) # TextCursor erzeugen
@@ -1597,6 +1601,28 @@ class TaPlan: # Writer
         while oEnum.hasMoreElements():
             oPar = oEnum.nextElement()
             oPar.CharHeight = iHoehe
+        pass
+    def set_text_fett(self):
+        fettMachen = []
+        fettMachen += ["Montag    :"]
+        fettMachen += ["Dienstag  :"]
+        fettMachen += ["Mittwoch  :"]
+        fettMachen += ["Donnerstag:"]
+        fettMachen += ["Freitag   :"]
+        for i in range(0, len(fettMachen)):
+            suche = self.doc.createSearchDescriptor()
+            # suche.SearchString = "Montag"
+            suche.SearchString = fettMachen[i]
+            suche.SearchWords = True # nur ganze Wörter suchen
+            suche.SearchCaseSensitive = True # Groß/Klein-Schreibung beachten
+            funde = self.doc.findAll(suche)
+            for ii in range(0, funde.getCount()):
+                fund = funde.getByIndex(ii)
+                fund.CharWeight = FONT_BOLD
+                fund.CharUnderline = FONT_UNDERLINED_SINGLE
+                # fund.setString("neuer text") # Suchergebnis ersetzen durch
+                pass
+            pass
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -1615,14 +1641,15 @@ def test_123():
     # t = ol_textdatei()
     # wpl = WoPlan()
     # wpl.get_tagesplan()
-    t = TaPlan()
-    t.set_text_hoehe(12)
-    # msg = "Die Testfunktion ist derzeit nicht in Nutzung."
-    # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+    # t = TaPlan()
+    # t.set_text_hoehe(12)
+    # t.set_text_fett()
+    msg = "Die Testfunktion ist derzeit nicht in Nutzung."
+    msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
 
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung im Calc-Menü:
+# Starter für die Bedienung im Menü:
 def SList_autoformat():
     sli = slist()
     sli.autoformat()
@@ -1697,9 +1724,14 @@ def WoPlan_Tagesplan():
     wpl = WoPlan()
     wpl.get_tagesplan()
     pass
+#---------
+def TaPlan_formartieren(): 
+    tpl = TaPlan()
+    tpl.formartieren()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung in der Calc-Symbolleiste:
+# Starter für die Bedienung in der Symbolleiste:
 def SList_autoformat_BTN(self):
     sli = slist()
     sli.autoformat()
@@ -1773,6 +1805,11 @@ def WoPlan_ist_Berufsschule_BTN(self):
 def WoPlan_Tagesplan_BTN(self):
     wpl = WoPlan()
     wpl.get_tagesplan()
+    pass
+#---------
+def TaPlan_formartieren_BTN(self): 
+    tpl = TaPlan()
+    tpl.formartieren()
     pass
 #----------------------------------------------------------------------------------
 
