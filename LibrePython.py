@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import os
 from os.path import expanduser
+from pathlib import Path
 import uno
 import datetime
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
@@ -14,13 +15,12 @@ from com.sun.star.table.CellContentType import TEXT as CELLCONTENTTYP_TEXT
 from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
+from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 """
 ToDo:
-- WoPlan:
-    -> Tagesplan erstellen lassen
-        -->Datei mit Inhalt füllen
+- 
 
 """
 #----------------------------------------------------------------------------------
@@ -44,13 +44,35 @@ def msgbox(message, title='LibreOffice', buttons=MSG_BUTTONS.BUTTONS_OK, type_ms
 #----------------------------------------------------------------------------------
 def RGBTo32bitInt(r, g, b):
   return int('%02x%02x%02x' % (r, g, b), 16)
-def create_file(full_path):
+def erstelle_datei(full_path):
     # Pfadtrenner ist auf Windows das \\
     # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
     # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
-    new_file = open(full_path, "w")
-    new_file.close()
-    pass
+    erfolg = True
+    my_file = Path(full_path)
+    if my_file.is_file():
+        msg = "Die Datei existiert bereits und wird nicht überschrieben."
+        msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        erfolg = False
+    else:
+        new_file = open(full_path, "w")
+        new_file.close()
+    return erfolg
+def schreibe_in_datei(full_path, sText):
+    # Pfadtrenner ist auf Windows das \\
+    # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    erfolg = True
+    my_file = Path(full_path)
+    if my_file.is_file():
+        msg = "Die Datei existiert bereits und wird nicht überschrieben."
+        msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        erfolg = False
+    else:
+        new_file = open(full_path, "w")
+        new_file.write(sText)
+        new_file.close()
+    return erfolg
 def get_userpath():
     return expanduser("~")
 #----------------------------------------------------------------------------------
@@ -389,7 +411,7 @@ class ol_textdatei:
         self.text.setString('Hello World in Python in Writer')
 
 #----------------------------------------------------------------------------------
-class slist:
+class slist: # Calc
     def __init__(self):
         self.t = ol_tabelle()
         self.maxistklen = 999   
@@ -929,7 +951,7 @@ class slist:
             rankingNum.append(iRanking)
             pass
         # Zellen nach unten verschieben:
-        source = self.t.sheet.getCellRangeByPosition(0, iZeileStart, 15, iZeileEnde)
+        source = self.t.sheet.getCellRangeByPosition(0, iZeileStart, 14, iZeileEnde)
         target = self.t.sheet.getCellByPosition(0, iZeileStart+tmpPosDiff)
         self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
         # Zellen in der richtigen Reihenfolge  wieder nach oben verschieben:
@@ -940,7 +962,7 @@ class slist:
                 for ii in range(last_ii, len(rankingNum)):
                     if rankingNum[ii] == i:
                         # Zeile nach oben verschieben
-                        source = self.t.sheet.getCellRangeByPosition(0, rankingVonZeile[ii]+tmpPosDiff, 15, rankingVonZeile[ii]+tmpPosDiff)
+                        source = self.t.sheet.getCellRangeByPosition(0, rankingVonZeile[ii]+tmpPosDiff, 14, rankingVonZeile[ii]+tmpPosDiff)
                         target = self.t.sheet.getCellByPosition(0, naechsteZeile)
                         self.t.sheet.moveRange(target.CellAddress, source.RangeAddress)
                         naechsteZeile += 1
@@ -1030,7 +1052,7 @@ class slist:
         pass
         
 #----------------------------------------------------------------------------------
-class WoPlan:
+class WoPlan: # Calc
     def __init__(self):
         self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
         self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
@@ -1195,7 +1217,7 @@ class WoPlan:
         tmp += t.get_zelltext_s("H3")
         t.set_zelltext_s("H3", tmp)
         pass
-    def set_tabellenrumpf(self):
+    def get_gruppennamen(self):
         t = ol_tabelle()
         t.set_tabname("Grundlagen")
         # Namen und Anzahl der Gruppen ermitteln:
@@ -1208,6 +1230,12 @@ class WoPlan:
                 tmp2 = [tmp] # Kapselung nötig da sonst jeder einzelne Buchstabe als Einzelwert gedeutet wird
                 gruppenNamen += tmp2
             pass
+        return gruppenNamen
+    def set_tabellenrumpf(self):
+        t = ol_tabelle()
+        t.set_tabname("Grundlagen")
+        # Namen und Anzahl der Gruppen ermitteln:
+        gruppenNamen = self.get_gruppennamen()
         # Mitarbeiter, Gruppe und Tätigkeit ermitteln:
         mitarb = []
         gruppe = []
@@ -1424,7 +1452,177 @@ class WoPlan:
             # path += self.get_kw()
             path += kw
             path += ".odt"
-            create_file(path)
+            # erstelle_datei(path)
+            # schreibe_in_datei(path, "Andre Klapper\n123")
+            # Inhalt erfassen:
+            gruppenNamen = self.get_gruppennamen()
+            mitarb = []
+            motag = []
+            ditag = []
+            mitwo = []
+            dotag = []
+            frtag = []
+            satag = []
+            for i in range(3, 99):
+                ma = tab.get_zelltext_i(i, 0)
+                mo = tab.get_zelltext_i(i, 3)
+                di = tab.get_zelltext_i(i, 4)
+                mi = tab.get_zelltext_i(i, 5)
+                do = tab.get_zelltext_i(i, 6)
+                fr = tab.get_zelltext_i(i, 7)
+                sa = tab.get_zelltext_i(i, 8)
+                if ma in gruppenNamen:
+                    continue # for
+                if len(ma) == 0:
+                    continue # for
+                if len(ma) > 50: #      Werte Kollegen  es gelten bis auf weiteres folgende Arbeitszeiten:                           Frühschicht von 6.00 bis 15.00 Uhr
+                    break # for
+                mitarb += [ma] # Kapselung notwendig
+                motag += [mo]
+                ditag += [di]
+                mitwo += [mi]
+                dotag += [do]
+                frtag += [fr]
+                satag += [sa]
+                pass
+            # msgbox(mitarb, 'msgbox', 1, 'QUERYBOX')
+            # Inhalt zusammenstellen:
+            taplan = ""
+            for i in range(0, len(mitarb)):
+                # Kopfzeile:
+                lentren = 55
+                lentren -= len(mitarb[i])
+                lentren -= 2
+                lentren = lentren/2
+                trenner = ""
+                for ii in range(0, int(lentren)):
+                    trenner += "-"
+                    pass
+                taplan += "KW "
+                taplan += tab.get_tabname()
+                taplan += "/"
+                taplan += self.get_jahr()
+                taplan += " "
+                taplan += trenner
+                taplan += " "
+                taplan += mitarb[i]
+                taplan += " "
+                taplan += trenner
+                taplan += "\n"
+                taplan += "\n"
+                # 
+                bemerkung = "    - "
+                # Montag:
+                # label = tab.get_zelltext_s("D3")
+                label = "Montag    "
+                taplan += label
+                taplan += ": "
+                taplan += motag[i]
+                taplan += "\n"
+                taplan += bemerkung
+                taplan += "\n"
+                # Dienstag:
+                # label = tab.get_zelltext_s("E3")
+                label = "Dienstag  "
+                taplan += label
+                taplan += ": "
+                taplan += ditag[i]
+                taplan += "\n"
+                taplan += bemerkung
+                taplan += "\n"
+                # Mittwoch:
+                # label = tab.get_zelltext_s("F3")
+                label = "Mittwoch  "
+                taplan += label
+                taplan += ": "
+                taplan += mitwo[i]
+                taplan += "\n"
+                taplan += bemerkung
+                taplan += "\n"
+                # Donnerstag:
+                # label = tab.get_zelltext_s("G3")
+                label = "Donnerstag"
+                taplan += label
+                taplan += ": "
+                taplan += dotag[i]
+                taplan += "\n"
+                taplan += bemerkung
+                taplan += "\n"
+                # Freitag:
+                # label = tab.get_zelltext_s("H3")
+                label = "Freitag   "
+                taplan += label
+                taplan += ": "
+                taplan += frtag[i]
+                taplan += "\n"
+                taplan += "    - "
+                taplan += "\n"
+                # Samstag:
+                if len(satag[i]) > 0:
+                    label = tab.get_zelltext_s("I3")
+                    if len(label) > 0:
+                        taplan += label
+                        taplan += ": "
+                    taplan += satag[i]
+                    taplan += "\n"
+                    taplan += bemerkung
+                    taplan += "\n"
+                # Freizeilen:
+                taplan += "\n"
+                taplan += "\n"
+                taplan += "\n"
+                pass
+            
+            if schreibe_in_datei(path, taplan) == True:
+                msg = "Tagespläne wurden erfolgrich gespeichert."
+                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            else:
+                msg = "Tagespläne konnten nicht gespeichert werden."
+                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        pass
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+class TaPlan: # Writer
+    def __init__(self):
+        self.doc = XSCRIPTCONTEXT.getDocument()
+        self.text = self.doc.getText()
+        self.desktop = XSCRIPTCONTEXT.getDesktop()
+        self.model = self.desktop.getCurrentComponent()        
+        pass
+    def formartieren(self):
+        self.set_text_hoehe(12)
+        self.set_text_fett()
+        pass
+    def set_text_hoehe(self, iHoehe):
+        oSel = self.doc.CurrentSelection.getByIndex(0) # get the current selection
+        oTC = self.text.createTextCursorByRange(oSel) # TextCursor erzeugen
+        oEnum = oTC.Text.createEnumeration()
+        # oTC = oText.createTextCursorByRange(oSel)
+        while oEnum.hasMoreElements():
+            oPar = oEnum.nextElement()
+            oPar.CharHeight = iHoehe
+        pass
+    def set_text_fett(self):
+        fettMachen = []
+        fettMachen += ["Montag    :"]
+        fettMachen += ["Dienstag  :"]
+        fettMachen += ["Mittwoch  :"]
+        fettMachen += ["Donnerstag:"]
+        fettMachen += ["Freitag   :"]
+        for i in range(0, len(fettMachen)):
+            suche = self.doc.createSearchDescriptor()
+            # suche.SearchString = "Montag"
+            suche.SearchString = fettMachen[i]
+            suche.SearchWords = True # nur ganze Wörter suchen
+            suche.SearchCaseSensitive = True # Groß/Klein-Schreibung beachten
+            funde = self.doc.findAll(suche)
+            for ii in range(0, funde.getCount()):
+                fund = funde.getByIndex(ii)
+                fund.CharWeight = FONT_BOLD
+                fund.CharUnderline = FONT_UNDERLINED_SINGLE
+                # fund.setString("neuer text") # Suchergebnis ersetzen durch
+                pass
+            pass
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -1443,12 +1641,15 @@ def test_123():
     # t = ol_textdatei()
     # wpl = WoPlan()
     # wpl.get_tagesplan()
+    # t = TaPlan()
+    # t.set_text_hoehe(12)
+    # t.set_text_fett()
     msg = "Die Testfunktion ist derzeit nicht in Nutzung."
     msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
 
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung im Calc-Menü:
+# Starter für die Bedienung im Menü:
 def SList_autoformat():
     sli = slist()
     sli.autoformat()
@@ -1523,9 +1724,14 @@ def WoPlan_Tagesplan():
     wpl = WoPlan()
     wpl.get_tagesplan()
     pass
+#---------
+def TaPlan_formartieren(): 
+    tpl = TaPlan()
+    tpl.formartieren()
+    pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung in der Calc-Symbolleiste:
+# Starter für die Bedienung in der Symbolleiste:
 def SList_autoformat_BTN(self):
     sli = slist()
     sli.autoformat()
@@ -1599,6 +1805,11 @@ def WoPlan_ist_Berufsschule_BTN(self):
 def WoPlan_Tagesplan_BTN(self):
     wpl = WoPlan()
     wpl.get_tagesplan()
+    pass
+#---------
+def TaPlan_formartieren_BTN(self): 
+    tpl = TaPlan()
+    tpl.formartieren()
     pass
 #----------------------------------------------------------------------------------
 
