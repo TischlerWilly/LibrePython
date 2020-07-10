@@ -1332,8 +1332,8 @@ class WoPlan: # Calc
         pass  
     def setup_for_printing(self):
         tab = ol_tabelle()
-        tab.set_seitenformat("A3", True, 3000, 3000, 500 , 500, False, False)
-        tab.set_pageScaling(85)
+        tab.set_seitenformat("A3", True, 1000, 500, 500 , 500, False, False)
+        tab.set_pageScaling(100)
         pass
     def ist_Urlaub(self):
         tab = ol_tabelle()
