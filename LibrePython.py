@@ -1050,6 +1050,27 @@ class slist: # Calc
                 list_kom.append(self.t.get_zelltext_i(i, 14))
             pass
         pass
+    def std_namen(self):
+        iZeileStart = self.t.get_selection_zeile_start()
+        iZeileEnde  = self.t.get_selection_zeile_ende()
+        for i in range(iZeileStart, iZeileEnde+1):
+            sName = self.t.get_zelltext_i(i, 0)     
+            sName = sName.replace("Seite Links", "S#_Seite_li")    
+            sName = sName.replace("Seite Rechts", "S#_Seite_re")    
+            sName = sName.replace("Mittelseite", "S#_MS")
+            sName = sName.replace("Boden Oben", "S#_OB")
+            sName = sName.replace("Boden Unten", "S#_UB")
+            sName = sName.replace("Konstruktionsboden", "S#_KB")
+            sName = sName.replace("Fachboden", "S#_EB")
+            sName = sName.replace("Rückwand", "S#_RW")
+            sName = sName.replace("Tür", "S#_Tuer")
+            sName = sName.replace("Schubkasten Front", "S#_SF")
+            sName = sName.replace("Travers Vorne", "S#_Traver_vo")
+            sName = sName.replace("Travers Hinten", "S#_Traver_hi")
+            #sName = sName.replace("", "S#_")
+            self.t.set_zelltext_i(i, 0, sName)
+            pass
+        pass
         
 #----------------------------------------------------------------------------------
 class WoPlan: # Calc
@@ -1332,8 +1353,8 @@ class WoPlan: # Calc
         pass  
     def setup_for_printing(self):
         tab = ol_tabelle()
-        tab.set_seitenformat("A3", True, 3000, 3000, 500 , 500, False, False)
-        tab.set_pageScaling(85)
+        tab.set_seitenformat("A3", True, 3000, 500, 500 , 500, False, False)
+        tab.set_pageScaling(82)
         pass
     def ist_Urlaub(self):
         tab = ol_tabelle()
@@ -1680,6 +1701,7 @@ def SList_reduzieren():
     pass
 def SList_sortieren_reduzieren():
     sli = slist()
+    sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
     pass
@@ -1762,6 +1784,7 @@ def SList_reduzieren_BTN(self):
     pass
 def SList_sortieren_reduzieren_BTN(self):
     sli = slist()
+    sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
     pass
