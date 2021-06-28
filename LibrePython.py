@@ -600,11 +600,16 @@ class slist: # Calc
         self.t.set_zelltext_s("Z1", "B<70")
         self.t.set_zelltext_s("AA1", "BC zu lang")
         # --
+        self.t.set_zelltext_s("AC1", "KD li")
+        self.t.set_zelltext_s("AD1", "KD re")
+        self.t.set_zelltext_s("AE1", "KD ob")
+        self.t.set_zelltext_s("AF1", "KD un")
+        # --
         self.t.set_zelltext_s("P1", "Projekt")
         self.t.set_zelltext_s("P2", "ABC01")
         self.t.set_zellfarbe_s("P2", self.gelb)
         # Breiten der ergänzten Spalten anpassen:
-        for i in range (15, 30):
+        for i in range (15, 35):
             self.t.optimale_spaltenbreite_i(i)
         self.t.set_spaltenbreite_i(17, 700)
         # Nullen in den Feldern der KaDi löschen:
@@ -613,11 +618,11 @@ class slist: # Calc
         # Es müssen immer die englischen Funktionsnamen für die Calc-Funktionen verwendet werden!
         for i in range (1, 25):
             sZellname = "Q" + str(i+1)
-            sFormel = "=IF(SUM(S" + str(i+1) + ":ZZ" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
+            sFormel = "=IF(SUM(S" + str(i+1) + ":AB" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- Anzahl der Fehler:
             sZellname = "R" + str(i+1)
-            sFormel = "=SUM(S" + str(i+1) + ":ZZ" + str(i+1) + ")"
+            sFormel = "=SUM(S" + str(i+1) + ":AB" + str(i+1) + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- PlattenDi:
             sZellname = "S" + str(i+1)
@@ -625,75 +630,127 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi links:
             sZellname = "T" + str(i+1)
-            sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            # Formel für alte Kantennummer:
+            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += "+" # Jetzt folg nächste Prüfung:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            # Formel für aktuelle Kantennummer:
+            sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            sFormel += "0" # Nichts tun
+            sFormel += ";" # Sonst
+            sFormel += "(IF(INDIRECT(" + "\"H\"" + "&ROW())" # Wenn der Wert
+            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"G\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"G\"" + "&ROW());5);2)))/10)" # minus Fügemaß
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += "+" # Jetzt folg nächste Prüfung:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            sFormel += "0" # Kein Fehler
+            sFormel += ";" # Sonst
+            sFormel += "1)))" # Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi rechts:
             sZellname = "U" + str(i+1)
-            sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            # Formel für alte Kantennummer:
+            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += "+" # Jetzt folg nächste Prüfung:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            # Formel für aktuelle Kantennummer:
+            sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            sFormel += "0" # Nichts tun
+            sFormel += ";" # Sonst
+            sFormel += "(IF(INDIRECT(" + "\"J\"" + "&ROW())" # Wenn der Wert
+            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"I\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"I\"" + "&ROW());5);2)))/10)" # minus Fügemaß
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += "+" # Jetzt folg nächste Prüfung:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            sFormel += "0" # Kein Fehler
+            sFormel += ";" # Sonst
+            sFormel += "1)))" # Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi oben:
             sZellname = "V" + str(i+1)
-            sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            # Formel für alte Kantennummer:
+            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += "+" # Jetzt folg nächste Prüfung:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            # Formel für aktuelle Kantennummer:
+            sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            sFormel += "0" # Nichts tun
+            sFormel += ";" # Sonst
+            sFormel += "(IF(INDIRECT(" + "\"L\"" + "&ROW())" # Wenn der Wert
+            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"K\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"K\"" + "&ROW());5);2)))/10)" # minus Fügemaß
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += "+" # Jetzt folg nächste Prüfung:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            sFormel += "0" # Kein Fehler
+            sFormel += ";" # Sonst
+            sFormel += "1)))" # Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi unten:
             sZellname = "W" + str(i+1)
-            sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            # Formel für alte Kantennummer:
+            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += "+" # Jetzt folg nächste Prüfung:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
+            #sFormel += ";" # Sonst Wenn:
+            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            #sFormel += ";" # Dann
+            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            # Formel für aktuelle Kantennummer:
+            sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
+            sFormel += "0" # Nichts tun
+            sFormel += ";" # Sonst
+            sFormel += "(IF(INDIRECT(" + "\"N\"" + "&ROW())" # Wenn der Wert
+            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"M\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"M\"" + "&ROW());5);2)))/10)" # minus Fügemaß
             sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += "+" # Jetzt folg nächste Prüfung:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            sFormel += ";" # Sonst Wenn:
-            sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            sFormel += ";" # Dann
-            sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
+            sFormel += "0" # Kein Fehler
+            sFormel += ";" # Sonst
+            sFormel += "1)))" # Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- Anz 0:
             sZellname = "X" + str(i+1)
@@ -711,6 +768,46 @@ class slist: # Calc
             sZellname = "AA" + str(i+1)
             sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>28;1;0)" # Wenn BC > 28 dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
+            # --- KaDi links korrekter Wert:
+            sZellname = "AC" + str(i+1)
+            sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
+            sFormel += ";" # Dann
+            sFormel += "\"---\"" # Kein Ergebnis
+            sFormel += ";" # Sonst
+            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"G\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"G\"" + "&ROW());5);2)))/10))" # minus Fügemaß
+            self.t.set_zellformel_s(sZellname, sFormel)
+            self.t.set_zellausrichtungHori_s(sZellname, "mi")
+            # --- KaDi rechts korrekter Wert:
+            sZellname = "AD" + str(i+1)
+            sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
+            sFormel += ";" # Dann
+            sFormel += "\"---\"" # Kein Ergebnis
+            sFormel += ";" # Sonst
+            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"I\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"I\"" + "&ROW());5);2)))/10))" # minus Fügemaß
+            self.t.set_zellformel_s(sZellname, sFormel)
+            self.t.set_zellausrichtungHori_s(sZellname, "mi")
+            # --- KaDi oben korrekter Wert:
+            sZellname = "AE" + str(i+1)
+            sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
+            sFormel += ";" # Dann
+            sFormel += "\"---\"" # Kein Ergebnis
+            sFormel += ";" # Sonst
+            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"K\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"K\"" + "&ROW());5);2)))/10))" # minus Fügemaß
+            self.t.set_zellformel_s(sZellname, sFormel)
+            self.t.set_zellausrichtungHori_s(sZellname, "mi")
+            # --- KaDi unten korrekter Wert:
+            sZellname = "AF" + str(i+1)
+            sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
+            sFormel += ";" # Dann
+            sFormel += "\"---\"" # Kein Ergebnis
+            sFormel += ";" # Sonst
+            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"M\"" + "&ROW());3))" # Kantendicke ist
+            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"M\"" + "&ROW());5);2)))/10))" # minus Fügemaß
+            self.t.set_zellformel_s(sZellname, sFormel)
+            self.t.set_zellausrichtungHori_s(sZellname, "mi")
         pass
         # Anwendung: self.formeln_edit()
     def formeln_kante(self):
@@ -818,10 +915,10 @@ class slist: # Calc
             formel += "+IF(C" + str(i+1) + "<240;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
             formel += "+IF(D" + str(i+1) + "<240;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
             formel += "+IF(D" + str(i+1) + "<240;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<80;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<80;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<80;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<80;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<90;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<90;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<90;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<90;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
             self.t.set_zellformel_i(i, 15, formel)
             sErgebnis = self.t.get_zelltext_i(i, 15)
             if(sErgebnis != "0") and (len(sErgebnis) >0 ):
