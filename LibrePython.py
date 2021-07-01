@@ -766,7 +766,7 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- BC zu lang:
             sZellname = "AA" + str(i+1)
-            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>28;1;0)" # Wenn BC > 28 dann Fehler
+            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>25;1;0)" # Wenn BC > 28 dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi links korrekter Wert:
             sZellname = "AC" + str(i+1)
