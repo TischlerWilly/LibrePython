@@ -1019,6 +1019,7 @@ class slist: # Calc
         rankingList += ["KB_ob", "KB_li", "KB_mi", "KB_un", "KB_re", "KB"]
         rankingList += ["Trav_ob", "Trav_un", "Trav_vo", "Trav_hi", "Trav"]
         rankingList += ["Traver_ob", "Traver_un", "Traver_vo", "Traver_hi", "Traver"]
+        rankingList += ["Trav_ob", "Trav_un", "Trav_vo", "Trav_hi", "Trav"]
         rankingList += ["EB_ob", "EB_li", "EB_mi", "EB_un", "EB_re", "EB"]
         rankingList += ["RW_ob", "RW_li", "RW_mi", "RW_un", "RW_re", "RW"]
         rankingList += ["Tuer_li", "Tuer_re", "Tuer_A", "Tuer_B", "Tuer_C", "Tuer_D", "Tuer_E", "Tuer"]
@@ -1162,8 +1163,10 @@ class slist: # Calc
             sName = sName.replace("Rückwand", "S#_RW")
             sName = sName.replace("Tür", "S#_Tuer")
             sName = sName.replace("Schubkasten Front", "S#_SF")
-            sName = sName.replace("Travers Vorne", "S#_Traver_vo")
-            sName = sName.replace("Travers Hinten", "S#_Traver_hi")
+            sName = sName.replace("Travers Vorne", "S#_Trav_vo")
+            sName = sName.replace("Travers Hinten", "S#_Trav_hi")
+            sName = sName.replace("Travers Oben Vorne", "S#_Trav_OV")
+            sName = sName.replace("Travers Oben Hinten", "S#_Trav_OH")
             #sName = sName.replace("", "S#_")
             self.t.set_zelltext_i(i, 0, sName)
             pass
