@@ -205,6 +205,65 @@ class ol_tabelle:
         else:
             self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
         pass
+    def tab_entfernen(self, sTabname):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sTabname:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            self.doc.Sheets.removeByName(sTabname)
+        pass
+    def tab_kopieren(self, sNeuerTabName, iTabIndex):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sNeuerTabName:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            msg = "Die Registerkarte \""
+            msg += sNeuerTabName
+            msg += "\" ist bereits vorhanden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            return 1
+        else:
+            sAlterTabName = self.get_tabname()
+            self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+            return 0
+        return 0
+    def tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sAlterTabName:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+        pass
+    def tab_setName(self, sNeuerTabName):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sNeuerTabName:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            msg = "Die Registerkarte \""
+            msg += sNeuerTabName
+            msg += "\" ist bereits vorhanden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            return 1
+        else:
+            self.sheet.Name = sNeuerTabName
+            return 0
+        return 0
     def set_tabfokus_s(self, sTabname):
         sheet = self.doc.Sheets[sTabname]
         self.doc.getCurrentController().setActiveSheet(sheet)
@@ -505,56 +564,60 @@ class slist: # Calc
     def umwandeln_von_BCtoCSV(self):
         # sortiert Stueckliste um
         # von CSV-Format zum Einlesen ins PIOS nach Std-Stuckliste
-        #----Spalten einfügen um Platz zu schaffen:
-        self.t.insert_spalte_re_i(0, 15)
-        #----Spalten umsortieren:
-        # Bezeichnung:
-        self.t.spalte_verschieben_i(19, 0)
-        # Anzahl:
-        self.t.spalte_verschieben_i(20, 1)
-        # Länge:
-        self.t.spalte_verschieben_i(21, 2)
-        # Breite:
-        self.t.spalte_verschieben_i(22, 3)
-        # Dicke:
-        # >>Die Dicke ist nicht in der Tabelle enthalten und muss aus der Artikelnummer berechnet werden
-        # Material:
-        self.t.spalte_verschieben_i(16, 5)
-        # Kante links:
-        self.t.spalte_verschieben_i(24, 6)
-        # KaDi li:
-        self.t.spalte_verschieben_i(29, 7)
-        # Kante rechts:
-        self.t.spalte_verschieben_i(25, 8)
-        # KaDi re:
-        self.t.spalte_verschieben_i(30, 9)
-        # Kante oben = vorne:
-        self.t.spalte_verschieben_i(26, 10)
-        # KaDi ob:
-        self.t.spalte_verschieben_i(31, 11)
-        # Kante unten = hinten:
-        self.t.spalte_verschieben_i(27, 12)
-        # KaDi un:
-        self.t.spalte_verschieben_i(32, 13)
-        # Bemerkung:
-        self.t.spalte_verschieben_i(28, 14)
-        #----nicht gebrauchte Zellen entfernen:
-        self.t.delelte_spalten_re_i(15, 100)
-        #----Tabellenkopf beschriften :
-        self.tabkopf_anlegen()
-        #----optimale Zellbreite festlegen:
-        self.t.optimale_spaltenbreiten()
-        #----Plattendicke aus Artikelnummer berechnen:
-        self.dicke_aus_artikelnummer_bestimmen()
-        #----dezimaltrennerkorrektur:
-        self.text_zu_zahl_i(1)
-        self.text_zu_zahl_i(2)
-        self.text_zu_zahl_i(3)
-        self.text_zu_zahl_i(7)
-        self.text_zu_zahl_i(9)
-        self.text_zu_zahl_i(11)
-        self.text_zu_zahl_i(13)
-        pass
+        # Tabelle kopieren in neue Registerkarte:
+        ret = self.t.tab_kopieren("Stueckliste", 99)
+        if ret == 0: # keine Fehler
+            self.t.set_tabfokus_s("Stueckliste")
+            #----Spalten einfügen um Platz zu schaffen:
+            self.t.insert_spalte_re_i(0, 15)
+            #----Spalten umsortieren:
+            # Bezeichnung:
+            self.t.spalte_verschieben_i(19, 0)
+            # Anzahl:
+            self.t.spalte_verschieben_i(20, 1)
+            # Länge:
+            self.t.spalte_verschieben_i(21, 2)
+            # Breite:
+            self.t.spalte_verschieben_i(22, 3)
+            # Dicke:
+            # >>Die Dicke ist nicht in der Tabelle enthalten und muss aus der Artikelnummer berechnet werden
+            # Material:
+            self.t.spalte_verschieben_i(16, 5)
+            # Kante links:
+            self.t.spalte_verschieben_i(24, 6)
+            # KaDi li:
+            self.t.spalte_verschieben_i(29, 7)
+            # Kante rechts:
+            self.t.spalte_verschieben_i(25, 8)
+            # KaDi re:
+            self.t.spalte_verschieben_i(30, 9)
+            # Kante oben = vorne:
+            self.t.spalte_verschieben_i(26, 10)
+            # KaDi ob:
+            self.t.spalte_verschieben_i(31, 11)
+            # Kante unten = hinten:
+            self.t.spalte_verschieben_i(27, 12)
+            # KaDi un:
+            self.t.spalte_verschieben_i(32, 13)
+            # Bemerkung:
+            self.t.spalte_verschieben_i(28, 14)
+            #----nicht gebrauchte Zellen entfernen:
+            self.t.delelte_spalten_re_i(15, 100)
+            #----Tabellenkopf beschriften :
+            self.tabkopf_anlegen()
+            #----optimale Zellbreite festlegen:
+            self.t.optimale_spaltenbreiten()
+            #----Plattendicke aus Artikelnummer berechnen:
+            self.dicke_aus_artikelnummer_bestimmen()
+            #----dezimaltrennerkorrektur:
+            self.text_zu_zahl_i(1)
+            self.text_zu_zahl_i(2)
+            self.text_zu_zahl_i(3)
+            self.text_zu_zahl_i(7)
+            self.text_zu_zahl_i(9)
+            self.text_zu_zahl_i(11)
+            self.text_zu_zahl_i(13)
+        return ret
         # Anwendung: self.umwandeln_von_BCtoCSV()
     def formatieren(self):
         # Alle Zellen sichtbar machen:
@@ -562,19 +625,19 @@ class slist: # Calc
             self.t.set_spalte_sichtbar_i(i, True)        
         # Zellgrößen anpassen:
         self.t.set_zeilenhoehen(700)
-        self.t.set_spaltenbreite_i(0, 4330) # Bezeichnung
+        self.t.set_spaltenbreite_i(0, 3900) # Bezeichnung
         self.t.set_spaltenbreite_i(1, 1410) # Anzahl
         self.t.set_spaltenbreite_i(2, 1320) # Länge
         self.t.set_spaltenbreite_i(3, 1320) # Breite
         self.t.set_spaltenbreite_i(4, 1220) # Dicke
         self.t.set_spaltenbreite_i(5, 3830) # Matieral
-        self.t.set_spaltenbreite_i(6, 3000) # Kante links
+        self.t.set_spaltenbreite_i(6, 4300) # Kante links
         self.t.set_spaltenbreite_i(7, 900) # KaDi links
-        self.t.set_spaltenbreite_i(8, 3000) # Kante rechts
+        self.t.set_spaltenbreite_i(8, 4300) # Kante rechts
         self.t.set_spaltenbreite_i(9, 900) # KaDi re
-        self.t.set_spaltenbreite_i(10, 3000) # Kante oben
+        self.t.set_spaltenbreite_i(10, 4300) # Kante oben
         self.t.set_spaltenbreite_i(11, 900) # KaDi oben
-        self.t.set_spaltenbreite_i(12, 3000) # Kante unten
+        self.t.set_spaltenbreite_i(12, 4300) # Kante unten
         self.t.set_spaltenbreite_i(13, 900) # KaDi unten
         self.t.set_spaltenbreite_i(14, 5460) # Bemerkung
         # Tabellenkopf farbig machen:
@@ -607,14 +670,16 @@ class slist: # Calc
         b = self.t.get_zelltext_s("B1")
         c = self.t.get_zelltext_s("C1")
         if a == "Aufkb" and b == "Plakb" and c == "Elnr": # Tabelle von BarcodeToCSV
-            self.umwandeln_von_BCtoCSV()
+            anzFehler = self.umwandeln_von_BCtoCSV()
+            if anzFehler != 0:
+                return False
             self.formatieren()
             return True
         elif len(a) == 0 and len(b) == 0 and len(c) == 0: # Tabellenkopf fehlt, evtl istes ein eleere Tabelle
             self.tabkopf_anlegen()
             self.formatieren()
             return True
-        elif a == "Bezeichnung" and b == "Anzahl" and c == "Länge": # Tabell ist bereits richtig formartiert
+        elif a == "Bezeichnung" and b == "Anzahl" and c == "Länge": # Tabelle ist bereits richtig formartiert
             self.formatieren()
             return True
         return False
@@ -849,6 +914,10 @@ class slist: # Calc
     def formeln_kante(self):
         if self.autoformat() != True:
             return False
+        # eventuell noch umbenennen:
+        sTabName = self.t.get_tabname()
+        if(sTabName == "Stueckliste"):
+            self.t.tab_setName("Kantenberechnung")
         # eventuellen vorherigen Inhalt löschen:
         self.t.delelte_spalten_re_i(15, 100)
         maxi = 0        
@@ -862,7 +931,7 @@ class slist: # Calc
         self.t.set_zelltext_s("Q1", "KantenNr")
         self.t.set_zelltext_s("R1", "lfdm")
         self.t.set_zelltext_s("S1", " = ca.")
-        self.t.set_spaltenbreite_i(16, 2700) # KantenNr
+        self.t.set_spaltenbreite_i(16, 4500) # KantenNr
         self.t.set_spaltenbreite_i(17, 1500) # lfdm
         self.t.set_spaltenbreite_i(18, 1500) # lfdm ca
         self.t.set_spaltenausrichtung_i(18, "mi")
@@ -1215,24 +1284,28 @@ class baugrpetk_calc: # Calc
         self.maxistklen = 999  
         self.listProjekt = []
         self.listPosNr   = []
-        self.listBaugrp  = []      
+        self.listBaugrp  = []   
+        self.listMenge   = []   
         pass
     def ermitteln(self):
         iSpalteProjekt = 0 # Spaltennummer mit Projektinformation
         iSpaltePosNr   = 3 # Spaltennummer mit Information über Pos-Nr
         iSpalteBez     = 4 # Spaltennummer mit Teilebezeichnung
-        #listProjekt = []
-        #listPosNr   = []
-        #listBaugrp  = []
+        iSpalteMenge   = 5 # Spaltennummer mit Menge
+        # Werte Nullen:
+        self.listProjekt = []
+        self.listPosNr   = []
+        self.listBaugrp  = []   
+        self.listMenge   = [] 
         for i in range (1, self.maxistklen):
             myCellProj  = self.t.get_zelle_i(i, iSpalteProjekt)
             myCellPosNr = self.t.get_zelle_i(i, iSpaltePosNr)
             myCellBez   = self.t.get_zelle_i(i, iSpalteBez)
+            myCellMenge = self.t.get_zelle_i(i, iSpalteMenge)
             sBaugruppe = myCellBez.String
             if "_" in sBaugruppe:
                 iPos = sBaugruppe.find("_")
                 sBaugruppe = sBaugruppe[0:iPos]
-                #msgbox(sBaugruppe[0], 'jobox', 1, 'QUERYBOX')
                 iGefunden = 0
                 if sBaugruppe[0] is "S":
                     if istZiffer(sBaugruppe[1]):
@@ -1246,10 +1319,13 @@ class baugrpetk_calc: # Calc
                 if iGefunden:
                     sProj  = myCellProj.String
                     sPosNr = myCellPosNr.String
+                    sMenge = myCellMenge.String # Es wird angenommen das immer zuerst eine Schrankseite in der 
+                                                # Stückliste steht und die Menge dieser Seite der Gesamtmenge entspricht
                     if not sBaugruppe in self.listBaugrp:
                         self.listProjekt += [sProj]
                         self.listPosNr   += [sPosNr]
                         self.listBaugrp  += [sBaugruppe]
+                        self.listMenge   += [sMenge]
                     else:
                         #iPos = listBaugrp.index(sBaugruppe)
                         for ii in range (1, len(self.listBaugrp)):
@@ -1257,11 +1333,13 @@ class baugrpetk_calc: # Calc
                                 self.listProjekt += [sProj]
                                 self.listPosNr   += [sPosNr]
                                 self.listBaugrp  += [sBaugruppe] 
+                                self.listMenge   += [sMenge]
                                 break #for ii
         #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
         pass
-    def auflisten(self):
+    def auflisten(self):      
         # Registerkarte anlegen:
+        self.t.tab_entfernen("labels")
         self.t.tab_anlegen("labels", 1)
         self.t.set_tabfokus_s("labels")
         # Tabellenkopf erstellen:
@@ -1269,12 +1347,18 @@ class baugrpetk_calc: # Calc
         self.t.set_zelltext_s("B1", "Pos")
         self.t.set_zelltext_s("C1", "Baugruppe")
         self.t.set_zelltext_s("D1", "Menge")
+        self.t.set_spaltenausrichtung_i(0, "li")
+        self.t.set_spaltenausrichtung_i(1, "mi")
+        self.t.set_spaltenausrichtung_i(2, "mi")
+        self.t.set_spaltenausrichtung_i(3, "mi")
+        self.t.set_spaltenausrichtung_i(4, "mi")
         # Tabelle füllen:
         for i in range (1, len(self.listBaugrp)):
             iStartZeile = 0
             self.t.set_zelltext_i(iStartZeile+i, 0, self.listProjekt[i]) # Projekt
             self.t.set_zelltext_i(iStartZeile+i, 1, self.listPosNr[i]) # Pos
             self.t.set_zelltext_i(iStartZeile+i, 2, self.listBaugrp[i]) # Baugruppe
+            self.t.set_zelltext_i(iStartZeile+i, 3, self.listMenge[i]) # Menge
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -1870,6 +1954,9 @@ def test_123():
     # t = TaPlan()
     # t.set_text_hoehe(12)
     # t.set_text_fett()
+    #sli = slist()
+    #sTabname = sli.t.get_tabname()
+    #sli.t.tab_kopieren("hans", 99)
     msg = "Die Testfunktion ist derzeit nicht in Nutzung."
     msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
