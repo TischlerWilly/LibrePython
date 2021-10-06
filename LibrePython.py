@@ -75,6 +75,29 @@ def schreibe_in_datei(full_path, sText):
     return erfolg
 def get_userpath():
     return expanduser("~")
+def istZiffer(c):
+    erg = False
+    if c is '0':
+        erg = True
+    elif c is '1':
+        erg = True
+    elif c is '2':
+        erg = True
+    elif c is '3':
+        erg = True
+    elif c is '4':
+        erg = True
+    elif c is '5':
+        erg = True
+    elif c is '6':
+        erg = True
+    elif c is '7':
+        erg = True
+    elif c is '8':
+        erg = True
+    elif c is '9':
+        erg = True
+    return erg
 #----------------------------------------------------------------------------------
 
 class ol_tabelle:
@@ -167,7 +190,20 @@ class ol_tabelle:
     # Tabs:
     #-----------------------------------------------------------------------------------------------
     def tab_anlegen(self, sTabname, iTabIndex):
-        self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sTabname:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            msg = "Die Registerkarte \""
+            msg += sTabname
+            msg += "\" ist bereits vorhanden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        else:
+            self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
         pass
     def set_tabfokus_s(self, sTabname):
         sheet = self.doc.Sheets[sTabname]
@@ -1173,6 +1209,75 @@ class slist: # Calc
         pass
         
 #----------------------------------------------------------------------------------
+class baugrpetk_calc: # Calc
+    def __init__(self):
+        self.t = ol_tabelle()
+        self.maxistklen = 999  
+        self.listProjekt = []
+        self.listPosNr   = []
+        self.listBaugrp  = []      
+        pass
+    def ermitteln(self):
+        iSpalteProjekt = 0 # Spaltennummer mit Projektinformation
+        iSpaltePosNr   = 3 # Spaltennummer mit Information über Pos-Nr
+        iSpalteBez     = 4 # Spaltennummer mit Teilebezeichnung
+        #listProjekt = []
+        #listPosNr   = []
+        #listBaugrp  = []
+        for i in range (1, self.maxistklen):
+            myCellProj  = self.t.get_zelle_i(i, iSpalteProjekt)
+            myCellPosNr = self.t.get_zelle_i(i, iSpaltePosNr)
+            myCellBez   = self.t.get_zelle_i(i, iSpalteBez)
+            sBaugruppe = myCellBez.String
+            if "_" in sBaugruppe:
+                iPos = sBaugruppe.find("_")
+                sBaugruppe = sBaugruppe[0:iPos]
+                #msgbox(sBaugruppe[0], 'jobox', 1, 'QUERYBOX')
+                iGefunden = 0
+                if sBaugruppe[0] is "S":
+                    if istZiffer(sBaugruppe[1]):
+                        iGefunden = 1
+                elif sBaugruppe[0] is "#":
+                    if istZiffer(sBaugruppe[1]):
+                        iGefunden = 1
+                elif sBaugruppe[0] is "@":
+                    if istZiffer(sBaugruppe[1]):
+                        iGefunden = 1
+                if iGefunden:
+                    sProj  = myCellProj.String
+                    sPosNr = myCellPosNr.String
+                    if not sBaugruppe in self.listBaugrp:
+                        self.listProjekt += [sProj]
+                        self.listPosNr   += [sPosNr]
+                        self.listBaugrp  += [sBaugruppe]
+                    else:
+                        #iPos = listBaugrp.index(sBaugruppe)
+                        for ii in range (1, len(self.listBaugrp)):
+                            if (self.listBaugrp[ii] == sBaugruppe) and (self.listPosNr[ii] != sPosNr):
+                                self.listProjekt += [sProj]
+                                self.listPosNr   += [sPosNr]
+                                self.listBaugrp  += [sBaugruppe] 
+                                break #for ii
+        #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        pass
+    def auflisten(self):
+        # Registerkarte anlegen:
+        self.t.tab_anlegen("labels", 1)
+        self.t.set_tabfokus_s("labels")
+        # Tabellenkopf erstellen:
+        self.t.set_zelltext_s("A1", "Projekt")
+        self.t.set_zelltext_s("B1", "Pos")
+        self.t.set_zelltext_s("C1", "Baugruppe")
+        self.t.set_zelltext_s("D1", "Menge")
+        # Tabelle füllen:
+        for i in range (1, len(self.listBaugrp)):
+            iStartZeile = 0
+            self.t.set_zelltext_i(iStartZeile+i, 0, self.listProjekt[i]) # Projekt
+            self.t.set_zelltext_i(iStartZeile+i, 1, self.listPosNr[i]) # Pos
+            self.t.set_zelltext_i(iStartZeile+i, 2, self.listBaugrp[i]) # Baugruppe
+        pass
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
 class WoPlan: # Calc
     def __init__(self):
         self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
@@ -1804,6 +1909,12 @@ def SList_sortieren_reduzieren():
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
+    pass
+#---------
+def baugrpetk_calc_ermitteln():
+    sli = baugrpetk_calc()
+    sli.ermitteln()
+    sli.auflisten()
     pass
 #---------
 def WoPlan_tab_Grundlagen():
