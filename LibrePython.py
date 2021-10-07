@@ -73,6 +73,18 @@ def schreibe_in_datei(full_path, sText):
         new_file.write(sText)
         new_file.close()
     return erfolg
+def schreibe_in_datei_entferne_bestehende(full_path, sText):
+    # Pfadtrenner ist auf Windows das \\
+    # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    datei_vorhanden = False
+    my_file = Path(full_path)
+    if my_file.is_file():
+        datei_vorhanden = True    
+    new_file = open(full_path, "w")
+    new_file.write(sText)
+    new_file.close()
+    return datei_vorhanden
 def get_userpath():
     return expanduser("~")
 def istZiffer(c):
@@ -501,10 +513,72 @@ class ol_tabelle:
 #----------------------------------------------------------------------------------
 class ol_textdatei:
     def __init__(self):
+        #self.doc = XSCRIPTCONTEXT.getDocument()
+        #self.text = self.doc.getText()
+        #self.text.setString('Hello World in Python in Writer')
         self.doc = XSCRIPTCONTEXT.getDocument()
         self.text = self.doc.getText()
-        self.text.setString('Hello World in Python in Writer')
-
+        self.desktop = XSCRIPTCONTEXT.getDesktop()
+        self.model = self.desktop.getCurrentComponent() 
+    def set_text_hoehe(self, iHoehe):
+        oSel = self.doc.CurrentSelection.getByIndex(0) # get the current selection
+        oTC = self.text.createTextCursorByRange(oSel) # TextCursor erzeugen      
+        oEnum = oTC.Text.createEnumeration()
+        while oEnum.hasMoreElements():
+            oPar = oEnum.nextElement()
+            oPar.CharHeight = iHoehe
+        pass
+    #-----------------------------------------------------------------------------------------------
+    # Seite:
+    #-----------------------------------------------------------------------------------------------
+    def set_seitenformat(self, sPapierformat, IstQuerformat, iRandLi, iRandRe, iRandOb, iRandUn):
+        #pageStyle = self.doc.getStyleFamilies().getByName("PageStyles")
+        #page = pageStyle.getByName("Default")
+        oViewCursor = self.doc.CurrentController.getViewCursor()
+        pageStyle = oViewCursor.PageStyleName
+        page = self.doc.StyleFamilies.getByName("PageStyles").getByName(pageStyle)
+        # Seitenränder:
+        # 500 == 5mm
+        page.LeftMargin = iRandLi
+        page.RightMargin = iRandRe
+        page.TopMargin = iRandOb
+        page.BottomMargin = iRandUn 
+        # Seitenformat:
+        if(sPapierformat == "A4"):
+            if(IstQuerformat == False):
+                # A4 hoch:
+                page.IsLandscape = False
+                page.Width = 21000
+                page.Height = 29700
+            else:
+                # A4 quer:
+                page.IsLandscape = False
+                page.Width = 29700
+                page.Height = 21000
+        elif(sPapierformat == "A3"):
+            if(IstQuerformat == False):
+                # A3 hoch:
+                page.IsLandscape = False
+                page.Width = 29700
+                page.Height = 42000
+            else:
+                # A3 quer:
+                page.IsLandscape = True
+                page.Width = 42000
+                page.Height = 29700   
+        elif(sPapierformat == "A6"):
+            if(IstQuerformat == False):
+                # A6 hoch:
+                page.IsLandscape = False
+                page.Width = 10500
+                page.Height = 14800
+            else:
+                # A6 quer:
+                page.IsLandscape = True
+                page.Width = 14800
+                page.Height = 10500 
+        pass
+        # Anwendung: set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
 #----------------------------------------------------------------------------------
 class slist: # Calc
     def __init__(self):
@@ -1360,6 +1434,58 @@ class baugrpetk_calc: # Calc
             self.t.set_zelltext_i(iStartZeile+i, 2, self.listBaugrp[i]) # Baugruppe
             self.t.set_zelltext_i(iStartZeile+i, 3, self.listMenge[i]) # Menge
         pass
+    def speichern(self):
+        msg = "" #return-Wert
+        iZeileKopf = 0
+        iSpalteStart = 0
+        iMaxLen = 999
+        # Tabellenkof:
+        for i in range (iZeileKopf, iMaxLen):
+            sProjekt = self.t.get_zelltext_i(i+1, iSpalteStart)
+            sPosNr   = self.t.get_zelltext_i(i+1, iSpalteStart+1)
+            sBaugrp  = self.t.get_zelltext_i(i+1, iSpalteStart+2)
+            iMenge   = self.t.get_zelltext_i(i+1, iSpalteStart+3)
+            tmp = "" # Zwischenergebnis für Ausgabe
+            # Projekt:
+            tmp += "Projekt  : "
+            tmp += sProjekt
+            tmp += "\n"
+            tmp += "\n"
+            # PosNr:
+            tmp += "Pos      : "
+            tmp += sPosNr
+            tmp += "\n"
+            tmp += "\n"
+            # Baugruppe:
+            tmp += "Baugruppe: "
+            tmp += sBaugrp
+            tmp += "\n"
+            tmp += "\n"
+            # Ort:
+            tmp += "Ort: " 
+            tmp += "\n"
+            tmp += "\n"
+
+            gesund = True
+            try:
+                val = int(iMenge) # versuche ob der string in einen int umgewandelt werden kann
+            except ValueError:
+                gesund = False
+            if gesund == True:
+                for ii in range (0, int(iMenge)):
+                    msg += tmp
+        
+        path = get_userpath()
+        path += "\\Desktop\\label"
+        path += ".odt"
+        if schreibe_in_datei_entferne_bestehende(path, msg) == True:
+            msg = "label wurden erfolgrich gespeichert."
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        else:
+            msg = "label konnten nicht gespeichert werden."
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        
+        pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 class WoPlan: # Calc
@@ -1936,6 +2062,40 @@ class TaPlan: # Writer
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+class baugrpetk_writer: # Writer
+    def __init__(self):      
+        self.t = ol_textdatei()
+        pass
+    def formartieren(self):
+        self.t.set_text_hoehe(24)
+        self.set_text_fett()
+        self.t.set_seitenformat("A6", True, 2000,1000,1000,1000)
+        pass
+    def set_text_fett(self):
+        fettMachen = []
+        fettMachen += ["Projekt  :"]
+        fettMachen += ["Pos      :"]
+        fettMachen += ["Baugruppe:"]
+        fettMachen += ["Ort:"]
+        for i in range(0, len(fettMachen)):
+            suche = self.t.doc.createSearchDescriptor()
+            # suche.SearchString = "Montag"
+            suche.SearchString = fettMachen[i]
+            suche.SearchWords = True # nur ganze Wörter suchen
+            suche.SearchCaseSensitive = True # Groß/Klein-Schreibung beachten
+            funde = self.t.doc.findAll(suche)
+            for ii in range(0, funde.getCount()):
+                fund = funde.getByIndex(ii)
+                fund.CharWeight = FONT_BOLD
+                fund.CharUnderline = FONT_UNDERLINED_SINGLE
+                # fund.setString("neuer text") # Suchergebnis ersetzen durch
+                pass
+            pass
+        pass
+
+#----------------------------------------------------------------------------------
+
 def test_123():
     # sli = slist()
     # sli.reduzieren()
@@ -2002,6 +2162,15 @@ def baugrpetk_calc_ermitteln():
     sli = baugrpetk_calc()
     sli.ermitteln()
     sli.auflisten()
+    pass
+def baugrpetk_calc_speichern():
+    sli = baugrpetk_calc()
+    sli.speichern()
+    pass
+#---------
+def baugrpetk_writer_formartieren():
+    obj = baugrpetk_writer()
+    obj.formartieren()
     pass
 #---------
 def WoPlan_tab_Grundlagen():
