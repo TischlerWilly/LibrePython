@@ -1203,6 +1203,7 @@ class slist: # Calc
         rankingList += ["RW_ob", "RW_li", "RW_mi", "RW_un", "RW_re", "RW"]
         rankingList += ["Tuer_li", "Tuer_re", "Tuer_A", "Tuer_B", "Tuer_C", "Tuer_D", "Tuer_E", "Tuer"]
         rankingList += ["Front_li", "Front_re", "Front_A", "Front_B", "Front_C", "Front_D", "Front_E", "Front"]
+        rankingList += ["Klappe"]
         rankingList += ["SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF"]
         rankingList += ["SS_A", "SS_B", "SS_C", "SS_D", "SS_E", "SS"]
         rankingList += ["SV_A", "SV_B", "SV_C", "SV_D", "SV_E", "SV"]
@@ -1341,6 +1342,7 @@ class slist: # Calc
             sName = sName.replace("Fachboden", "S#_EB")
             sName = sName.replace("Rückwand", "S#_RW")
             sName = sName.replace("Tür", "S#_Tuer")
+            sName = sName.replace("Klappe", "S#_Klappe")
             sName = sName.replace("Schubkasten Front", "S#_SF")
             sName = sName.replace("Travers Vorne", "S#_Trav_vo")
             sName = sName.replace("Travers Hinten", "S#_Trav_hi")
@@ -1418,21 +1420,25 @@ class baugrpetk_calc: # Calc
         self.t.set_tabfokus_s("labels")
         # Tabellenkopf erstellen:
         self.t.set_zelltext_s("A1", "Projekt")
-        self.t.set_zelltext_s("B1", "Pos")
-        self.t.set_zelltext_s("C1", "Baugruppe")
-        self.t.set_zelltext_s("D1", "Menge")
+        self.t.set_zelltext_s("B1", "Opti")
+        self.t.set_zelltext_s("C1", "Pos")
+        self.t.set_zelltext_s("D1", "Baugruppe")
+        self.t.set_zelltext_s("E1", "Menge")
         self.t.set_spaltenausrichtung_i(0, "li")
         self.t.set_spaltenausrichtung_i(1, "mi")
         self.t.set_spaltenausrichtung_i(2, "mi")
         self.t.set_spaltenausrichtung_i(3, "mi")
         self.t.set_spaltenausrichtung_i(4, "mi")
+        self.t.set_spaltenausrichtung_i(5, "mi")
         # Tabelle füllen:
         for i in range (1, len(self.listBaugrp)):
             iStartZeile = 0
-            self.t.set_zelltext_i(iStartZeile+i, 0, self.listProjekt[i]) # Projekt
-            self.t.set_zelltext_i(iStartZeile+i, 1, self.listPosNr[i]) # Pos
-            self.t.set_zelltext_i(iStartZeile+i, 2, self.listBaugrp[i]) # Baugruppe
-            self.t.set_zelltext_i(iStartZeile+i, 3, self.listMenge[i]) # Menge
+            self.t.set_zelltext_i(iStartZeile+i, 0, self.listProjekt[i]) # Projekt            
+            if i > 1:
+                self.t.set_zellformel_i(iStartZeile+i, 1, "=B2") # Opti
+            self.t.set_zelltext_i(iStartZeile+i, 2, self.listPosNr[i]) # Pos
+            self.t.set_zelltext_i(iStartZeile+i, 3, self.listBaugrp[i]) # Baugruppe
+            self.t.set_zelltext_i(iStartZeile+i, 4, self.listMenge[i]) # Menge
         pass
     def speichern(self):
         msg = "" #return-Wert
@@ -1442,14 +1448,18 @@ class baugrpetk_calc: # Calc
         # Tabellenkof:
         for i in range (iZeileKopf, iMaxLen):
             sProjekt = self.t.get_zelltext_i(i+1, iSpalteStart)
-            sPosNr   = self.t.get_zelltext_i(i+1, iSpalteStart+1)
-            sBaugrp  = self.t.get_zelltext_i(i+1, iSpalteStart+2)
-            iMenge   = self.t.get_zelltext_i(i+1, iSpalteStart+3)
+            sOpti    = self.t.get_zelltext_i(i+1, iSpalteStart+1)
+            sPosNr   = self.t.get_zelltext_i(i+1, iSpalteStart+2)            
+            sBaugrp  = self.t.get_zelltext_i(i+1, iSpalteStart+3)
+            iMenge   = self.t.get_zelltext_i(i+1, iSpalteStart+4)
             tmp = "" # Zwischenergebnis für Ausgabe
             # Projekt:
             tmp += "Projekt  : "
             tmp += sProjekt
             tmp += "\n"
+            # Projekt:
+            tmp += "Opti     : "
+            tmp += sOpti
             tmp += "\n"
             # PosNr:
             tmp += "Pos      : "
@@ -2075,6 +2085,7 @@ class baugrpetk_writer: # Writer
     def set_text_fett(self):
         fettMachen = []
         fettMachen += ["Projekt  :"]
+        fettMachen += ["Opti     :"]
         fettMachen += ["Pos      :"]
         fettMachen += ["Baugruppe:"]
         fettMachen += ["Ort:"]
