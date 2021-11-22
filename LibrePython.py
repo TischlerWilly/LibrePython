@@ -1404,7 +1404,7 @@ class baugrpetk_calc: # Calc
                         self.listMenge   += [sMenge]
                     else:
                         #iPos = listBaugrp.index(sBaugruppe)
-                        for ii in range (1, len(self.listBaugrp)):
+                        for ii in range (0, len(self.listBaugrp)):
                             if (self.listBaugrp[ii] == sBaugruppe) and (self.listPosNr[ii] != sPosNr):
                                 self.listProjekt += [sProj]
                                 self.listPosNr   += [sPosNr]
@@ -1431,10 +1431,10 @@ class baugrpetk_calc: # Calc
         self.t.set_spaltenausrichtung_i(4, "mi")
         self.t.set_spaltenausrichtung_i(5, "mi")
         # Tabelle füllen:
-        for i in range (1, len(self.listBaugrp)):
-            iStartZeile = 0
+        for i in range (0, len(self.listBaugrp)):
+            iStartZeile = 1
             self.t.set_zelltext_i(iStartZeile+i, 0, self.listProjekt[i]) # Projekt            
-            if i > 1:
+            if i > 0:
                 self.t.set_zellformel_i(iStartZeile+i, 1, "=B2") # Opti
             self.t.set_zelltext_i(iStartZeile+i, 2, self.listPosNr[i]) # Pos
             self.t.set_zelltext_i(iStartZeile+i, 3, self.listBaugrp[i]) # Baugruppe
