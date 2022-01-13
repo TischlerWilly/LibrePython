@@ -1402,14 +1402,27 @@ class baugrpetk_calc: # Calc
                         self.listPosNr   += [sPosNr]
                         self.listBaugrp  += [sBaugruppe]
                         self.listMenge   += [sMenge]
+                        # msgbox(sBaugruppe +'\n' + sPosNr +'\n' + sMenge , 'msgbox1', 1, 'QUERYBOX')
                     else:
-                        #iPos = listBaugrp.index(sBaugruppe)
-                        for ii in range (0, len(self.listBaugrp)):
-                            if (self.listBaugrp[ii] == sBaugruppe) and (self.listPosNr[ii] != sPosNr):
+                        # msgbox(iAnzBaugrp , sBaugruppe, 1, 'QUERYBOX')
+                        for ii in range (0, len(self.listBaugrp)):    
+                            listIndexex = [] 
+                            # alle Indexe finden in der Baugruppenliste für diese Baugruppe:
+                            for iii in range (0, len(self.listBaugrp)): 
+                                if (self.listBaugrp[iii] == sBaugruppe):
+                                    listIndexex += [iii]
+                            # Index für Index durchgehen:
+                            iBekannt = 0
+                            for iii in range (0, len(listIndexex)):
+                                if (self.listPosNr[listIndexex[iii]] == sPosNr):
+                                    iBekannt = 1
+                                    break #for iii
+                            if(iBekannt == 0):
                                 self.listProjekt += [sProj]
                                 self.listPosNr   += [sPosNr]
                                 self.listBaugrp  += [sBaugruppe] 
                                 self.listMenge   += [sMenge]
+                                # msgbox(sBaugruppe +'\n' + sPosNr +'\n' + sMenge , 'msgbox3', 1, 'QUERYBOX')
                                 break #for ii
         #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
         pass
@@ -1489,7 +1502,7 @@ class baugrpetk_calc: # Calc
         path += "\\Desktop\\label"
         path += ".odt"
         if schreibe_in_datei_entferne_bestehende(path, msg) == True:
-            msg = "label wurden erfolgrich gespeichert."
+            msg = "label wurden erfolgreich gespeichert."
             msgbox(msg, 'msgbox', 1, 'QUERYBOX')
         else:
             msg = "label konnten nicht gespeichert werden."
