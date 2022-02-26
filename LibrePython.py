@@ -1404,7 +1404,6 @@ class baugrpetk_calc: # Calc
                         self.listMenge   += [sMenge]
                         # msgbox(sBaugruppe +'\n' + sPosNr +'\n' + sMenge , 'msgbox1', 1, 'QUERYBOX')
                     else:
-                        # msgbox(iAnzBaugrp , sBaugruppe, 1, 'QUERYBOX')
                         for ii in range (0, len(self.listBaugrp)):    
                             listIndexex = [] 
                             # alle Indexe finden in der Baugruppenliste für diese Baugruppe:
@@ -1422,7 +1421,6 @@ class baugrpetk_calc: # Calc
                                 self.listPosNr   += [sPosNr]
                                 self.listBaugrp  += [sBaugruppe] 
                                 self.listMenge   += [sMenge]
-                                # msgbox(sBaugruppe +'\n' + sPosNr +'\n' + sMenge , 'msgbox3', 1, 'QUERYBOX')
                                 break #for ii
         #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
         pass
@@ -1510,6 +1508,125 @@ class baugrpetk_calc: # Calc
         
         pass
 #----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
+class lieferlisten: #calc
+     def __init__(self):
+         self.t = ol_tabelle()
+         self.quelle = ""
+         self.quelle_zelle = "B1"
+         self.ziel = ""
+         self.ziel_zelle = "B2"
+         #-----------------------------
+         self.we_info_zeile = "B5"
+         self.we_info_spalte_start = "C5"
+         self.we_info_spalte_ende = "D5"
+         #-----------------------------
+         self.datei_info_zeile_start = "B8"
+         self.datei_info_zeile_ende = "C8"
+         self.datei_info_spalte = "D8"
+         pass
+     def spalten_umwandeln(self, buchstabe):
+         if buchstabe == "A":
+             return 1
+         elif buchstabe == "B":
+             return 2
+         elif buchstabe == "C":
+             return 3
+         elif buchstabe == "D":
+             return 4
+         elif buchstabe == "E":
+             return 5
+         elif buchstabe == "F":
+             return 6
+         elif buchstabe == "G":
+             return 7
+         elif buchstabe == "H":
+             return 8
+         elif buchstabe == "I":
+             return 9
+         elif buchstabe == "J":
+             return 10
+         else:
+             return 0
+         pass
+     def start(self):
+         # ------------------------------------------------------ ist die richtige Registerkarte geöffnet? :
+         reg = self.t.get_tabname()
+         if reg != "Lieferlisten":
+             msgbox('Bitte in die Registerkarte \"Lieferlisten\" wechseln', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------ WE Zeile:
+         we_zei = 0
+         tmp = self.t.get_zelltext_s(self.we_info_zeile)
+         if len(tmp) == 0:
+             msgbox('Eingabe von WE-Zeile ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             we_zei = tmp
+         # ------------------------------------------------------ WE Spalte Start:
+         we_spaS = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.we_info_spalte_start))
+         if tmp != 0:
+            we_spaS = tmp
+         else:
+             msgbox('Eingabe von WE-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------ WE Spalte Ende:
+         we_spaE = 0 
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.we_info_spalte_ende))
+         if tmp != 0:
+            we_spaE = tmp
+         else:
+             msgbox('Eingabe von WE-Spalte Ende ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------ Dateinahmen Zeile Start:
+         dn_zeiS = 0
+         tmp = self.t.get_zelltext_s(self.datei_info_zeile_start)
+         if len(tmp) == 0:
+             msgbox('Eingabe von WE-Zeile ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             dn_zeiS = tmp
+         # ------------------------------------------------------ Dateinahmen Zeile Ende:
+         dn_zeiE = 0
+         tmp = self.t.get_zelltext_s(self.datei_info_zeile_ende)
+         if len(tmp) == 0:
+             msgbox('Eingabe von WE-Zeile ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             dn_zeiE = tmp
+         # ------------------------------------------------------ Dateinahmen Spalte:
+         dn_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.datei_info_spalte))
+         if tmp != 0:
+            dn_spa = tmp
+         else:
+             msgbox('Eingabe von WE-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return         
+         # ------------------------------------------------------ 
+         msg = ""
+         msg += "WE:\n"
+         msg += we_zei
+         msg += "\n"
+         msg += str(we_spaS)
+         msg += "\n"
+         msg += str(we_spaE)
+         msg += "\n"
+         msg += "Datei:\n"
+         msg += dn_zeiS
+         msg += "\n"
+         msg += dn_zeiE
+         msg += "\n"
+         msg += str(dn_spa)
+         msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+
+         pass
+
+
+
+#----------------------------------------------------------------------------------
+
 #----------------------------------------------------------------------------------
 class WoPlan: # Calc
     def __init__(self):
@@ -2182,6 +2299,11 @@ def SList_sortieren_reduzieren():
     sli.sortieren()
     pass
 #---------
+def LiefList_start():
+    l = lieferlisten()
+    l.start()
+    pass
+#---------
 def baugrpetk_calc_ermitteln():
     sli = baugrpetk_calc()
     sli.ermitteln()
@@ -2278,6 +2400,11 @@ def SList_sortieren_reduzieren_BTN(self):
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
+    pass
+#---------
+def LiefList_start_BTN(self):
+    l = lieferlisten()
+    l.start()
     pass
 #---------
 def WoPlan_tab_Grundlagen_BTN(self):
