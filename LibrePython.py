@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from ast import Not
+from genericpath import exists
 import os
 from os.path import expanduser
 from pathlib import Path
@@ -17,6 +18,7 @@ from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
+from shutil import copyfile
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 """
@@ -1560,6 +1562,300 @@ class lieferlisten: #calc
              return 9
          elif buchstabe == "J":
              return 10
+         elif buchstabe == "K":
+             return 11
+         elif buchstabe == "L":
+             return 12
+         elif buchstabe == "M":
+             return 13
+         elif buchstabe == "N":
+             return 14
+         elif buchstabe == "O":
+             return 15
+         elif buchstabe == "P":
+             return 16
+         elif buchstabe == "Q":
+             return 17
+         elif buchstabe == "R":
+             return 18
+         elif buchstabe == "S":
+             return 19
+         elif buchstabe == "T":
+             return 20
+         elif buchstabe == "U":
+             return 21
+         elif buchstabe == "V":
+             return 22
+         elif buchstabe == "W":
+             return 23
+         elif buchstabe == "X":
+             return 24
+         elif buchstabe == "Y":
+             return 25
+         elif buchstabe == "Z":
+             return 26
+         elif buchstabe == "AA":
+             return 27
+         elif buchstabe == "AB":
+             return 28
+         elif buchstabe == "AC":
+             return 29
+         elif buchstabe == "AD":
+             return 30
+         elif buchstabe == "AE":
+             return 31
+         elif buchstabe == "AF":
+             return 32
+         elif buchstabe == "AG":
+             return 33
+         elif buchstabe == "AH":
+             return 34
+         elif buchstabe == "AI":
+             return 35
+         elif buchstabe == "AJ":
+             return 36
+         elif buchstabe == "AK":
+             return 37
+         elif buchstabe == "AL":
+             return 38
+         elif buchstabe == "AM":
+             return 39
+         elif buchstabe == "AN":
+             return 40
+         elif buchstabe == "AO":
+             return 41
+         elif buchstabe == "AP":
+             return 42
+         elif buchstabe == "AQ":
+             return 43
+         elif buchstabe == "AR":
+             return 44
+         elif buchstabe == "AS":
+             return 45
+         elif buchstabe == "AT":
+             return 46
+         elif buchstabe == "AU":
+             return 47
+         elif buchstabe == "AV":
+             return 48
+         elif buchstabe == "AW":
+             return 49
+         elif buchstabe == "AX":
+             return 50
+         elif buchstabe == "AY":
+             return 51
+         elif buchstabe == "AZ":
+             return 52
+         elif buchstabe == "BA":
+             return 53
+         elif buchstabe == "BB":
+             return 54
+         elif buchstabe == "BC":
+             return 55
+         elif buchstabe == "BD":
+             return 56
+         elif buchstabe == "BE":
+             return 57
+         elif buchstabe == "BF":
+             return 58
+         elif buchstabe == "BG":
+             return 59
+         elif buchstabe == "BH":
+             return 60
+         elif buchstabe == "BI":
+             return 61
+         elif buchstabe == "BJ":
+             return 62
+         elif buchstabe == "BK":
+             return 63
+         elif buchstabe == "BL":
+             return 64
+         elif buchstabe == "BM":
+             return 65
+         elif buchstabe == "BN":
+             return 66
+         elif buchstabe == "BO":
+             return 67
+         elif buchstabe == "BP":
+             return 68
+         elif buchstabe == "BQ":
+             return 69
+         elif buchstabe == "BR":
+             return 70
+         elif buchstabe == "BS":
+             return 71
+         elif buchstabe == "BT":
+             return 72
+         elif buchstabe == "BU":
+             return 73
+         elif buchstabe == "BV":
+             return 74
+         elif buchstabe == "BW":
+             return 75
+         elif buchstabe == "BX":
+             return 76
+         elif buchstabe == "BY":
+             return 77
+         elif buchstabe == "BZ":
+             return 78
+         elif buchstabe == "CA":
+             return 79
+         elif buchstabe == "CB":
+             return 80
+         elif buchstabe == "CC":
+             return 81
+         elif buchstabe == "CD":
+             return 82
+         elif buchstabe == "CE":
+             return 83
+         elif buchstabe == "CF":
+             return 84
+         elif buchstabe == "CG":
+             return 85
+         elif buchstabe == "CH":
+             return 86
+         elif buchstabe == "CI":
+             return 87
+         elif buchstabe == "CJ":
+             return 88
+         elif buchstabe == "CK":
+             return 89
+         elif buchstabe == "CL":
+             return 90
+         elif buchstabe == "CM":
+             return 91
+         elif buchstabe == "CN":
+             return 92
+         elif buchstabe == "CO":
+             return 93
+         elif buchstabe == "CP":
+             return 94
+         elif buchstabe == "CQ":
+             return 95
+         elif buchstabe == "CR":
+             return 96
+         elif buchstabe == "CS":
+             return 97
+         elif buchstabe == "CT":
+             return 98
+         elif buchstabe == "CU":
+             return 99
+         elif buchstabe == "CV":
+             return 100
+         elif buchstabe == "CW":
+             return 101
+         elif buchstabe == "CX":
+             return 102
+         elif buchstabe == "CY":
+             return 103
+         elif buchstabe == "CZ":
+             return 104
+         elif buchstabe == "DA":
+             return 105
+         elif buchstabe == "DB":
+             return 106
+         elif buchstabe == "DC":
+             return 107
+         elif buchstabe == "DD":
+             return 108
+         elif buchstabe == "DE":
+             return 109
+         elif buchstabe == "DF":
+             return 110
+         elif buchstabe == "DG":
+             return 111
+         elif buchstabe == "DH":
+             return 112
+         elif buchstabe == "DI":
+             return 113
+         elif buchstabe == "DJ":
+             return 114
+         elif buchstabe == "DK":
+             return 115
+         elif buchstabe == "DL":
+             return 116
+         elif buchstabe == "DM":
+             return 117
+         elif buchstabe == "DN":
+             return 118
+         elif buchstabe == "DO":
+             return 119
+         elif buchstabe == "DP":
+             return 120
+         elif buchstabe == "DQ":
+             return 121
+         elif buchstabe == "DR":
+             return 122
+         elif buchstabe == "DS":
+             return 123
+         elif buchstabe == "DT":
+             return 124
+         elif buchstabe == "DU":
+             return 125
+         elif buchstabe == "DV":
+             return 126
+         elif buchstabe == "DW":
+             return 127
+         elif buchstabe == "DX":
+             return 128
+         elif buchstabe == "DY":
+             return 129
+         elif buchstabe == "DZ":
+             return 130
+         elif buchstabe == "EA":
+             return 131
+         elif buchstabe == "EB":
+             return 132
+         elif buchstabe == "EC":
+             return 133
+         elif buchstabe == "ED":
+             return 134
+         elif buchstabe == "EE":
+             return 135
+         elif buchstabe == "EF":
+             return 136
+         elif buchstabe == "EG":
+             return 137
+         elif buchstabe == "EH":
+             return 138
+         elif buchstabe == "EI":
+             return 139
+         elif buchstabe == "EJ":
+             return 140
+         elif buchstabe == "EK":
+             return 141
+         elif buchstabe == "EL":
+             return 142
+         elif buchstabe == "EM":
+             return 143
+         elif buchstabe == "EN":
+             return 144
+         elif buchstabe == "EO":
+             return 145
+         elif buchstabe == "EP":
+             return 146
+         elif buchstabe == "EQ":
+             return 147
+         elif buchstabe == "ER":
+             return 148
+         elif buchstabe == "ES":
+             return 149
+         elif buchstabe == "ET":
+             return 150
+         elif buchstabe == "EU":
+             return 151
+         elif buchstabe == "EV":
+             return 152
+         elif buchstabe == "EW":
+             return 153
+         elif buchstabe == "EX":
+             return 154
+         elif buchstabe == "EY":
+             return 155
+         elif buchstabe == "EZ":
+             return 156
+         elif buchstabe == "FA":
+             return 157
          else:
              return 0
          pass
@@ -1571,6 +1867,7 @@ class lieferlisten: #calc
              return
          # ------------------------------------------------------
          self.quelle = self.t.get_zelltext_s(self.quelle_zelle)
+         self.ziel = self.t.get_zelltext_s(self.ziel_zelle)
          # ------------------------------------------------------ WE Zeile:
          we_zei = 0
          tmp = self.t.get_zelltext_s(self.we_info_zeile)
@@ -1619,23 +1916,6 @@ class lieferlisten: #calc
              return
          else:
              dn_zeiE = tmp
-               
-         # ------------------------------------------------------ 
-         msg = ""
-         msg += "WE:\n"
-         msg += we_zei
-         msg += "\n"
-         msg += str(we_spaS)
-         msg += "\n"
-         msg += str(we_spaE)
-         msg += "\n"
-         msg += "Datei:\n"
-         msg += str(dn_spa)
-         msg += "\n"
-         msg += dn_zeiS
-         msg += "\n"
-         msg += dn_zeiE
-         # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
          # ------------------------------------------------------ Prüfen ob alle Dateien existieren:
          tabname_raumbuch = "Raumbuch"
          if self.t.tab_existiert(tabname_raumbuch) == True:
@@ -1659,7 +1939,67 @@ class lieferlisten: #calc
              msg += tabname_raumbuch
              msg += "\" existiert nicht!"
              msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+         # ------------------------------------------------------ WE Prüfen:
+         WEs = []
+         for i in range (we_spaS-1, we_spaE):              
+             we = self.t.get_zelltext_i(int(we_zei)-1, i)
+             if len(we) == 0:
+                 msg  = "Bitte Raumbuch prüfen!\n"
+                 msg += "Im angegebenen Bereich fehlen WE-Angaben.\n"
+                 msg += "Spalte "
+                 msg += str(i+1)
+                 msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                 return
+             elif we in WEs:
+                 msg = "Die WE \""
+                 msg += we
+                 msg += "\" ist mehrfach vorhanden!"
+                 msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                 return
+             else:
+                WEs += [we]             
+             pass
+         # ------------------------------------------------------Ordner für WEs erstellen:
+         if(os.path.isdir(self.ziel)):
+             for i in WEs:
+                 dir = self.ziel
+                 dir += "\\\\"
+                 dir += i
+                 if os.path.isdir(dir) == False:
+                    os.makedirs(dir)
+         else:
+             msg  = "Das angegebene Zielverzeichnis\n"
+             msg += self.ziel
+             msg += "ist nicht zugreifbar."
+             msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------Dateien in WE-Ordnern ablegen:
+         for spa in range (we_spaS-1, we_spaE): # WE für WE durchgehen
+             for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
+                 zelakt = self.t.get_zelltext_i(zei-1, spa)
+                 if( len(zelakt) > 0):
+                    datnam = self.t.get_zelltext_i(int(zei)-1, int(dn_spa)-1)
+                    quelldatei  = self.quelle 
+                    quelldatei += "\\\\" 
+                    quelldatei += datnam
+                    ziedatei = self.ziel
+                    ziedatei += "\\\\"
+                    ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                    ziedatei += "\\\\"
+                    ziedatei += datnam
+                    copyfile(quelldatei, ziedatei)
+
+                    #msg = "zelakt: \"" + zelakt + "\""
+                    #msg += "\n quelle:\n"
+                    #msg += quelldatei
+                    #msg += "\n ziel:\n"
+                    #msg += ziedatei
+                    #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                 pass
+             pass
+         # ------------------------------------------------------
          pass
+        
 
 
 
