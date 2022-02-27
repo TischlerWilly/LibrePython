@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from ast import Not
 import os
 from os.path import expanduser
 from pathlib import Path
@@ -201,6 +202,18 @@ class ol_tabelle:
     #-----------------------------------------------------------------------------------------------
     # Tabs:
     #-----------------------------------------------------------------------------------------------
+    def tab_existiert(self, sTabname):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (0, len(namen)):
+            if namen[i] == sTabname:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            return True
+        else: 
+            return False
     def tab_anlegen(self, sTabname, iTabIndex):
         namen = []
         namen = self.doc.Sheets.ElementNames
@@ -221,7 +234,7 @@ class ol_tabelle:
         namen = []
         namen = self.doc.Sheets.ElementNames
         tab_schon_vorhanden = 0
-        for i in range (1, len(namen)):
+        for i in range (0, len(namen)):
             if namen[i] == sTabname:
                 tab_schon_vorhanden = 1
                 break #for i
@@ -1517,16 +1530,16 @@ class lieferlisten: #calc
          self.quelle_zelle = "B1"
          self.ziel = ""
          self.ziel_zelle = "B2"
-         #-----------------------------
+         #----------------------------- WE:
          self.we_info_zeile = "B5"
          self.we_info_spalte_start = "C5"
          self.we_info_spalte_ende = "D5"
-         #-----------------------------
-         self.datei_info_zeile_start = "B8"
-         self.datei_info_zeile_ende = "C8"
-         self.datei_info_spalte = "D8"
+         #----------------------------- Dateien:
+         self.datei_info_spalte = "B8"
+         self.datei_info_zeile_start = "C8"
+         self.datei_info_zeile_ende = "D8"         
          pass
-     def spalten_umwandeln(self, buchstabe):
+     def spalten_umwandeln(self, buchstabe): # noch ergänzen!!!
          if buchstabe == "A":
              return 1
          elif buchstabe == "B":
@@ -1556,6 +1569,8 @@ class lieferlisten: #calc
          if reg != "Lieferlisten":
              msgbox('Bitte in die Registerkarte \"Lieferlisten\" wechseln', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return
+         # ------------------------------------------------------
+         self.quelle = self.t.get_zelltext_s(self.quelle_zelle)
          # ------------------------------------------------------ WE Zeile:
          we_zei = 0
          tmp = self.t.get_zelltext_s(self.we_info_zeile)
@@ -1580,6 +1595,14 @@ class lieferlisten: #calc
          else:
              msgbox('Eingabe von WE-Spalte Ende ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return
+          # ------------------------------------------------------ Dateinahmen Spalte:
+         dn_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.datei_info_spalte))
+         if tmp != 0:
+            dn_spa = tmp
+         else:
+             msgbox('Eingabe von WE-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
          # ------------------------------------------------------ Dateinahmen Zeile Start:
          dn_zeiS = 0
          tmp = self.t.get_zelltext_s(self.datei_info_zeile_start)
@@ -1596,14 +1619,7 @@ class lieferlisten: #calc
              return
          else:
              dn_zeiE = tmp
-         # ------------------------------------------------------ Dateinahmen Spalte:
-         dn_spa = 0
-         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.datei_info_spalte))
-         if tmp != 0:
-            dn_spa = tmp
-         else:
-             msgbox('Eingabe von WE-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
-             return         
+               
          # ------------------------------------------------------ 
          msg = ""
          msg += "WE:\n"
@@ -1614,13 +1630,35 @@ class lieferlisten: #calc
          msg += str(we_spaE)
          msg += "\n"
          msg += "Datei:\n"
+         msg += str(dn_spa)
+         msg += "\n"
          msg += dn_zeiS
          msg += "\n"
          msg += dn_zeiE
-         msg += "\n"
-         msg += str(dn_spa)
-         msgbox(msg, 'msgbox', 1, 'QUERYBOX')
-
+         # msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+         # ------------------------------------------------------ Prüfen ob alle Dateien existieren:
+         tabname_raumbuch = "Raumbuch"
+         if self.t.tab_existiert(tabname_raumbuch) == True:
+             self.t.set_tabfokus_s(tabname_raumbuch)
+             for i in range (int(dn_zeiS), int(dn_zeiE)+1):
+                datnam = self.t.get_zelltext_i(int(i)-1, int(dn_spa)-1)
+                # msgbox(datnam, 'msgbox', 1, 'QUERYBOX')
+                if len(datnam) > 4:
+                    datnam = self.quelle + "\\\\" + datnam
+                    fileObj = Path(datnam)
+                    if fileObj.is_file() == False:
+                        msg = "Die Datei \""
+                        msg += datnam
+                        msg += "\" wurde ncht gefunden!"
+                        msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                        return
+                    pass
+             pass
+         else:
+             msg = "Die Registerkarte \""
+             msg += tabname_raumbuch
+             msg += "\" existiert nicht!"
+             msgbox(msg, 'msgbox', 1, 'QUERYBOX')
          pass
 
 
