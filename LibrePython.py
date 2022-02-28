@@ -1525,9 +1525,10 @@ class baugrpetk_calc: # Calc
 #----------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------
-class lieferlisten: #calc
+class raumbuch: #calc
      def __init__(self):
          self.t = ol_tabelle()
+         self.grau = RGBTo32bitInt(204, 204, 204) 
          self.quelle = ""
          self.quelle_zelle = "B1"
          self.ziel = ""
@@ -1859,7 +1860,110 @@ class lieferlisten: #calc
          else:
              return 0
          pass
-     def start(self):
+     def RB_Blankoliste(self):
+         # ---------
+         tabname = "Raumbuch"
+         self.t.tab_anlegen(tabname, 99)
+         self.t.set_tabfokus_s(tabname)
+         # ---------
+         self.t.set_Rahmen_komplett_s("A1:I10", 20)
+         self.t.set_zellfarbe_s("A1:I1", self.grau)
+         self.t.set_zellfarbe_s("A1:C10", self.grau)
+         self.t.set_zellfarbe_s("I1:I10", self.grau)
+         # ---------
+         self.t.set_spaltenbreite_i(1, 5000)
+         # ---------
+         self.t.set_spaltenausrichtung_i(8, "mi")
+         # ---------
+         self.t.set_zelltext_s("A1", "Pos")
+         self.t.set_zelltext_s("B1", "Bezeichnung")
+         self.t.set_zelltext_s("C1", "Datei")
+         self.t.set_zelltext_s("D1", "WE 1")
+         self.t.set_zelltext_s("E1", "WE 2")
+         self.t.set_zelltext_s("F1", "WE 3")
+         self.t.set_zelltext_s("G1", "WE 4")
+         self.t.set_zelltext_s("H1", "WE 5")
+         self.t.set_zelltext_s("I1", "Summe")
+         # ---------
+         for i in range (1, 10):
+            formel = "=SUM(D" + str(i+1) + ":H" + str(i+1) + ")"
+            self.t.set_zellformel_i(i, 8, formel)
+            pass
+         # ---------
+         pass
+     def LList_Formblatt (self):
+         # ---------
+         tabname = "Lieferlisten"
+         self.t.tab_anlegen(tabname, 99)
+         self.t.set_tabfokus_s(tabname)
+         self.t.set_spaltenbreite_i(0, 4500)
+         # ---------
+         text = "Quell-Verzeichnis"
+         pos = "A1"
+         self.t.set_zelltext_s(pos, text)
+         text = "Bitte hier den Pfad eintragen"
+         pos = "B1"
+         self.t.set_zelltext_s(pos, text)
+         text = "Ziel-Verzeichnis"
+         pos = "A2"
+         self.t.set_zelltext_s(pos, text)
+         text = "Bitte hier den Pfad eintragen"
+         pos = "B2"
+         self.t.set_zelltext_s(pos, text)
+         # ---------
+         text = "WE-Bezeichnungen"
+         pos = "A5"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile"
+         pos = "B4"
+         self.t.set_zelltext_s(pos, text)
+         text = "Spalte-Start"
+         pos = "C4"
+         self.t.set_zelltext_s(pos, text)
+         text = "Spalte-Ende"
+         pos = "D4"
+         self.t.set_zelltext_s(pos, text)
+         self.t.set_zellfarbe_s("A4:D4", self.grau)
+         self.t.set_zellfarbe_s("A4:A5", self.grau)
+         self.t.set_Rahmen_komplett_s("A4:D5", 20)
+         self.t.set_zellausrichtungHori_s("B5:D5", "mi")
+         text = "1"
+         pos = "B5"
+         self.t.set_zelltext_s(pos, text)
+         text = "D"
+         pos = "C5"
+         self.t.set_zelltext_s(pos, text)
+         text = "H"
+         pos = "D5"
+         self.t.set_zelltext_s(pos, text)
+         # ---------
+         text = "Dateinamen"
+         pos = "A8"
+         self.t.set_zelltext_s(pos, text)
+         text = "Spalte"
+         pos = "B7"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile-Start"
+         pos = "C7"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile-Ende"
+         pos = "D7"
+         self.t.set_zelltext_s(pos, text)
+         self.t.set_zellfarbe_s("A7:D7", self.grau)
+         self.t.set_zellfarbe_s("A7:A8", self.grau)
+         self.t.set_Rahmen_komplett_s("A7:D8", 20)
+         self.t.set_zellausrichtungHori_s("B8:D8", "mi")
+         text = "C"
+         pos = "B8"
+         self.t.set_zelltext_s(pos, text)
+         text = "2"
+         pos = "C8"
+         self.t.set_zelltext_s(pos, text)
+         text = "10"
+         pos = "D8"
+         self.t.set_zelltext_s(pos, text)
+         pass
+     def LList_start(self):
          # ------------------------------------------------------ ist die richtige Registerkarte geöffnet? :
          reg = self.t.get_tabname()
          if reg != "Lieferlisten":
@@ -2677,9 +2781,17 @@ def SList_sortieren_reduzieren():
     sli.sortieren()
     pass
 #---------
-def LiefList_start():
-    l = lieferlisten()
-    l.start()
+def RB_Blancoliste():
+    l = raumbuch()
+    l.RB_Blankoliste()
+    pass
+def RB_LList_Formblatt():
+    l = raumbuch()
+    l.LList_Formblatt()
+    pass
+def RB_LList_start():
+    l = raumbuch()
+    l.LList_start()
     pass
 #---------
 def baugrpetk_calc_ermitteln():
@@ -2780,9 +2892,17 @@ def SList_sortieren_reduzieren_BTN(self):
     sli.sortieren()
     pass
 #---------
-def LiefList_start_BTN(self):
-    l = lieferlisten()
-    l.start()
+def RB_Blancoliste_BTN(self):
+    l = raumbuch()
+    l.RB_Blankoliste()
+    pass
+def RB_LList_Formblatt_BTN(self):
+    l = raumbuch()
+    l.LList_Formblatt()
+    pass
+def RB_LList_start_BTN(self):
+    l = raumbuch()
+    l.LList_start()
     pass
 #---------
 def WoPlan_tab_Grundlagen_BTN(self):
