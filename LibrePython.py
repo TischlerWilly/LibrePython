@@ -6,6 +6,7 @@ from os.path import expanduser
 from pathlib import Path
 import uno
 import datetime
+import time
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.sheet.CellInsertMode import RIGHT as INSERT_RE
 from com.sun.star.sheet.CellInsertMode import DOWN as INSERT_UN
@@ -2131,34 +2132,37 @@ class WoPlan: # Calc
             t.set_zelltext_s("A1", "Mitarbeiter")
             t.set_zelltext_s("B1", "Gruppe")
             t.set_zelltext_s("C1", "Tätigkeit")   
-            t.set_SchriftFett_s("A1:C1", True)
-            t.set_zellfarbe_s("A1:C1", self.grau)
-            t.set_Rahmen_komplett_s("A1:C20", self.RahLinDi)
+            t.set_zelltext_s("D1", "Geburtstag") 
+            t.set_SchriftFett_s("A1:D1", True)
+            t.set_zellfarbe_s("A1:D1", self.grau)
+            t.set_Rahmen_komplett_s("A1:D20", self.RahLinDi)
             t.set_spaltenbreite_i(0, 4100)
             t.set_spaltenbreite_i(1, 2260)
             t.set_spaltenbreite_i(2, 2260)
+            t.set_spaltenbreite_i(3, 2260)
+            t.set_zellformat_s("D2:D20", "TT.MM.JJJJ")
             #---
-            t.set_zelltext_s("E1", "Kalender-Jahr")
-            t.set_zelltext_s("F1", "2020")
-            t.set_zelltext_s("E2", "KW1 beginnt am")
-            t.set_zelltext_datum_s("F2", "2019", "12", "30")
-            t.set_zelltext_s("E3", "KW")
-            t.set_zelltext_s("F3", "1")
-            t.set_SchriftFett_s("E1:E3", True)            
-            t.set_zellfarbe_s("E1:E3", self.grau)            
-            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
-            t.set_spaltenbreite_i(4, 3250) 
+            t.set_zelltext_s("F1", "Kalender-Jahr")
+            t.set_zelltext_s("G1", "2020")
+            t.set_zelltext_s("F2", "KW1 beginnt am")
+            t.set_zelltext_datum_s("G2", "2021", "12", "30")
+            t.set_zelltext_s("F3", "KW")
+            t.set_zelltext_s("G3", "1")
+            t.set_SchriftFett_s("F1:F3", True)            
+            t.set_zellfarbe_s("F1:F3", self.grau)            
+            t.set_Rahmen_komplett_s("F1:G3", self.RahLinDi)
+            t.set_spaltenbreite_i(5, 3250) 
             #---
-            t.set_zelltext_s("E5", "Gruppen")
-            t.set_SchriftFett_s("E5", True)            
-            t.set_zellfarbe_s("E5", self.grau)            
-            t.set_Rahmen_komplett_s("E5:E15", self.RahLinDi)
-            t.set_zelltext_s("E6", "Halle1")
-            t.set_zelltext_s("E7", "Halle2")
-            t.set_zelltext_s("E8", "Halle3")
-            t.set_zelltext_s("E9", "Kraftfahrer")
-            t.set_zelltext_s("E10", "Lehrlinge")
-            t.set_zelltext_s("E11", "Büro")
+            t.set_zelltext_s("F5", "Gruppen")
+            t.set_SchriftFett_s("F5", True)            
+            t.set_zellfarbe_s("F5", self.grau)            
+            t.set_Rahmen_komplett_s("F5:F15", self.RahLinDi)
+            t.set_zelltext_s("F6", "Halle1")
+            t.set_zelltext_s("F7", "Halle2")
+            t.set_zelltext_s("F8", "Halle3")
+            t.set_zelltext_s("F9", "Kraftfahrer")
+            t.set_zelltext_s("F10", "Lehrlinge")
+            t.set_zelltext_s("F11", "Büro")
             #---
         pass
     def tab_Grundlagen(self):
@@ -2197,9 +2201,9 @@ class WoPlan: # Calc
     def set_fokus_tab_kw(self):
         self.tab.set_tabfokus_s(self.get_kw())
     def get_kw(self):
-        return self.tabGrundlagen.get_zelltext_s("F3")
+        return self.tabGrundlagen.get_zelltext_s("G3")
     def get_jahr(self):
-        return self.tabGrundlagen.get_zelltext_s("F1")
+        return self.tabGrundlagen.get_zelltext_s("G1")
     def set_spaltenbreiten(self):
         t = ol_tabelle()
         t.set_tabname(self.get_kw())
@@ -2235,7 +2239,7 @@ class WoPlan: # Calc
         t.set_zelltext_s("B3", "Tätigkeit")
         t.set_zelltext_s("C3", "KFZ")
         # Beschriftung Montag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)" # startdatum + ( (KW-1) * 7 )
         t.set_zellformel_s("D3", formel)
         t.set_zellformat_s("D3", "TT.MM.JJJJ")
@@ -2243,7 +2247,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("D3")
         t.set_zelltext_s("D3", tmp)
         # Beschriftung Dienstag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+1" # startdatum + ( (KW-1) * 7 ) + 1 Tag
         t.set_zellformel_s("E3", formel)
         t.set_zellformat_s("E3", "TT.MM.JJJJ")
@@ -2251,7 +2255,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("E3")
         t.set_zelltext_s("E3", tmp)
         # Beschriftung Mittwoch:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+2" # startdatum + ( (KW-1) * 7 ) + 2 Tage
         t.set_zellformel_s("F3", formel)
         t.set_zellformat_s("F3", "TT.MM.JJJJ")
@@ -2259,7 +2263,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("F3")
         t.set_zelltext_s("F3", tmp)
         # Beschriftung Donnerstag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+3" # startdatum + ( (KW-1) * 7 ) + 3 Tage
         t.set_zellformel_s("G3", formel)
         t.set_zellformat_s("G3", "TT.MM.JJJJ")
@@ -2267,7 +2271,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("G3")
         t.set_zelltext_s("G3", tmp)
         # Beschriftung Freitag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+4" # startdatum + ( (KW-1) * 7 ) + 4 Tage
         t.set_zellformel_s("H3", formel)
         t.set_zellformat_s("H3", "TT.MM.JJJJ")
@@ -2281,7 +2285,7 @@ class WoPlan: # Calc
         # Namen und Anzahl der Gruppen ermitteln:
         gruppenNamen = []
         idZeile = 5
-        idSpalte = 4
+        idSpalte = 5
         for i in range(0, 10):
             tmp = t.get_zelltext_i(idZeile+i, idSpalte)
             if(len(tmp) > 0):
@@ -2298,17 +2302,21 @@ class WoPlan: # Calc
         mitarb = []
         gruppe = []
         taetig = []
+        gebtag = []
         idZeile = 1
         idSpalte = 0
         for i in range(0, 50):
             tmp_mitarb = t.get_zelltext_i(idZeile+i, idSpalte)
             tmp_gruppe = t.get_zelltext_i(idZeile+i, idSpalte+1)
             tmp_taetig = t.get_zelltext_i(idZeile+i, idSpalte+2)
+            tmp_gebtag = t.get_zelltext_i(idZeile+i, idSpalte+3)
             if(len(tmp_gruppe) > 0):
                 mitarb += [tmp_mitarb] # Kapselung nötig da sonst jeder einzelne Buchstabe als Einzelwert gedeutet wird
                 gruppe += [tmp_gruppe]
                 taetig += [tmp_taetig]
+                gebtag += [tmp_gebtag]
             pass
+        #msgbox(gebtag, 'msgbox', 1, 'QUERYBOX')
         # Tabellenrumpf füllen:
         t.set_tabname(self.get_kw()) # ab jetzt tab der KW ansprechen
         aktZeile = 3
@@ -2332,6 +2340,37 @@ class WoPlan: # Calc
                     if(gruppe[ii] == gruppenNamen[i]):
                         t.set_zelltext_i(aktZeile, 0, mitarb[ii])
                         t.set_zelltext_i(aktZeile, 1, taetig[ii])
+                        # Prüfen ob Mitarbeiter Geburtstag hat:
+                        if(len(gebtag[ii])>0):
+                            zeitformat = "%d.%m.%Y"
+                            tmp_s = t.get_zelltext_s("D3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            montag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("E3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            dienstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("F3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            mitwoch = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("G3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            donnerstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("H3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            freitag = time.strptime(tmp_s, zeitformat)
+                            geburtstag = time.strptime(gebtag[ii], zeitformat)
+                            gebtagtext = mitarb[ii] + " hat Geburtstag"
+                            if geburtstag == montag:
+                                t.set_zelltext_i(aktZeile, 3, gebtagtext)
+                            if geburtstag == dienstag:
+                                t.set_zelltext_i(aktZeile, 4, gebtagtext)
+                            if geburtstag == mitwoch:
+                                t.set_zelltext_i(aktZeile, 5, gebtagtext)
+                            if geburtstag == donnerstag:
+                                t.set_zelltext_i(aktZeile, 6, gebtagtext)
+                            if geburtstag == freitag:
+                                t.set_zelltext_i(aktZeile, 7, gebtagtext)
+                            pass
                         aktZeile += 1
                     pass
                 zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+1)
@@ -2383,6 +2422,37 @@ class WoPlan: # Calc
                     if(gruppe[ii] == gruppenNamen[i]):
                         t.set_zelltext_i(aktZeile, 0, mitarb[ii])
                         t.set_zelltext_i(aktZeile, 1, taetig[ii])
+                        # Prüfen ob Mitarbeiter Geburtstag hat:
+                        if(len(gebtag[ii])>0):
+                            zeitformat = "%d.%m.%Y"
+                            tmp_s = t.get_zelltext_s("D3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            montag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("E3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            dienstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("F3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            mitwoch = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("G3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            donnerstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("H3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            freitag = time.strptime(tmp_s, zeitformat)
+                            geburtstag = time.strptime(gebtag[ii], zeitformat)
+                            gebtagtext = mitarb[ii] + " hat Geburtstag"
+                            if geburtstag == montag:
+                                t.set_zelltext_i(aktZeile, 3, gebtagtext)
+                            if geburtstag == dienstag:
+                                t.set_zelltext_i(aktZeile, 4, gebtagtext)
+                            if geburtstag == mitwoch:
+                                t.set_zelltext_i(aktZeile, 5, gebtagtext)
+                            if geburtstag == donnerstag:
+                                t.set_zelltext_i(aktZeile, 6, gebtagtext)
+                            if geburtstag == freitag:
+                                t.set_zelltext_i(aktZeile, 7, gebtagtext)
+                            pass
                         aktZeile += 1
                     pass
                 aktZeile += 1
