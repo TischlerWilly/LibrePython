@@ -4,6 +4,7 @@ from genericpath import exists
 import os
 from os.path import expanduser
 from pathlib import Path
+import string
 import uno
 import datetime
 import time
@@ -2105,9 +2106,6 @@ class raumbuch: #calc
          # ------------------------------------------------------
          pass
         
-
-
-
 #----------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------
@@ -2121,7 +2119,9 @@ class WoPlan: # Calc
         self.tab = ol_tabelle()
         self.tabGrundlagen = ol_tabelle()
         self.setup_tab_grundlagen()
-        self.tabGrundlagen.set_tabname("Grundlagen")              
+        self.tabGrundlagen.set_tabname("Grundlagen")   
+        self.jahr = 2020 
+        self.kw = 1          
         pass
     def setup_tab_grundlagen(self):
         anzFehler = self.tabelle_anlegen("Grundlagen", True)
@@ -2201,9 +2201,11 @@ class WoPlan: # Calc
     def set_fokus_tab_kw(self):
         self.tab.set_tabfokus_s(self.get_kw())
     def get_kw(self):
-        return self.tabGrundlagen.get_zelltext_s("G3")
+        self.kw = self.tabGrundlagen.get_zelltext_s("G3")
+        return self.kw
     def get_jahr(self):
-        return self.tabGrundlagen.get_zelltext_s("G1")
+        self.jahr = self.tabGrundlagen.get_zelltext_s("G1")
+        return self.jahr
     def set_spaltenbreiten(self):
         t = ol_tabelle()
         t.set_tabname(self.get_kw())
@@ -2359,16 +2361,17 @@ class WoPlan: # Calc
                             tmp_s = tmp_s[len(tmp_s)-10: ]
                             freitag = time.strptime(tmp_s, zeitformat)
                             geburtstag = time.strptime(gebtag[ii], zeitformat)
-                            gebtagtext = mitarb[ii] + " hat Geburtstag"
-                            if geburtstag == montag:
+                            alter = int(self.jahr) - int(geburtstag.tm_year)                            
+                            gebtagtext = mitarb[ii] + " hat " + str(alter) + ". Geburtstag"
+                            if geburtstag.tm_yday == montag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 3, gebtagtext)
-                            if geburtstag == dienstag:
+                            if geburtstag.tm_yday == dienstag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 4, gebtagtext)
-                            if geburtstag == mitwoch:
+                            if geburtstag.tm_yday == mitwoch.tm_yday:
                                 t.set_zelltext_i(aktZeile, 5, gebtagtext)
-                            if geburtstag == donnerstag:
+                            if geburtstag.tm_yday == donnerstag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 6, gebtagtext)
-                            if geburtstag == freitag:
+                            if geburtstag.tm_yday == freitag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 7, gebtagtext)
                             pass
                         aktZeile += 1
@@ -2441,16 +2444,17 @@ class WoPlan: # Calc
                             tmp_s = tmp_s[len(tmp_s)-10: ]
                             freitag = time.strptime(tmp_s, zeitformat)
                             geburtstag = time.strptime(gebtag[ii], zeitformat)
-                            gebtagtext = mitarb[ii] + " hat Geburtstag"
-                            if geburtstag == montag:
+                            alter = int(self.jahr) - int(geburtstag.tm_year)                            
+                            gebtagtext = mitarb[ii] + " hat " + str(alter) + ". Geburtstag"
+                            if geburtstag.tm_yday == montag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 3, gebtagtext)
-                            if geburtstag == dienstag:
+                            if geburtstag.tm_yday == dienstag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 4, gebtagtext)
-                            if geburtstag == mitwoch:
+                            if geburtstag.tm_yday == mitwoch.tm_yday:
                                 t.set_zelltext_i(aktZeile, 5, gebtagtext)
-                            if geburtstag == donnerstag:
+                            if geburtstag.tm_yday == donnerstag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 6, gebtagtext)
-                            if geburtstag == freitag:
+                            if geburtstag.tm_yday == freitag.tm_yday:
                                 t.set_zelltext_i(aktZeile, 7, gebtagtext)
                             pass
                         aktZeile += 1
