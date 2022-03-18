@@ -1542,7 +1542,10 @@ class raumbuch: #calc
          #----------------------------- Dateien:
          self.datei_info_spalte = "B8"
          self.datei_info_zeile_start = "C8"
-         self.datei_info_zeile_ende = "D8"         
+         self.datei_info_zeile_ende = "D8" 
+         #----
+         self.pos_info_spalte = "B9"
+         self.bez_info_spalte = "B10"
          pass
      def spalten_umwandeln(self, buchstabe): # noch ergänzen!!!
          if buchstabe == "A":
@@ -1942,6 +1945,12 @@ class raumbuch: #calc
          text = "Dateinamen"
          pos = "A8"
          self.t.set_zelltext_s(pos, text)
+         text = "Pos-Nummern"
+         pos = "A9"
+         self.t.set_zelltext_s(pos, text)
+         text = "Pos-Bez."
+         pos = "A10"
+         self.t.set_zelltext_s(pos, text)
          text = "Spalte"
          pos = "B7"
          self.t.set_zelltext_s(pos, text)
@@ -1952,11 +1961,18 @@ class raumbuch: #calc
          pos = "D7"
          self.t.set_zelltext_s(pos, text)
          self.t.set_zellfarbe_s("A7:D7", self.grau)
-         self.t.set_zellfarbe_s("A7:A8", self.grau)
-         self.t.set_Rahmen_komplett_s("A7:D8", 20)
-         self.t.set_zellausrichtungHori_s("B8:D8", "mi")
+         self.t.set_zellfarbe_s("A7:A10", self.grau)
+         self.t.set_zellfarbe_s("C9:D10", self.grau)
+         self.t.set_Rahmen_komplett_s("A7:D10", 20)
+         self.t.set_zellausrichtungHori_s("B8:D10", "mi")
          text = "C"
          pos = "B8"
+         self.t.set_zelltext_s(pos, text)
+         text = "A"
+         pos = "B9"
+         self.t.set_zelltext_s(pos, text)
+         text = "B"
+         pos = "B10"
          self.t.set_zelltext_s(pos, text)
          text = "2"
          pos = "C8"
@@ -1965,6 +1981,12 @@ class raumbuch: #calc
          pos = "D8"
          self.t.set_zelltext_s(pos, text)
          pass
+     def csvZelle(self, msg):
+         ret = "\""
+         ret += msg
+         ret += "\""
+         ret += ";"
+         return ret
      def LList_start(self):
          # ------------------------------------------------------ ist die richtige Registerkarte geöffnet? :
          reg = self.t.get_tabname()
@@ -2022,6 +2044,22 @@ class raumbuch: #calc
              return
          else:
              dn_zeiE = tmp
+         # ------------------------------------------------------ Position Spalte:
+         pos_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.pos_info_spalte))
+         if tmp != 0:
+            pos_spa = tmp
+         else:
+             msgbox('Eingabe von Pos-Nummer-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
+         # ------------------------------------------------------ Position Spalte:
+         bez_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.bez_info_spalte))
+         if tmp != 0:
+            bez_spa = tmp
+         else:
+             msgbox('Eingabe von Pos.Bez.-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
          # ------------------------------------------------------ Prüfen ob alle Dateien existieren:
          tabname_raumbuch = "Raumbuch"
          if self.t.tab_existiert(tabname_raumbuch) == True:
@@ -2041,7 +2079,7 @@ class raumbuch: #calc
                     pass
              pass
          else:
-             msg = "Die Registerkarte \""
+             msg =  "Die Registerkarte \""
              msg += tabname_raumbuch
              msg += "\" existiert nicht!"
              msgbox(msg, 'msgbox', 1, 'QUERYBOX')
@@ -2081,6 +2119,17 @@ class raumbuch: #calc
              return
          # ------------------------------------------------------Dateien in WE-Ordnern ablegen:
          for spa in range (we_spaS-1, we_spaE): # WE für WE durchgehen
+             weName = self.t.get_zelltext_i(int(we_zei)-1, spa)
+             sRBtext  = self.csvZelle("Raumbuch ")
+             sRBtext += self.csvZelle("")
+             sRBtext += self.csvZelle(weName)
+             sRBtext += "\n"
+             sRBtext += "\n"
+             sRBtext += self.csvZelle("Pos")
+             sRBtext += self.csvZelle("Bezeichnung")
+             sRBtext += self.csvZelle("Menge")
+             sRBtext += "\n"
+
              for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
                  zelakt = self.t.get_zelltext_i(zei-1, spa)
                  if( len(zelakt) > 0):
@@ -2094,14 +2143,22 @@ class raumbuch: #calc
                     ziedatei += "\\\\"
                     ziedatei += datnam
                     copyfile(quelldatei, ziedatei)
-
-                    #msg = "zelakt: \"" + zelakt + "\""
-                    #msg += "\n quelle:\n"
-                    #msg += quelldatei
-                    #msg += "\n ziel:\n"
-                    #msg += ziedatei
-                    #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                    #------------------------------------
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, pos_spa-1)) #Pos
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, bez_spa-1))#Bez
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, spa))#Menge
+                    sRBtext += "\n"
                  pass
+             rbDatNam = self.ziel
+             rbDatNam += "\\\\"
+             rbDatNam += weName
+             rbDatNam += "\\\\"
+             rbDatNam += "Raumbuch "
+             rbDatNam += weName
+             rbDatNam += ".csv"
+             file = open(rbDatNam, "w")
+             file.write(sRBtext)
+             file.close()
              pass
          # ------------------------------------------------------
          pass
