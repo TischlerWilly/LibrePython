@@ -2131,9 +2131,9 @@ class raumbuch: #calc
              sRBtext += "\n"
 
              for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
-                 zelakt = self.t.get_zelltext_i(zei-1, spa)
-                 if( len(zelakt) > 0):
-                    datnam = self.t.get_zelltext_i(int(zei)-1, int(dn_spa)-1)
+                 zelakt = self.t.get_zelltext_i(zei-1, spa) # Mengenangabe in dieser WE
+                 datnam = self.t.get_zelltext_i(int(zei)-1, int(dn_spa)-1) # Dateiname
+                 if( (len(zelakt) > 0) and (len(datnam) > 0) ):
                     quelldatei  = self.quelle 
                     quelldatei += "\\\\" 
                     quelldatei += datnam
