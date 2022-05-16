@@ -2133,17 +2133,20 @@ class raumbuch: #calc
              for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
                  zelakt = self.t.get_zelltext_i(zei-1, spa) # Mengenangabe in dieser WE
                  datnam = self.t.get_zelltext_i(int(zei)-1, int(dn_spa)-1) # Dateiname
-                 if( (len(zelakt) > 0) and (len(datnam) > 0) ):
-                    quelldatei  = self.quelle 
-                    quelldatei += "\\\\" 
-                    quelldatei += datnam
-                    ziedatei = self.ziel
-                    ziedatei += "\\\\"
-                    ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
-                    ziedatei += "\\\\"
-                    ziedatei += datnam
-                    copyfile(quelldatei, ziedatei)
-                    #------------------------------------
+                 if( len(zelakt) > 0 ):
+                    if( len(datnam) > 0 ): # Dateien nur ablegen wenn Dateinamen angegeben worden sind.
+                                           # Ohne diese Prüfung kommt es zu Fehlern bei fehlender Dateiangabe.
+                        quelldatei  = self.quelle 
+                        quelldatei += "\\\\" 
+                        quelldatei += datnam
+                        ziedatei = self.ziel
+                        ziedatei += "\\\\"
+                        ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                        ziedatei += "\\\\"
+                        ziedatei += datnam
+                        copyfile(quelldatei, ziedatei)
+                    # Auch wenn keine Datei angegeben wurde soll das Bauteil im Raumbuch
+                    # dieser Wohnung aufgeführt werden:
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, pos_spa-1)) #Pos
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, bez_spa-1))#Bez
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, spa))#Menge
