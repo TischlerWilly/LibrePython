@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from ast import Not
 from genericpath import exists
+from importlib.util import MAGIC_NUMBER
 import os
 from os.path import expanduser
 from pathlib import Path
@@ -1871,26 +1872,35 @@ class raumbuch: #calc
          self.t.tab_anlegen(tabname, 99)
          self.t.set_tabfokus_s(tabname)
          # ---------
-         self.t.set_Rahmen_komplett_s("A1:I10", 20)
-         self.t.set_zellfarbe_s("A1:I1", self.grau)
-         self.t.set_zellfarbe_s("A1:C10", self.grau)
-         self.t.set_zellfarbe_s("I1:I10", self.grau)
+         self.t.set_Rahmen_komplett_s("D1:I1", 20)
+         self.t.set_Rahmen_komplett_s("A2:I11", 20)
+         self.t.set_zellfarbe_s("A2:I2", self.grau)
+         self.t.set_zellfarbe_s("A2:C11", self.grau)
+         self.t.set_zellfarbe_s("I2:I11", self.grau)
          # ---------
-         self.t.set_spaltenbreite_i(1, 5000)
+         self.t.set_spaltenbreite_i(1, 5000) # B == Bezeichnung
+         self.t.set_spaltenbreite_i(2, 6000) # C == Dateiname
+         self.t.set_spaltenbreite_i(3, 1200) # WE
+         self.t.set_spaltenbreite_i(4, 1200) # WE
+         self.t.set_spaltenbreite_i(5, 1200) # WE
+         self.t.set_spaltenbreite_i(6, 1200) # WE
+         self.t.set_spaltenbreite_i(7, 1200) # WE
+         self.t.set_spaltenbreite_i(8, 1200) # Summe
          # ---------
          self.t.set_spaltenausrichtung_i(8, "mi")
          # ---------
-         self.t.set_zelltext_s("A1", "Pos")
-         self.t.set_zelltext_s("B1", "Bezeichnung")
-         self.t.set_zelltext_s("C1", "Datei")
-         self.t.set_zelltext_s("D1", "WE 1")
-         self.t.set_zelltext_s("E1", "WE 2")
-         self.t.set_zelltext_s("F1", "WE 3")
-         self.t.set_zelltext_s("G1", "WE 4")
-         self.t.set_zelltext_s("H1", "WE 5")
-         self.t.set_zelltext_s("I1", "Summe")
+         self.t.set_zelltext_s("A1", "Projekt xy")
+         self.t.set_zelltext_s("A2", "Pos")
+         self.t.set_zelltext_s("B2", "Bezeichnung")
+         self.t.set_zelltext_s("C2", "Datei                                                WE:")
+         self.t.set_zelltext_s("D2", "001")
+         self.t.set_zelltext_s("E2", "002")
+         self.t.set_zelltext_s("F2", "003")
+         self.t.set_zelltext_s("G2", "004")
+         self.t.set_zelltext_s("H2", "005")
+         self.t.set_zelltext_s("I2", "Summe")
          # ---------
-         for i in range (1, 10):
+         for i in range (2, 11):
             formel = "=SUM(D" + str(i+1) + ":H" + str(i+1) + ")"
             self.t.set_zellformel_i(i, 8, formel)
             pass
@@ -1932,7 +1942,7 @@ class raumbuch: #calc
          self.t.set_zellfarbe_s("A4:A5", self.grau)
          self.t.set_Rahmen_komplett_s("A4:D5", 20)
          self.t.set_zellausrichtungHori_s("B5:D5", "mi")
-         text = "1"
+         text = "2"
          pos = "B5"
          self.t.set_zelltext_s(pos, text)
          text = "D"
@@ -1974,10 +1984,10 @@ class raumbuch: #calc
          text = "B"
          pos = "B10"
          self.t.set_zelltext_s(pos, text)
-         text = "2"
+         text = "3"
          pos = "C8"
          self.t.set_zelltext_s(pos, text)
-         text = "10"
+         text = "11"
          pos = "D8"
          self.t.set_zelltext_s(pos, text)
          pass
@@ -2061,13 +2071,17 @@ class raumbuch: #calc
              msgbox('Eingabe von Pos.Bez.-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return  
          # ------------------------------------------------------ Prüfen ob alle Dateien existieren:
+         # Dateinamen mit Platzhaltern nicht prüfen
+         # Platzhalter:
+         # [WE] --> Wird durch die jeweiligewohnungsnummer ersetzt
+         PLATZHALTER_WE = "[WE]" # Konstante
          tabname_raumbuch = "Raumbuch"
          if self.t.tab_existiert(tabname_raumbuch) == True:
              self.t.set_tabfokus_s(tabname_raumbuch)
              for i in range (int(dn_zeiS), int(dn_zeiE)+1):
                 datnam = self.t.get_zelltext_i(int(i)-1, int(dn_spa)-1)
                 # msgbox(datnam, 'msgbox', 1, 'QUERYBOX')
-                if len(datnam) > 4:
+                if ((len(datnam) > 4) and (PLATZHALTER_WE not in datnam)):
                     datnam = self.quelle + "\\\\" + datnam
                     fileObj = Path(datnam)
                     if fileObj.is_file() == False:
@@ -2118,6 +2132,7 @@ class raumbuch: #calc
              msgbox(msg, 'msgbox', 1, 'QUERYBOX')
              return
          # ------------------------------------------------------Dateien in WE-Ordnern ablegen:
+         msg_zaehler = 0
          for spa in range (we_spaS-1, we_spaE): # WE für WE durchgehen
              weName = self.t.get_zelltext_i(int(we_zei)-1, spa)
              sRBtext  = self.csvZelle("Raumbuch ")
@@ -2129,22 +2144,37 @@ class raumbuch: #calc
              sRBtext += self.csvZelle("Bezeichnung")
              sRBtext += self.csvZelle("Menge")
              sRBtext += "\n"
-
+             
              for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
                  zelakt = self.t.get_zelltext_i(zei-1, spa) # Mengenangabe in dieser WE
                  datnam = self.t.get_zelltext_i(int(zei)-1, int(dn_spa)-1) # Dateiname
                  if( len(zelakt) > 0 ):
                     if( len(datnam) > 0 ): # Dateien nur ablegen wenn Dateinamen angegeben worden sind.
                                            # Ohne diese Prüfung kommt es zu Fehlern bei fehlender Dateiangabe.
+                        if(PLATZHALTER_WE in datnam):
+                            datnam = datnam.replace(PLATZHALTER_WE, weName, 1)                            
                         quelldatei  = self.quelle 
-                        quelldatei += "\\\\" 
+                        quelldatei += "\\" 
                         quelldatei += datnam
                         ziedatei = self.ziel
-                        ziedatei += "\\\\"
+                        ziedatei += "\\"
                         ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
-                        ziedatei += "\\\\"
+                        ziedatei += "\\"
                         ziedatei += datnam
-                        copyfile(quelldatei, ziedatei)
+                        if(os.path.isfile(quelldatei) == True):                            
+                            copyfile(quelldatei, ziedatei)
+                        else:
+                            if(msg_zaehler < 5):
+                                msg = "Die Datei: \n"
+                                msg += quelldatei
+                                msg += "\n wurde nicht gefunden und wird übersprungen."
+                                fenstertitel = "Datei nicht gefunden (" + str(msg_zaehler+1) + ")"
+                                msgbox(msg, fenstertitel, 1, 'QUERYBOX')
+                                msg_zaehler = msg_zaehler + 1
+                            elif(msg_zaehler == 5):
+                                msg = "Alle weiteren nicht vorhandenen Dateien werden ohne weitere Meldungen übersprungen."
+                                msgbox(msg, 'Datei nicht gefunden', 1, 'QUERYBOX')
+                                msg_zaehler = msg_zaehler + 1
                     # Auch wenn keine Datei angegeben wurde soll das Bauteil im Raumbuch
                     # dieser Wohnung aufgeführt werden:
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, pos_spa-1)) #Pos
