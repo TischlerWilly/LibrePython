@@ -1892,12 +1892,12 @@ class raumbuch: #calc
          self.t.set_zelltext_s("A1", "Projekt xy")
          self.t.set_zelltext_s("A2", "Pos")
          self.t.set_zelltext_s("B2", "Bezeichnung")
-         self.t.set_zelltext_s("C2", "Datei                                                WE:")
-         self.t.set_zelltext_s("D2", "001")
-         self.t.set_zelltext_s("E2", "002")
-         self.t.set_zelltext_s("F2", "003")
-         self.t.set_zelltext_s("G2", "004")
-         self.t.set_zelltext_s("H2", "005")
+         self.t.set_zelltext_s("C2", "Datei")
+         self.t.set_zelltext_s("D2", "WE001")
+         self.t.set_zelltext_s("E2", "WE002")
+         self.t.set_zelltext_s("F2", "WE003")
+         self.t.set_zelltext_s("G2", "WE004")
+         self.t.set_zelltext_s("H2", "leer")
          self.t.set_zelltext_s("I2", "Summe")
          # ---------
          for i in range (2, 11):
@@ -2115,16 +2115,25 @@ class raumbuch: #calc
                  msgbox(msg, 'msgbox', 1, 'QUERYBOX')
                  return
              else:
-                WEs += [we]             
+                WEs += [we] 
              pass
          # ------------------------------------------------------Ordner für WEs erstellen:
          if(os.path.isdir(self.ziel)):
              for i in WEs:
                  dir = self.ziel
-                 dir += "\\\\"
+                 dir += "\\"
                  dir += i
                  if os.path.isdir(dir) == False:
-                    os.makedirs(dir)
+                    try: 
+                        os.makedirs(dir)
+                    except OSError:
+                        titel = "Ordner erstellen"
+                        msg = "Der Ordner \n"
+                        msg += dir
+                        msg += "\n"
+                        msg += "kann nicht erstellt werden! Makro wird abgebrochen."
+                        msgbox(msg, titel, 1, 'QUERYBOX')
+                        return
          else:
              msg  = "Das angegebene Zielverzeichnis\n"
              msg += self.ziel
@@ -2194,6 +2203,8 @@ class raumbuch: #calc
              file.close()
              pass
          # ------------------------------------------------------
+         msg = "Makro erfolgreich abgeschlossen."
+         msgbox(msg, 'Makro Lieferlisten', 1, 'QUERYBOX')
          pass
         
 #----------------------------------------------------------------------------------
