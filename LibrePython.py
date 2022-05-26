@@ -116,6 +116,13 @@ def istZiffer(c):
     elif c is '9':
         erg = True
     return erg
+def findeDateien(name, pfad):
+    alleDateien = os.listdir(pfad)
+    dateien = []
+    for i in alleDateien:
+        if name in i:
+            dateien += [os.path.join(pfad, i)]
+    return dateien
 #----------------------------------------------------------------------------------
 
 class ol_tabelle:
@@ -2082,7 +2089,7 @@ class raumbuch: #calc
                 datnam = self.t.get_zelltext_i(int(i)-1, int(dn_spa)-1)
                 # msgbox(datnam, 'msgbox', 1, 'QUERYBOX')
                 if ((len(datnam) > 4) and (PLATZHALTER_WE not in datnam)):
-                    datnam = self.quelle + "\\\\" + datnam
+                    datnam = self.quelle + "\\" + datnam
                     fileObj = Path(datnam)
                     if fileObj.is_file() == False:
                         msg = "Die Datei \""
@@ -2161,29 +2168,38 @@ class raumbuch: #calc
                     if( len(datnam) > 0 ): # Dateien nur ablegen wenn Dateinamen angegeben worden sind.
                                            # Ohne diese Prüfung kommt es zu Fehlern bei fehlender Dateiangabe.
                         if(PLATZHALTER_WE in datnam):
-                            datnam = datnam.replace(PLATZHALTER_WE, weName, 1)                            
-                        quelldatei  = self.quelle 
-                        quelldatei += "\\" 
-                        quelldatei += datnam
-                        ziedatei = self.ziel
-                        ziedatei += "\\"
-                        ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
-                        ziedatei += "\\"
-                        ziedatei += datnam
-                        if(os.path.isfile(quelldatei) == True):                            
-                            copyfile(quelldatei, ziedatei)
+                            datnam = datnam.replace(PLATZHALTER_WE, weName, 1) 
+                            datnam_ohne_daterw = datnam.replace(".pdf", "", 1)
+                            quelldateien = findeDateien(datnam_ohne_daterw, self.quelle) 
+                            for i in quelldateien:
+                                aktZieldatei = self.ziel + "\\"
+                                aktZieldatei += self.t.get_zelltext_i(int(we_zei)-1, spa) + "\\"
+                                aktZieldatei += os.path.basename(i)
+                                if(os.path.isfile(i) == True):
+                                    copyfile(i, aktZieldatei)
                         else:
-                            if(msg_zaehler < 5):
-                                msg = "Die Datei: \n"
-                                msg += quelldatei
-                                msg += "\n wurde nicht gefunden und wird übersprungen."
-                                fenstertitel = "Datei nicht gefunden (" + str(msg_zaehler+1) + ")"
-                                msgbox(msg, fenstertitel, 1, 'QUERYBOX')
-                                msg_zaehler = msg_zaehler + 1
-                            elif(msg_zaehler == 5):
-                                msg = "Alle weiteren nicht vorhandenen Dateien werden ohne weitere Meldungen übersprungen."
-                                msgbox(msg, 'Datei nicht gefunden', 1, 'QUERYBOX')
-                                msg_zaehler = msg_zaehler + 1
+                            ziedatei = self.ziel
+                            ziedatei += "\\"
+                            ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                            ziedatei += "\\" 
+                            ziedatei += datnam
+                            quelldatei  = self.quelle 
+                            quelldatei += "\\" 
+                            quelldatei += datnam
+                            if(os.path.isfile(quelldatei) == True):                            
+                                copyfile(quelldatei, ziedatei)
+                            else:
+                                if(msg_zaehler < 5):
+                                    msg = "Die Datei: \n"
+                                    msg += quelldatei
+                                    msg += "\n wurde nicht gefunden und wird übersprungen."
+                                    fenstertitel = "Datei nicht gefunden (" + str(msg_zaehler+1) + ")"
+                                    msgbox(msg, fenstertitel, 1, 'QUERYBOX')
+                                    msg_zaehler = msg_zaehler + 1
+                                elif(msg_zaehler == 5):
+                                    msg = "Alle weiteren nicht vorhandenen Dateien werden ohne weitere Meldungen übersprungen."
+                                    msgbox(msg, 'Datei nicht gefunden', 1, 'QUERYBOX')
+                                    msg_zaehler = msg_zaehler + 1                            
                     # Auch wenn keine Datei angegeben wurde soll das Bauteil im Raumbuch
                     # dieser Wohnung aufgeführt werden:
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, pos_spa-1)) #Pos
