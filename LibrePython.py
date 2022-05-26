@@ -1539,21 +1539,26 @@ class raumbuch: #calc
      def __init__(self):
          self.t = ol_tabelle()
          self.grau = RGBTo32bitInt(204, 204, 204) 
+         #----------------------------- Verzeichnisse:
          self.quelle = ""
          self.quelle_zelle = "B1"
          self.ziel = ""
          self.ziel_zelle = "B2"
+         self.grundrisse = ""
+         self.grundrisse_zelle = "B3"
          #----------------------------- WE:
-         self.we_info_zeile = "B5"
-         self.we_info_spalte_start = "C5"
-         self.we_info_spalte_ende = "D5"
-         #----------------------------- Dateien:
-         self.datei_info_spalte = "B8"
-         self.datei_info_zeile_start = "C8"
-         self.datei_info_zeile_ende = "D8" 
+         self.we_info_zeile = "B6"
+         self.we_info_spalte_start = "C6"
+         self.we_info_spalte_ende = "D6"
          #----
-         self.pos_info_spalte = "B9"
-         self.bez_info_spalte = "B10"
+         self.grundrisse_info_zeile = "B7"
+         #----------------------------- Dateien:
+         self.datei_info_spalte = "B10"
+         self.datei_info_zeile_start = "C10"
+         self.datei_info_zeile_ende = "D10" 
+         #----
+         self.pos_info_spalte = "B11"
+         self.bez_info_spalte = "B12"
          pass
      def spalten_umwandeln(self, buchstabe): # noch ergänzen!!!
          if buchstabe == "A":
@@ -1912,6 +1917,9 @@ class raumbuch: #calc
             self.t.set_zellformel_i(i, 8, formel)
             pass
          # ---------
+         self.t.set_zelltext_s("C13", "Grundrissname:")
+         self.t.set_Rahmen_komplett_s("C13:H13", 20)
+         # ---------
          pass
      def LList_Formblatt (self):
          # ---------
@@ -1919,7 +1927,7 @@ class raumbuch: #calc
          self.t.tab_anlegen(tabname, 99)
          self.t.set_tabfokus_s(tabname)
          self.t.set_spaltenbreite_i(0, 4500)
-         # ---------
+         # ---------Verzeichnisse:
          text = "Quell-Verzeichnis"
          pos = "A1"
          self.t.set_zelltext_s(pos, text)
@@ -1932,71 +1940,97 @@ class raumbuch: #calc
          text = "Bitte hier den Pfad eintragen"
          pos = "B2"
          self.t.set_zelltext_s(pos, text)
-         # ---------
+         text = "Grundrisse-Verzeichnis"
+         pos = "A3"
+         self.t.set_zelltext_s(pos, text)
+         text = "Bitte hier den Pfad eintragen"
+         pos = "B3"
+         self.t.set_zelltext_s(pos, text)
+         # ---------Erste Tabelle:
          text = "WE-Bezeichnungen"
-         pos = "A5"
+         pos = "A6"
+         self.t.set_zelltext_s(pos, text)
+         text = "Grundrisse"
+         pos = "A7"
          self.t.set_zelltext_s(pos, text)
          text = "Zeile"
-         pos = "B4"
-         self.t.set_zelltext_s(pos, text)
-         text = "Spalte-Start"
-         pos = "C4"
-         self.t.set_zelltext_s(pos, text)
-         text = "Spalte-Ende"
-         pos = "D4"
-         self.t.set_zelltext_s(pos, text)
-         self.t.set_zellfarbe_s("A4:D4", self.grau)
-         self.t.set_zellfarbe_s("A4:A5", self.grau)
-         self.t.set_Rahmen_komplett_s("A4:D5", 20)
-         self.t.set_zellausrichtungHori_s("B5:D5", "mi")
-         text = "2"
          pos = "B5"
          self.t.set_zelltext_s(pos, text)
-         text = "D"
+         text = "Spalte-Start"
          pos = "C5"
          self.t.set_zelltext_s(pos, text)
-         text = "H"
+         text = "Spalte-Ende"
          pos = "D5"
          self.t.set_zelltext_s(pos, text)
-         # ---------
-         text = "Dateinamen"
-         pos = "A8"
+
+         self.t.set_zellfarbe_s("A5:D5", self.grau)
+         self.t.set_zellfarbe_s("A5:A7", self.grau)
+         self.t.set_zellfarbe_s("C7:D7", self.grau)
+         self.t.set_Rahmen_komplett_s("A5:D7", 20)
+         self.t.set_zellausrichtungHori_s("B6:D7", "mi")
+         text = "2"
+         pos = "B6"
          self.t.set_zelltext_s(pos, text)
-         text = "Pos-Nummern"
-         pos = "A9"
+         text = "D"
+         pos = "C6"
          self.t.set_zelltext_s(pos, text)
-         text = "Pos-Bez."
-         pos = "A10"
+         text = "H"
+         pos = "D6"
          self.t.set_zelltext_s(pos, text)
-         text = "Spalte"
+         text = "13"
          pos = "B7"
          self.t.set_zelltext_s(pos, text)
-         text = "Zeile-Start"
-         pos = "C7"
+         # ---------Zweite Tabelle:
+         text = "Dateinamen"
+         pos = "A10"
          self.t.set_zelltext_s(pos, text)
-         text = "Zeile-Ende"
-         pos = "D7"
+         text = "Pos-Nummern"
+         pos = "A11"
          self.t.set_zelltext_s(pos, text)
-         self.t.set_zellfarbe_s("A7:D7", self.grau)
-         self.t.set_zellfarbe_s("A7:A10", self.grau)
-         self.t.set_zellfarbe_s("C9:D10", self.grau)
-         self.t.set_Rahmen_komplett_s("A7:D10", 20)
-         self.t.set_zellausrichtungHori_s("B8:D10", "mi")
-         text = "C"
-         pos = "B8"
+         text = "Pos-Bez."
+         pos = "A12"
          self.t.set_zelltext_s(pos, text)
-         text = "A"
+         text = "Spalte"
          pos = "B9"
          self.t.set_zelltext_s(pos, text)
-         text = "B"
+         text = "Zeile-Start"
+         pos = "C9"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile-Ende"
+         pos = "D9"
+         self.t.set_zelltext_s(pos, text)
+
+         self.t.set_zellfarbe_s("A9:D9", self.grau)
+         self.t.set_zellfarbe_s("A9:A12", self.grau)
+         self.t.set_zellfarbe_s("C11:D12", self.grau)
+         self.t.set_Rahmen_komplett_s("A9:D12", 20)
+         self.t.set_zellausrichtungHori_s("B10:D12", "mi")
+         text = "C"
          pos = "B10"
          self.t.set_zelltext_s(pos, text)
+         text = "A"
+         pos = "B11"
+         self.t.set_zelltext_s(pos, text)
+         text = "B"
+         pos = "B12"
+         self.t.set_zelltext_s(pos, text)
          text = "3"
-         pos = "C8"
+         pos = "C10"
          self.t.set_zelltext_s(pos, text)
          text = "11"
-         pos = "D8"
+         pos = "D10"
          self.t.set_zelltext_s(pos, text)
+         # ---------Bedienerhinweise:
+         text = "Der Platzhalter [WE] kann bei der Benennung der Dateinamen für"
+         pos = "A14"
+         self.t.set_zelltext_s(pos, text)
+         text = "die Zeichnungen und Grundrisse verwendet werden. Das Makro tauscht"
+         pos = "A15"
+         self.t.set_zelltext_s(pos, text)
+         text = "den Platzhalter dann mit der Bezeichnung der jeweiligen Wohnung aus."
+         pos = "A16"
+         self.t.set_zelltext_s(pos, text)
+         # ---------
          pass
      def csvZelle(self, msg):
          ret = "\""
@@ -2013,6 +2047,7 @@ class raumbuch: #calc
          # ------------------------------------------------------
          self.quelle = self.t.get_zelltext_s(self.quelle_zelle)
          self.ziel = self.t.get_zelltext_s(self.ziel_zelle)
+         self.grundrisse = self.t.get_zelltext_s(self.grundrisse_zelle)
          # ------------------------------------------------------ WE Zeile:
          we_zei = 0
          tmp = self.t.get_zelltext_s(self.we_info_zeile)
@@ -2037,13 +2072,22 @@ class raumbuch: #calc
          else:
              msgbox('Eingabe von WE-Spalte Ende ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return
-          # ------------------------------------------------------ Dateinahmen Spalte:
+         # ------------------------------------------------------ Grundrisse Zeile:
+         gru_zei = 0
+         tmp = self.t.get_zelltext_s(self.grundrisse_info_zeile)
+         if len(tmp) == 0:
+             msgbox('Eingabe von Grundrisse ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             gru_zei  = tmp
+         # ------------------------------------------------------
+         # ------------------------------------------------------ Dateinahmen Spalte:
          dn_spa = 0
          tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.datei_info_spalte))
          if tmp != 0:
             dn_spa = tmp
          else:
-             msgbox('Eingabe von WE-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             msgbox('Eingabe von Dateinamen-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return  
          # ------------------------------------------------------ Dateinahmen Zeile Start:
          dn_zeiS = 0
@@ -2178,16 +2222,16 @@ class raumbuch: #calc
                                 if(os.path.isfile(i) == True):
                                     copyfile(i, aktZieldatei)
                         else:
-                            ziedatei = self.ziel
-                            ziedatei += "\\"
-                            ziedatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
-                            ziedatei += "\\" 
-                            ziedatei += datnam
+                            zieldatei = self.ziel
+                            zieldatei += "\\"
+                            zieldatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                            zieldatei += "\\" 
+                            zieldatei += datnam
                             quelldatei  = self.quelle 
                             quelldatei += "\\" 
                             quelldatei += datnam
                             if(os.path.isfile(quelldatei) == True):                            
-                                copyfile(quelldatei, ziedatei)
+                                copyfile(quelldatei, zieldatei)
                             else:
                                 if(msg_zaehler < 5):
                                     msg = "Die Datei: \n"
@@ -2207,6 +2251,7 @@ class raumbuch: #calc
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, spa))#Menge
                     sRBtext += "\n"
                  pass
+             
              rbDatNam = self.ziel
              rbDatNam += "\\\\"
              rbDatNam += weName
@@ -2217,6 +2262,31 @@ class raumbuch: #calc
              file = open(rbDatNam, "w")
              file.write(sRBtext)
              file.close()
+             pass
+         # ------------------------------------------------------Grundrisse in WE-Ordnern ablegen:
+         for spa in range (we_spaS-1, we_spaE): # WE für WE durchgehen
+             weName = self.t.get_zelltext_i(int(we_zei)-1, spa)
+             datnam = self.t.get_zelltext_i(int(gru_zei)-1, spa) # Dateiname
+             if( len(datnam) > 0 ):
+                 if(PLATZHALTER_WE in datnam):
+                     datnam = datnam.replace(PLATZHALTER_WE, weName, 1)
+                     pass
+                 quelldatei  = self.grundrisse
+                 quelldatei += "\\" 
+                 quelldatei += datnam
+                 zieldatei = self.ziel
+                 zieldatei += "\\"
+                 zieldatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                 zieldatei += "\\" 
+                 zieldatei += datnam
+                 if(os.path.isfile(quelldatei) == True):                            
+                    copyfile(quelldatei, zieldatei)
+                 else:
+                     msg = "Die Datei: \n"
+                     msg += quelldatei
+                     msg += "\n wurde nicht gefunden und wird übersprungen."
+                     fenstertitel = "Datei für Grundris nicht gefunden (" + str(msg_zaehler+1) + ")"
+                     msgbox(msg, fenstertitel, 1, 'QUERYBOX')
              pass
          # ------------------------------------------------------
          msg = "Makro erfolgreich abgeschlossen."
