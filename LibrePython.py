@@ -1559,6 +1559,7 @@ class raumbuch: #calc
          #----
          self.pos_info_spalte = "B11"
          self.bez_info_spalte = "B12"
+         self.montage_info_spalte = "B13"
          pass
      def spalten_umwandeln(self, buchstabe): # noch ergänzen!!!
          if buchstabe == "A":
@@ -2064,7 +2065,6 @@ class raumbuch: #calc
          else:
              return "ZZZ"
          pass
-     
      def RB_Blankoliste(self):
          # ---------
          tabname = "Raumbuch"
@@ -2201,6 +2201,9 @@ class raumbuch: #calc
          text = "Pos-Bez."
          pos = "A12"
          self.t.set_zelltext_s(pos, text)
+         text = "Montagebudget"
+         pos = "A13"
+         self.t.set_zelltext_s(pos, text)
          text = "Spalte"
          pos = "B9"
          self.t.set_zelltext_s(pos, text)
@@ -2212,10 +2215,10 @@ class raumbuch: #calc
          self.t.set_zelltext_s(pos, text)
 
          self.t.set_zellfarbe_s("A9:D9", self.grau)
-         self.t.set_zellfarbe_s("A9:A12", self.grau)
-         self.t.set_zellfarbe_s("C11:D12", self.grau)
-         self.t.set_Rahmen_komplett_s("A9:D12", 20)
-         self.t.set_zellausrichtungHori_s("B10:D12", "mi")
+         self.t.set_zellfarbe_s("A9:A13", self.grau)
+         self.t.set_zellfarbe_s("C11:D13", self.grau)
+         self.t.set_Rahmen_komplett_s("A9:D13", 20)
+         self.t.set_zellausrichtungHori_s("B10:D13", "mi")
          text = "C"
          pos = "B10"
          self.t.set_zelltext_s(pos, text)
@@ -2225,6 +2228,9 @@ class raumbuch: #calc
          text = "B"
          pos = "B12"
          self.t.set_zelltext_s(pos, text)
+         text = "L"
+         pos = "B13"
+         self.t.set_zelltext_s(pos, text)
          text = "3"
          pos = "C10"
          self.t.set_zelltext_s(pos, text)
@@ -2233,13 +2239,13 @@ class raumbuch: #calc
          self.t.set_zelltext_s(pos, text)
          # ---------Bedienerhinweise:
          text = "Der Platzhalter [WE] kann bei der Benennung der Dateinamen für"
-         pos = "A14"
-         self.t.set_zelltext_s(pos, text)
-         text = "die Zeichnungen und Grundrisse verwendet werden. Das Makro tauscht"
          pos = "A15"
          self.t.set_zelltext_s(pos, text)
-         text = "den Platzhalter dann mit der Bezeichnung der jeweiligen Wohnung aus."
+         text = "die Zeichnungen und Grundrisse verwendet werden. Das Makro tauscht"
          pos = "A16"
+         self.t.set_zelltext_s(pos, text)
+         text = "den Platzhalter dann mit der Bezeichnung der jeweiligen Wohnung aus."
+         pos = "A17"
          self.t.set_zelltext_s(pos, text)
          # ---------
          pass
@@ -2324,13 +2330,21 @@ class raumbuch: #calc
          else:
              msgbox('Eingabe von Pos-Nummer-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return  
-         # ------------------------------------------------------ Position Spalte:
+         # ------------------------------------------------------ Positios-Bezeichnung Spalte:
          bez_spa = 0
          tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.bez_info_spalte))
          if tmp != 0:
             bez_spa = tmp
          else:
              msgbox('Eingabe von Pos.Bez.-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
+         # ------------------------------------------------------ Montagebudget Spalte:
+         montage_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.montage_info_spalte))
+         if tmp != 0:
+            montage_spa = tmp
+         else:
+             msgbox('Eingabe von Montage.-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
              return  
          # ------------------------------------------------------ Prüfen ob alle Dateien existieren:
          # Dateinamen mit Platzhaltern nicht prüfen
@@ -2414,6 +2428,7 @@ class raumbuch: #calc
              sRBtext += self.csvZelle("Pos")
              sRBtext += self.csvZelle("Bezeichnung")
              sRBtext += self.csvZelle("Menge")
+             sRBtext += self.csvZelle("Montagebudget")
              sRBtext += "\n"
              
              for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
@@ -2460,6 +2475,7 @@ class raumbuch: #calc
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, pos_spa-1)) #Pos
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, bez_spa-1))#Bez
                     sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, spa))#Menge
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, montage_spa-1))#Montagebudget
                     sRBtext += "\n"
                  pass
              
