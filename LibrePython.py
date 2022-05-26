@@ -1878,6 +1878,193 @@ class raumbuch: #calc
          else:
              return 0
          pass
+     def spalten_umwandeln_num(self, spaltennummer): # noch ergänzen!!!
+         if spaltennummer == 1:
+             return "A"
+         elif spaltennummer == 2:
+             return "B"
+         elif spaltennummer == 3:
+             return "C"
+         elif spaltennummer == 4:
+             return "D"
+         elif spaltennummer == 5:
+             return "E"
+         elif spaltennummer == 6:
+             return "F"
+         elif spaltennummer == 7:
+             return "G"
+         elif spaltennummer == 8:
+             return "H"
+         elif spaltennummer == 9:
+             return "I"
+         elif spaltennummer == 10:
+             return "J"
+         elif spaltennummer == 11:
+             return "K"
+         elif spaltennummer == 12:
+             return "L"
+         elif spaltennummer == 13:
+             return "M"
+         elif spaltennummer == 14:
+             return "N"
+         elif spaltennummer == 15:
+             return "O"
+         elif spaltennummer == 16:
+             return "P"
+         elif spaltennummer == 17:
+             return "Q"
+         elif spaltennummer == 18:
+             return "R"
+         elif spaltennummer == 19:
+             return "S"
+         elif spaltennummer == 20:
+             return "T"
+         elif spaltennummer == 21:
+             return "U"
+         elif spaltennummer == 22:
+             return "V"
+         elif spaltennummer == 23:
+             return "W"
+         elif spaltennummer == 24:
+             return "X"
+         elif spaltennummer == 25:
+             return "Y"
+         elif spaltennummer == 26:
+             return "Z"
+         elif spaltennummer == 27:
+             return "AA"
+         elif spaltennummer == 28:
+             return "AB"
+         elif spaltennummer == 29:
+             return "AC"
+         elif spaltennummer == 30:
+             return "AD"
+         elif spaltennummer == 31:
+             return "AE"
+         elif spaltennummer == 32:
+             return "AF"
+         elif spaltennummer == 33:
+             return "AG"
+         elif spaltennummer == 34:
+             return "AH"
+         elif spaltennummer == 35:
+             return "AI"
+         elif spaltennummer == 36:
+             return "AJ"
+         elif spaltennummer == 37:
+             return "AK"
+         elif spaltennummer == 38:
+             return "AL"
+         elif spaltennummer == 39:
+             return "AM"
+         elif spaltennummer == 40:
+             return "AN"
+         elif spaltennummer == 41:
+             return "AO"
+         elif spaltennummer == 42:
+             return "AP"
+         elif spaltennummer == 43:
+             return "AQ"
+         elif spaltennummer == 44:
+             return "AR"
+         elif spaltennummer == 45:
+             return "AS"
+         elif spaltennummer == 46:
+             return "AT"
+         elif spaltennummer == 47:
+             return "AU"
+         elif spaltennummer == 48:
+             return "AV"
+         elif spaltennummer == 49:
+             return "AW"
+         elif spaltennummer == 50:
+             return "AX"
+         elif spaltennummer == 51:
+             return "AY"
+         elif spaltennummer == 52:
+             return "AZ"
+         elif spaltennummer == 53:
+             return "BA"
+         elif spaltennummer == 54:
+             return "BB"
+         elif spaltennummer == 55:
+             return "BC"
+         elif spaltennummer == 56:
+             return "BD"
+         elif spaltennummer == 57:
+             return "BE"
+         elif spaltennummer == 58:
+             return "BF"
+         elif spaltennummer == 59:
+             return "BG"
+         elif spaltennummer == 60:
+             return "BH"
+         elif spaltennummer == 61:
+             return "BI"
+         elif spaltennummer == 62:
+             return "BJ"
+         elif spaltennummer == 63:
+             return "BK"
+         elif spaltennummer == 64:
+             return "BL"
+         elif spaltennummer == 65:
+             return "BM"
+         elif spaltennummer == 66:
+             return "BN"
+         elif spaltennummer == 67:
+             return "BO"
+         elif spaltennummer == 68:
+             return "BP"
+         elif spaltennummer == 69:
+             return "BQ"
+         elif spaltennummer == 70:
+             return "BR"
+         elif spaltennummer == 71:
+             return "BS"
+         elif spaltennummer == 72:
+             return "BT"
+         elif spaltennummer == 73:
+             return "BU"
+         elif spaltennummer == 74:
+             return "BV"
+         elif spaltennummer == 75:
+             return "BW"
+         elif spaltennummer == 76:
+             return "BX"
+         elif spaltennummer == 77:
+             return "BY"
+         elif spaltennummer == 78:
+             return "BZ"
+         elif spaltennummer == 79:
+             return "CA"
+         elif spaltennummer == 80:
+             return "CB"
+         elif spaltennummer == 81:
+             return "CC"
+         elif spaltennummer == 82:
+             return "CD"
+         elif spaltennummer == 83:
+             return "CE"
+         elif spaltennummer == 84:
+             return "CF"
+         elif spaltennummer == 85:
+             return "CG"
+         elif spaltennummer == 86:
+             return "CH"
+         elif spaltennummer == 87:
+             return "CI"
+         elif spaltennummer == 88:
+             return "CJ"
+         elif spaltennummer == 89:
+             return "CK"
+         elif spaltennummer == 90:
+             return "CL"
+         elif spaltennummer == 91:
+             return "CM"
+         else:
+             return "ZZZ"
+         pass
+     
      def RB_Blankoliste(self):
          # ---------
          tabname = "Raumbuch"
@@ -1892,12 +2079,14 @@ class raumbuch: #calc
          # ---------
          self.t.set_spaltenbreite_i(1, 5000) # B == Bezeichnung
          self.t.set_spaltenbreite_i(2, 6000) # C == Dateiname
-         self.t.set_spaltenbreite_i(3, 1200) # WE
-         self.t.set_spaltenbreite_i(4, 1200) # WE
-         self.t.set_spaltenbreite_i(5, 1200) # WE
-         self.t.set_spaltenbreite_i(6, 1200) # WE
-         self.t.set_spaltenbreite_i(7, 1200) # WE
-         self.t.set_spaltenbreite_i(8, 1200) # Summe
+         self.t.set_spaltenbreite_i(3, 2000) # WE
+         self.t.set_spaltenbreite_i(4, 2000) # WE
+         self.t.set_spaltenbreite_i(5, 2000) # WE
+         self.t.set_spaltenbreite_i(6, 2000) # WE
+         self.t.set_spaltenbreite_i(7, 2000) # WE
+         self.t.set_spaltenbreite_i(8, 2000) # Summe
+         self.t.set_spaltenbreite_i(10, 2500) # VK-Preis
+         self.t.set_spaltenbreite_i(11, 2500) # Montagebudget
          # ---------
          self.t.set_spaltenausrichtung_i(8, "mi")
          # ---------
@@ -1916,9 +2105,31 @@ class raumbuch: #calc
             formel = "=SUM(D" + str(i+1) + ":H" + str(i+1) + ")"
             self.t.set_zellformel_i(i, 8, formel)
             pass
-         # ---------
+         # ---------Grundrisse:
          self.t.set_zelltext_s("C13", "Grundrissname:")
          self.t.set_Rahmen_komplett_s("C13:H13", 20)
+         self.t.set_zellfarbe_s("C13:C13", self.grau)
+         # ---------Kalkulatorische Auswertung untere Zellen:
+         self.t.set_zelltext_s("C15", "VK-Preis:")
+         self.t.set_zelltext_s("C16", "Montagebudget:")
+         self.t.set_Rahmen_komplett_s("C15:H16", 20)
+         self.t.set_zellfarbe_s("C15:C16", self.grau)
+         for spa in range (3, 8):
+            spaAplha = self.spalten_umwandeln_num(spa+1)
+            #VK_Preis:
+            formel  = "=SUMPRODUCT(" + spaAplha + "3:" + spaAplha + "11*$K3:$K11)"
+            self.t.set_zellformel_i(15-1, spa, formel)
+            #Montagebudget:
+            formel  = "=SUMPRODUCT(" + spaAplha + "3:" + spaAplha + "11*$L3:$L11)"
+            self.t.set_zellformel_i(16-1, spa, formel)
+            pass
+         self.t.set_zellformat_s("D15:H16", "#.##0,00 [$€-407];[ROT]-#.##0,00 [$€-407]") # Währung
+         # ---------Kalkulatorische Auswertung rechte Zellen:
+         self.t.set_zelltext_s("K2", "VK-Preis:")
+         self.t.set_zelltext_s("L2", "Montagebudget:")
+         self.t.set_Rahmen_komplett_s("K2:L11", 20)
+         self.t.set_zellfarbe_s("K2:L2", self.grau)
+         self.t.set_zellformat_s("K3:L11", "#.##0,00 [$€-407];[ROT]-#.##0,00 [$€-407]") # Währung
          # ---------
          pass
      def LList_Formblatt (self):
