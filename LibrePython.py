@@ -1,9 +1,14 @@
 from __future__ import unicode_literals
+from ast import Not
+from genericpath import exists
+from importlib.util import MAGIC_NUMBER
 import os
 from os.path import expanduser
 from pathlib import Path
+import string
 import uno
 import datetime
+import time
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.sheet.CellInsertMode import RIGHT as INSERT_RE
 from com.sun.star.sheet.CellInsertMode import DOWN as INSERT_UN
@@ -16,6 +21,7 @@ from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
+from shutil import copyfile
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 """
@@ -73,8 +79,50 @@ def schreibe_in_datei(full_path, sText):
         new_file.write(sText)
         new_file.close()
     return erfolg
+def schreibe_in_datei_entferne_bestehende(full_path, sText):
+    # Pfadtrenner ist auf Windows das \\
+    # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
+    datei_vorhanden = False
+    my_file = Path(full_path)
+    if my_file.is_file():
+        datei_vorhanden = True    
+    new_file = open(full_path, "w")
+    new_file.write(sText)
+    new_file.close()
+    return datei_vorhanden
 def get_userpath():
     return expanduser("~")
+def istZiffer(c):
+    erg = False
+    if c is '0':
+        erg = True
+    elif c is '1':
+        erg = True
+    elif c is '2':
+        erg = True
+    elif c is '3':
+        erg = True
+    elif c is '4':
+        erg = True
+    elif c is '5':
+        erg = True
+    elif c is '6':
+        erg = True
+    elif c is '7':
+        erg = True
+    elif c is '8':
+        erg = True
+    elif c is '9':
+        erg = True
+    return erg
+def findeDateien(name, pfad):
+    alleDateien = os.listdir(pfad)
+    dateien = []
+    for i in alleDateien:
+        if name in i:
+            dateien += [os.path.join(pfad, i)]
+    return dateien
 #----------------------------------------------------------------------------------
 
 class ol_tabelle:
@@ -166,9 +214,93 @@ class ol_tabelle:
     #-----------------------------------------------------------------------------------------------
     # Tabs:
     #-----------------------------------------------------------------------------------------------
+    def tab_existiert(self, sTabname):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (0, len(namen)):
+            if namen[i] == sTabname:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            return True
+        else: 
+            return False
     def tab_anlegen(self, sTabname, iTabIndex):
-        self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sTabname:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            msg = "Die Registerkarte \""
+            msg += sTabname
+            msg += "\" ist bereits vorhanden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        else:
+            self.doc.Sheets.insertNewByName(sTabname, iTabIndex)
         pass
+    def tab_entfernen(self, sTabname):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (0, len(namen)):
+            if namen[i] == sTabname:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            self.doc.Sheets.removeByName(sTabname)
+        pass
+    def tab_kopieren(self, sNeuerTabName, iTabIndex):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sNeuerTabName:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            msg = "Die Registerkarte \""
+            msg += sNeuerTabName
+            msg += "\" ist bereits vorhanden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            return 1
+        else:
+            sAlterTabName = self.get_tabname()
+            self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+            return 0
+        return 0
+    def tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sAlterTabName:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+        pass
+    def tab_setName(self, sNeuerTabName):
+        namen = []
+        namen = self.doc.Sheets.ElementNames
+        tab_schon_vorhanden = 0
+        for i in range (1, len(namen)):
+            if namen[i] == sNeuerTabName:
+                tab_schon_vorhanden = 1
+                break #for i
+        if tab_schon_vorhanden == 1:
+            msg = "Die Registerkarte \""
+            msg += sNeuerTabName
+            msg += "\" ist bereits vorhanden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            return 1
+        else:
+            self.sheet.Name = sNeuerTabName
+            return 0
+        return 0
     def set_tabfokus_s(self, sTabname):
         sheet = self.doc.Sheets[sTabname]
         self.doc.getCurrentController().setActiveSheet(sheet)
@@ -406,10 +538,72 @@ class ol_tabelle:
 #----------------------------------------------------------------------------------
 class ol_textdatei:
     def __init__(self):
+        #self.doc = XSCRIPTCONTEXT.getDocument()
+        #self.text = self.doc.getText()
+        #self.text.setString('Hello World in Python in Writer')
         self.doc = XSCRIPTCONTEXT.getDocument()
         self.text = self.doc.getText()
-        self.text.setString('Hello World in Python in Writer')
-
+        self.desktop = XSCRIPTCONTEXT.getDesktop()
+        self.model = self.desktop.getCurrentComponent() 
+    def set_text_hoehe(self, iHoehe):
+        oSel = self.doc.CurrentSelection.getByIndex(0) # get the current selection
+        oTC = self.text.createTextCursorByRange(oSel) # TextCursor erzeugen      
+        oEnum = oTC.Text.createEnumeration()
+        while oEnum.hasMoreElements():
+            oPar = oEnum.nextElement()
+            oPar.CharHeight = iHoehe
+        pass
+    #-----------------------------------------------------------------------------------------------
+    # Seite:
+    #-----------------------------------------------------------------------------------------------
+    def set_seitenformat(self, sPapierformat, IstQuerformat, iRandLi, iRandRe, iRandOb, iRandUn):
+        #pageStyle = self.doc.getStyleFamilies().getByName("PageStyles")
+        #page = pageStyle.getByName("Default")
+        oViewCursor = self.doc.CurrentController.getViewCursor()
+        pageStyle = oViewCursor.PageStyleName
+        page = self.doc.StyleFamilies.getByName("PageStyles").getByName(pageStyle)
+        # Seitenränder:
+        # 500 == 5mm
+        page.LeftMargin = iRandLi
+        page.RightMargin = iRandRe
+        page.TopMargin = iRandOb
+        page.BottomMargin = iRandUn 
+        # Seitenformat:
+        if(sPapierformat == "A4"):
+            if(IstQuerformat == False):
+                # A4 hoch:
+                page.IsLandscape = False
+                page.Width = 21000
+                page.Height = 29700
+            else:
+                # A4 quer:
+                page.IsLandscape = False
+                page.Width = 29700
+                page.Height = 21000
+        elif(sPapierformat == "A3"):
+            if(IstQuerformat == False):
+                # A3 hoch:
+                page.IsLandscape = False
+                page.Width = 29700
+                page.Height = 42000
+            else:
+                # A3 quer:
+                page.IsLandscape = True
+                page.Width = 42000
+                page.Height = 29700   
+        elif(sPapierformat == "A6"):
+            if(IstQuerformat == False):
+                # A6 hoch:
+                page.IsLandscape = False
+                page.Width = 10500
+                page.Height = 14800
+            else:
+                # A6 quer:
+                page.IsLandscape = True
+                page.Width = 14800
+                page.Height = 10500 
+        pass
+        # Anwendung: set_setenformat("A3", True, 500, 500, 500 , 500, False, False)
 #----------------------------------------------------------------------------------
 class slist: # Calc
     def __init__(self):
@@ -469,56 +663,60 @@ class slist: # Calc
     def umwandeln_von_BCtoCSV(self):
         # sortiert Stueckliste um
         # von CSV-Format zum Einlesen ins PIOS nach Std-Stuckliste
-        #----Spalten einfügen um Platz zu schaffen:
-        self.t.insert_spalte_re_i(0, 15)
-        #----Spalten umsortieren:
-        # Bezeichnung:
-        self.t.spalte_verschieben_i(19, 0)
-        # Anzahl:
-        self.t.spalte_verschieben_i(20, 1)
-        # Länge:
-        self.t.spalte_verschieben_i(21, 2)
-        # Breite:
-        self.t.spalte_verschieben_i(22, 3)
-        # Dicke:
-        # >>Die Dicke ist nicht in der Tabelle enthalten und muss aus der Artikelnummer berechnet werden
-        # Material:
-        self.t.spalte_verschieben_i(16, 5)
-        # Kante links:
-        self.t.spalte_verschieben_i(24, 6)
-        # KaDi li:
-        self.t.spalte_verschieben_i(29, 7)
-        # Kante rechts:
-        self.t.spalte_verschieben_i(25, 8)
-        # KaDi re:
-        self.t.spalte_verschieben_i(30, 9)
-        # Kante oben = vorne:
-        self.t.spalte_verschieben_i(26, 10)
-        # KaDi ob:
-        self.t.spalte_verschieben_i(31, 11)
-        # Kante unten = hinten:
-        self.t.spalte_verschieben_i(27, 12)
-        # KaDi un:
-        self.t.spalte_verschieben_i(32, 13)
-        # Bemerkung:
-        self.t.spalte_verschieben_i(28, 14)
-        #----nicht gebrauchte Zellen entfernen:
-        self.t.delelte_spalten_re_i(15, 100)
-        #----Tabellenkopf beschriften :
-        self.tabkopf_anlegen()
-        #----optimale Zellbreite festlegen:
-        self.t.optimale_spaltenbreiten()
-        #----Plattendicke aus Artikelnummer berechnen:
-        self.dicke_aus_artikelnummer_bestimmen()
-        #----dezimaltrennerkorrektur:
-        self.text_zu_zahl_i(1)
-        self.text_zu_zahl_i(2)
-        self.text_zu_zahl_i(3)
-        self.text_zu_zahl_i(7)
-        self.text_zu_zahl_i(9)
-        self.text_zu_zahl_i(11)
-        self.text_zu_zahl_i(13)
-        pass
+        # Tabelle kopieren in neue Registerkarte:
+        ret = self.t.tab_kopieren("Stueckliste", 99)
+        if ret == 0: # keine Fehler
+            self.t.set_tabfokus_s("Stueckliste")
+            #----Spalten einfügen um Platz zu schaffen:
+            self.t.insert_spalte_re_i(0, 15)
+            #----Spalten umsortieren:
+            # Bezeichnung:
+            self.t.spalte_verschieben_i(19, 0)
+            # Anzahl:
+            self.t.spalte_verschieben_i(20, 1)
+            # Länge:
+            self.t.spalte_verschieben_i(21, 2)
+            # Breite:
+            self.t.spalte_verschieben_i(22, 3)
+            # Dicke:
+            # >>Die Dicke ist nicht in der Tabelle enthalten und muss aus der Artikelnummer berechnet werden
+            # Material:
+            self.t.spalte_verschieben_i(16, 5)
+            # Kante links:
+            self.t.spalte_verschieben_i(24, 6)
+            # KaDi li:
+            self.t.spalte_verschieben_i(29, 7)
+            # Kante rechts:
+            self.t.spalte_verschieben_i(25, 8)
+            # KaDi re:
+            self.t.spalte_verschieben_i(30, 9)
+            # Kante oben = vorne:
+            self.t.spalte_verschieben_i(26, 10)
+            # KaDi ob:
+            self.t.spalte_verschieben_i(31, 11)
+            # Kante unten = hinten:
+            self.t.spalte_verschieben_i(27, 12)
+            # KaDi un:
+            self.t.spalte_verschieben_i(32, 13)
+            # Bemerkung:
+            self.t.spalte_verschieben_i(28, 14)
+            #----nicht gebrauchte Zellen entfernen:
+            self.t.delelte_spalten_re_i(15, 100)
+            #----Tabellenkopf beschriften :
+            self.tabkopf_anlegen()
+            #----optimale Zellbreite festlegen:
+            self.t.optimale_spaltenbreiten()
+            #----Plattendicke aus Artikelnummer berechnen:
+            self.dicke_aus_artikelnummer_bestimmen()
+            #----dezimaltrennerkorrektur:
+            self.text_zu_zahl_i(1)
+            self.text_zu_zahl_i(2)
+            self.text_zu_zahl_i(3)
+            self.text_zu_zahl_i(7)
+            self.text_zu_zahl_i(9)
+            self.text_zu_zahl_i(11)
+            self.text_zu_zahl_i(13)
+        return ret
         # Anwendung: self.umwandeln_von_BCtoCSV()
     def formatieren(self):
         # Alle Zellen sichtbar machen:
@@ -526,19 +724,19 @@ class slist: # Calc
             self.t.set_spalte_sichtbar_i(i, True)        
         # Zellgrößen anpassen:
         self.t.set_zeilenhoehen(700)
-        self.t.set_spaltenbreite_i(0, 4330) # Bezeichnung
+        self.t.set_spaltenbreite_i(0, 3900) # Bezeichnung
         self.t.set_spaltenbreite_i(1, 1410) # Anzahl
         self.t.set_spaltenbreite_i(2, 1320) # Länge
         self.t.set_spaltenbreite_i(3, 1320) # Breite
         self.t.set_spaltenbreite_i(4, 1220) # Dicke
         self.t.set_spaltenbreite_i(5, 3830) # Matieral
-        self.t.set_spaltenbreite_i(6, 3000) # Kante links
+        self.t.set_spaltenbreite_i(6, 4300) # Kante links
         self.t.set_spaltenbreite_i(7, 900) # KaDi links
-        self.t.set_spaltenbreite_i(8, 3000) # Kante rechts
+        self.t.set_spaltenbreite_i(8, 4300) # Kante rechts
         self.t.set_spaltenbreite_i(9, 900) # KaDi re
-        self.t.set_spaltenbreite_i(10, 3000) # Kante oben
+        self.t.set_spaltenbreite_i(10, 4300) # Kante oben
         self.t.set_spaltenbreite_i(11, 900) # KaDi oben
-        self.t.set_spaltenbreite_i(12, 3000) # Kante unten
+        self.t.set_spaltenbreite_i(12, 4300) # Kante unten
         self.t.set_spaltenbreite_i(13, 900) # KaDi unten
         self.t.set_spaltenbreite_i(14, 5460) # Bemerkung
         # Tabellenkopf farbig machen:
@@ -571,14 +769,16 @@ class slist: # Calc
         b = self.t.get_zelltext_s("B1")
         c = self.t.get_zelltext_s("C1")
         if a == "Aufkb" and b == "Plakb" and c == "Elnr": # Tabelle von BarcodeToCSV
-            self.umwandeln_von_BCtoCSV()
+            anzFehler = self.umwandeln_von_BCtoCSV()
+            if anzFehler != 0:
+                return False
             self.formatieren()
             return True
         elif len(a) == 0 and len(b) == 0 and len(c) == 0: # Tabellenkopf fehlt, evtl istes ein eleere Tabelle
             self.tabkopf_anlegen()
             self.formatieren()
             return True
-        elif a == "Bezeichnung" and b == "Anzahl" and c == "Länge": # Tabell ist bereits richtig formartiert
+        elif a == "Bezeichnung" and b == "Anzahl" and c == "Länge": # Tabelle ist bereits richtig formartiert
             self.formatieren()
             return True
         return False
@@ -766,7 +966,7 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- BC zu lang:
             sZellname = "AA" + str(i+1)
-            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>28;1;0)" # Wenn BC > 28 dann Fehler
+            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>25;1;0)" # Wenn BC > 28 dann Fehler
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi links korrekter Wert:
             sZellname = "AC" + str(i+1)
@@ -813,6 +1013,10 @@ class slist: # Calc
     def formeln_kante(self):
         if self.autoformat() != True:
             return False
+        # eventuell noch umbenennen:
+        sTabName = self.t.get_tabname()
+        if(sTabName == "Stueckliste"):
+            self.t.tab_setName("Kantenberechnung")
         # eventuellen vorherigen Inhalt löschen:
         self.t.delelte_spalten_re_i(15, 100)
         maxi = 0        
@@ -826,7 +1030,7 @@ class slist: # Calc
         self.t.set_zelltext_s("Q1", "KantenNr")
         self.t.set_zelltext_s("R1", "lfdm")
         self.t.set_zelltext_s("S1", " = ca.")
-        self.t.set_spaltenbreite_i(16, 2700) # KantenNr
+        self.t.set_spaltenbreite_i(16, 4500) # KantenNr
         self.t.set_spaltenbreite_i(17, 1500) # lfdm
         self.t.set_spaltenbreite_i(18, 1500) # lfdm ca
         self.t.set_spaltenausrichtung_i(18, "mi")
@@ -1019,10 +1223,12 @@ class slist: # Calc
         rankingList += ["KB_ob", "KB_li", "KB_mi", "KB_un", "KB_re", "KB"]
         rankingList += ["Trav_ob", "Trav_un", "Trav_vo", "Trav_hi", "Trav"]
         rankingList += ["Traver_ob", "Traver_un", "Traver_vo", "Traver_hi", "Traver"]
+        rankingList += ["Trav_ob", "Trav_un", "Trav_vo", "Trav_hi", "Trav"]
         rankingList += ["EB_ob", "EB_li", "EB_mi", "EB_un", "EB_re", "EB"]
         rankingList += ["RW_ob", "RW_li", "RW_mi", "RW_un", "RW_re", "RW"]
         rankingList += ["Tuer_li", "Tuer_re", "Tuer_A", "Tuer_B", "Tuer_C", "Tuer_D", "Tuer_E", "Tuer"]
         rankingList += ["Front_li", "Front_re", "Front_A", "Front_B", "Front_C", "Front_D", "Front_E", "Front"]
+        rankingList += ["Klappe"]
         rankingList += ["SF_A", "SF_B", "SF_C", "SF_D", "SF_E", "SF"]
         rankingList += ["SS_A", "SS_B", "SS_C", "SS_D", "SS_E", "SS"]
         rankingList += ["SV_A", "SV_B", "SV_C", "SV_D", "SV_E", "SV"]
@@ -1161,14 +1367,1161 @@ class slist: # Calc
             sName = sName.replace("Fachboden", "S#_EB")
             sName = sName.replace("Rückwand", "S#_RW")
             sName = sName.replace("Tür", "S#_Tuer")
+            sName = sName.replace("Klappe", "S#_Klappe")
             sName = sName.replace("Schubkasten Front", "S#_SF")
-            sName = sName.replace("Travers Vorne", "S#_Traver_vo")
-            sName = sName.replace("Travers Hinten", "S#_Traver_hi")
+            sName = sName.replace("Travers Vorne", "S#_Trav_vo")
+            sName = sName.replace("Travers Hinten", "S#_Trav_hi")
+            sName = sName.replace("Travers Oben Vorne", "S#_Trav_OV")
+            sName = sName.replace("Travers Oben Hinten", "S#_Trav_OH")
             #sName = sName.replace("", "S#_")
             self.t.set_zelltext_i(i, 0, sName)
             pass
         pass
         
+#----------------------------------------------------------------------------------
+class baugrpetk_calc: # Calc
+    def __init__(self):
+        self.t = ol_tabelle()
+        self.maxistklen = 999  
+        self.listProjekt = []
+        self.listPosNr   = []
+        self.listBaugrp  = []   
+        self.listMenge   = []   
+        pass
+    def ermitteln(self):
+        iSpalteProjekt = 0 # Spaltennummer mit Projektinformation
+        iSpaltePosNr   = 3 # Spaltennummer mit Information über Pos-Nr
+        iSpalteBez     = 4 # Spaltennummer mit Teilebezeichnung
+        iSpalteMenge   = 5 # Spaltennummer mit Menge
+        # Werte Nullen:
+        self.listProjekt = []
+        self.listPosNr   = []
+        self.listBaugrp  = []   
+        self.listMenge   = [] 
+        for i in range (1, self.maxistklen):
+            myCellProj  = self.t.get_zelle_i(i, iSpalteProjekt)
+            myCellPosNr = self.t.get_zelle_i(i, iSpaltePosNr)
+            myCellBez   = self.t.get_zelle_i(i, iSpalteBez)
+            myCellMenge = self.t.get_zelle_i(i, iSpalteMenge)
+            sBaugruppe = myCellBez.String
+            if "_" in sBaugruppe:
+                iPos = sBaugruppe.find("_")
+                sBaugruppe = sBaugruppe[0:iPos]
+                iGefunden = 0
+                if sBaugruppe[0] is "S":
+                    if istZiffer(sBaugruppe[1]):
+                        iGefunden = 1
+                elif sBaugruppe[0] is "#":
+                    if istZiffer(sBaugruppe[1]):
+                        iGefunden = 1
+                elif sBaugruppe[0] is "@":
+                    if istZiffer(sBaugruppe[1]):
+                        iGefunden = 1
+                if iGefunden:
+                    sProj  = myCellProj.String
+                    sPosNr = myCellPosNr.String
+                    sMenge = myCellMenge.String # Es wird angenommen das immer zuerst eine Schrankseite in der 
+                                                # Stückliste steht und die Menge dieser Seite der Gesamtmenge entspricht
+                    if not sBaugruppe in self.listBaugrp:
+                        self.listProjekt += [sProj]
+                        self.listPosNr   += [sPosNr]
+                        self.listBaugrp  += [sBaugruppe]
+                        self.listMenge   += [sMenge]
+                        # msgbox(sBaugruppe +'\n' + sPosNr +'\n' + sMenge , 'msgbox1', 1, 'QUERYBOX')
+                    else:
+                        for ii in range (0, len(self.listBaugrp)):    
+                            listIndexex = [] 
+                            # alle Indexe finden in der Baugruppenliste für diese Baugruppe:
+                            for iii in range (0, len(self.listBaugrp)): 
+                                if (self.listBaugrp[iii] == sBaugruppe):
+                                    listIndexex += [iii]
+                            # Index für Index durchgehen:
+                            iBekannt = 0
+                            for iii in range (0, len(listIndexex)):
+                                if (self.listPosNr[listIndexex[iii]] == sPosNr):
+                                    iBekannt = 1
+                                    break #for iii
+                            if(iBekannt == 0):
+                                self.listProjekt += [sProj]
+                                self.listPosNr   += [sPosNr]
+                                self.listBaugrp  += [sBaugruppe] 
+                                self.listMenge   += [sMenge]
+                                break #for ii
+        #msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        pass
+    def auflisten(self):      
+        # Registerkarte anlegen:
+        self.t.tab_entfernen("labels")
+        self.t.tab_anlegen("labels", 1)
+        self.t.set_tabfokus_s("labels")
+        # Tabellenkopf erstellen:
+        self.t.set_zelltext_s("A1", "Projekt")
+        self.t.set_zelltext_s("B1", "Opti")
+        self.t.set_zelltext_s("C1", "Pos")
+        self.t.set_zelltext_s("D1", "Baugruppe")
+        self.t.set_zelltext_s("E1", "Menge")
+        self.t.set_spaltenausrichtung_i(0, "li")
+        self.t.set_spaltenausrichtung_i(1, "mi")
+        self.t.set_spaltenausrichtung_i(2, "mi")
+        self.t.set_spaltenausrichtung_i(3, "mi")
+        self.t.set_spaltenausrichtung_i(4, "mi")
+        self.t.set_spaltenausrichtung_i(5, "mi")
+        # Tabelle füllen:
+        for i in range (0, len(self.listBaugrp)):
+            iStartZeile = 1
+            self.t.set_zelltext_i(iStartZeile+i, 0, self.listProjekt[i]) # Projekt            
+            if i > 0:
+                self.t.set_zellformel_i(iStartZeile+i, 1, "=B2") # Opti
+            self.t.set_zelltext_i(iStartZeile+i, 2, self.listPosNr[i]) # Pos
+            self.t.set_zelltext_i(iStartZeile+i, 3, self.listBaugrp[i]) # Baugruppe
+            self.t.set_zelltext_i(iStartZeile+i, 4, self.listMenge[i]) # Menge
+        pass
+    def speichern(self):
+        msg = "" #return-Wert
+        iZeileKopf = 0
+        iSpalteStart = 0
+        iMaxLen = 999
+        # Tabellenkof:
+        for i in range (iZeileKopf, iMaxLen):
+            sProjekt = self.t.get_zelltext_i(i+1, iSpalteStart)
+            sOpti    = self.t.get_zelltext_i(i+1, iSpalteStart+1)
+            sPosNr   = self.t.get_zelltext_i(i+1, iSpalteStart+2)            
+            sBaugrp  = self.t.get_zelltext_i(i+1, iSpalteStart+3)
+            iMenge   = self.t.get_zelltext_i(i+1, iSpalteStart+4)
+            tmp = "" # Zwischenergebnis für Ausgabe
+            # Projekt:
+            tmp += "Projekt  : "
+            tmp += sProjekt
+            tmp += "\n"
+            # Projekt:
+            tmp += "Opti     : "
+            tmp += sOpti
+            tmp += "\n"
+            # PosNr:
+            tmp += "Pos      : "
+            tmp += sPosNr
+            tmp += "\n"
+            tmp += "\n"
+            # Baugruppe:
+            tmp += "Baugruppe: "
+            tmp += sBaugrp
+            tmp += "\n"
+            tmp += "\n"
+            # Ort:
+            tmp += "Ort: " 
+            tmp += "\n"
+            tmp += "\n"
+
+            gesund = True
+            try:
+                val = int(iMenge) # versuche ob der string in einen int umgewandelt werden kann
+            except ValueError:
+                gesund = False
+            if gesund == True:
+                for ii in range (0, int(iMenge)):
+                    msg += tmp
+        
+        path = get_userpath()
+        path += "\\Desktop\\label"
+        path += ".odt"
+        if schreibe_in_datei_entferne_bestehende(path, msg) == True:
+            msg = "label wurden erfolgreich gespeichert."
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        else:
+            msg = "label konnten nicht gespeichert werden."
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        
+        pass
+#----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
+class raumbuch: #calc
+     def __init__(self):
+         self.t = ol_tabelle()
+         self.grau = RGBTo32bitInt(204, 204, 204) 
+         #----------------------------- Verzeichnisse:
+         self.quelle = ""
+         self.quelle_zelle = "B1"
+         self.ziel = ""
+         self.ziel_zelle = "B2"
+         self.grundrisse = ""
+         self.grundrisse_zelle = "B3"
+         #----------------------------- WE:
+         self.we_info_zeile = "B6"
+         self.we_info_spalte_start = "C6"
+         self.we_info_spalte_ende = "D6"
+         #----
+         self.grundrisse_info_zeile = "B7"
+         #----------------------------- Dateien:
+         self.datei_info_spalte = "B10"
+         self.datei_info_zeile_start = "C10"
+         self.datei_info_zeile_ende = "D10" 
+         #----
+         self.pos_info_spalte = "B11"
+         self.bez_info_spalte = "B12"
+         self.montage_info_spalte = "B13"
+         pass
+     def spalten_umwandeln(self, buchstabe): # noch ergänzen!!!
+         if buchstabe == "A":
+             return 1
+         elif buchstabe == "B":
+             return 2
+         elif buchstabe == "C":
+             return 3
+         elif buchstabe == "D":
+             return 4
+         elif buchstabe == "E":
+             return 5
+         elif buchstabe == "F":
+             return 6
+         elif buchstabe == "G":
+             return 7
+         elif buchstabe == "H":
+             return 8
+         elif buchstabe == "I":
+             return 9
+         elif buchstabe == "J":
+             return 10
+         elif buchstabe == "K":
+             return 11
+         elif buchstabe == "L":
+             return 12
+         elif buchstabe == "M":
+             return 13
+         elif buchstabe == "N":
+             return 14
+         elif buchstabe == "O":
+             return 15
+         elif buchstabe == "P":
+             return 16
+         elif buchstabe == "Q":
+             return 17
+         elif buchstabe == "R":
+             return 18
+         elif buchstabe == "S":
+             return 19
+         elif buchstabe == "T":
+             return 20
+         elif buchstabe == "U":
+             return 21
+         elif buchstabe == "V":
+             return 22
+         elif buchstabe == "W":
+             return 23
+         elif buchstabe == "X":
+             return 24
+         elif buchstabe == "Y":
+             return 25
+         elif buchstabe == "Z":
+             return 26
+         elif buchstabe == "AA":
+             return 27
+         elif buchstabe == "AB":
+             return 28
+         elif buchstabe == "AC":
+             return 29
+         elif buchstabe == "AD":
+             return 30
+         elif buchstabe == "AE":
+             return 31
+         elif buchstabe == "AF":
+             return 32
+         elif buchstabe == "AG":
+             return 33
+         elif buchstabe == "AH":
+             return 34
+         elif buchstabe == "AI":
+             return 35
+         elif buchstabe == "AJ":
+             return 36
+         elif buchstabe == "AK":
+             return 37
+         elif buchstabe == "AL":
+             return 38
+         elif buchstabe == "AM":
+             return 39
+         elif buchstabe == "AN":
+             return 40
+         elif buchstabe == "AO":
+             return 41
+         elif buchstabe == "AP":
+             return 42
+         elif buchstabe == "AQ":
+             return 43
+         elif buchstabe == "AR":
+             return 44
+         elif buchstabe == "AS":
+             return 45
+         elif buchstabe == "AT":
+             return 46
+         elif buchstabe == "AU":
+             return 47
+         elif buchstabe == "AV":
+             return 48
+         elif buchstabe == "AW":
+             return 49
+         elif buchstabe == "AX":
+             return 50
+         elif buchstabe == "AY":
+             return 51
+         elif buchstabe == "AZ":
+             return 52
+         elif buchstabe == "BA":
+             return 53
+         elif buchstabe == "BB":
+             return 54
+         elif buchstabe == "BC":
+             return 55
+         elif buchstabe == "BD":
+             return 56
+         elif buchstabe == "BE":
+             return 57
+         elif buchstabe == "BF":
+             return 58
+         elif buchstabe == "BG":
+             return 59
+         elif buchstabe == "BH":
+             return 60
+         elif buchstabe == "BI":
+             return 61
+         elif buchstabe == "BJ":
+             return 62
+         elif buchstabe == "BK":
+             return 63
+         elif buchstabe == "BL":
+             return 64
+         elif buchstabe == "BM":
+             return 65
+         elif buchstabe == "BN":
+             return 66
+         elif buchstabe == "BO":
+             return 67
+         elif buchstabe == "BP":
+             return 68
+         elif buchstabe == "BQ":
+             return 69
+         elif buchstabe == "BR":
+             return 70
+         elif buchstabe == "BS":
+             return 71
+         elif buchstabe == "BT":
+             return 72
+         elif buchstabe == "BU":
+             return 73
+         elif buchstabe == "BV":
+             return 74
+         elif buchstabe == "BW":
+             return 75
+         elif buchstabe == "BX":
+             return 76
+         elif buchstabe == "BY":
+             return 77
+         elif buchstabe == "BZ":
+             return 78
+         elif buchstabe == "CA":
+             return 79
+         elif buchstabe == "CB":
+             return 80
+         elif buchstabe == "CC":
+             return 81
+         elif buchstabe == "CD":
+             return 82
+         elif buchstabe == "CE":
+             return 83
+         elif buchstabe == "CF":
+             return 84
+         elif buchstabe == "CG":
+             return 85
+         elif buchstabe == "CH":
+             return 86
+         elif buchstabe == "CI":
+             return 87
+         elif buchstabe == "CJ":
+             return 88
+         elif buchstabe == "CK":
+             return 89
+         elif buchstabe == "CL":
+             return 90
+         elif buchstabe == "CM":
+             return 91
+         elif buchstabe == "CN":
+             return 92
+         elif buchstabe == "CO":
+             return 93
+         elif buchstabe == "CP":
+             return 94
+         elif buchstabe == "CQ":
+             return 95
+         elif buchstabe == "CR":
+             return 96
+         elif buchstabe == "CS":
+             return 97
+         elif buchstabe == "CT":
+             return 98
+         elif buchstabe == "CU":
+             return 99
+         elif buchstabe == "CV":
+             return 100
+         elif buchstabe == "CW":
+             return 101
+         elif buchstabe == "CX":
+             return 102
+         elif buchstabe == "CY":
+             return 103
+         elif buchstabe == "CZ":
+             return 104
+         elif buchstabe == "DA":
+             return 105
+         elif buchstabe == "DB":
+             return 106
+         elif buchstabe == "DC":
+             return 107
+         elif buchstabe == "DD":
+             return 108
+         elif buchstabe == "DE":
+             return 109
+         elif buchstabe == "DF":
+             return 110
+         elif buchstabe == "DG":
+             return 111
+         elif buchstabe == "DH":
+             return 112
+         elif buchstabe == "DI":
+             return 113
+         elif buchstabe == "DJ":
+             return 114
+         elif buchstabe == "DK":
+             return 115
+         elif buchstabe == "DL":
+             return 116
+         elif buchstabe == "DM":
+             return 117
+         elif buchstabe == "DN":
+             return 118
+         elif buchstabe == "DO":
+             return 119
+         elif buchstabe == "DP":
+             return 120
+         elif buchstabe == "DQ":
+             return 121
+         elif buchstabe == "DR":
+             return 122
+         elif buchstabe == "DS":
+             return 123
+         elif buchstabe == "DT":
+             return 124
+         elif buchstabe == "DU":
+             return 125
+         elif buchstabe == "DV":
+             return 126
+         elif buchstabe == "DW":
+             return 127
+         elif buchstabe == "DX":
+             return 128
+         elif buchstabe == "DY":
+             return 129
+         elif buchstabe == "DZ":
+             return 130
+         elif buchstabe == "EA":
+             return 131
+         elif buchstabe == "EB":
+             return 132
+         elif buchstabe == "EC":
+             return 133
+         elif buchstabe == "ED":
+             return 134
+         elif buchstabe == "EE":
+             return 135
+         elif buchstabe == "EF":
+             return 136
+         elif buchstabe == "EG":
+             return 137
+         elif buchstabe == "EH":
+             return 138
+         elif buchstabe == "EI":
+             return 139
+         elif buchstabe == "EJ":
+             return 140
+         elif buchstabe == "EK":
+             return 141
+         elif buchstabe == "EL":
+             return 142
+         elif buchstabe == "EM":
+             return 143
+         elif buchstabe == "EN":
+             return 144
+         elif buchstabe == "EO":
+             return 145
+         elif buchstabe == "EP":
+             return 146
+         elif buchstabe == "EQ":
+             return 147
+         elif buchstabe == "ER":
+             return 148
+         elif buchstabe == "ES":
+             return 149
+         elif buchstabe == "ET":
+             return 150
+         elif buchstabe == "EU":
+             return 151
+         elif buchstabe == "EV":
+             return 152
+         elif buchstabe == "EW":
+             return 153
+         elif buchstabe == "EX":
+             return 154
+         elif buchstabe == "EY":
+             return 155
+         elif buchstabe == "EZ":
+             return 156
+         elif buchstabe == "FA":
+             return 157
+         else:
+             return 0
+         pass
+     def spalten_umwandeln_num(self, spaltennummer): # noch ergänzen!!!
+         if spaltennummer == 1:
+             return "A"
+         elif spaltennummer == 2:
+             return "B"
+         elif spaltennummer == 3:
+             return "C"
+         elif spaltennummer == 4:
+             return "D"
+         elif spaltennummer == 5:
+             return "E"
+         elif spaltennummer == 6:
+             return "F"
+         elif spaltennummer == 7:
+             return "G"
+         elif spaltennummer == 8:
+             return "H"
+         elif spaltennummer == 9:
+             return "I"
+         elif spaltennummer == 10:
+             return "J"
+         elif spaltennummer == 11:
+             return "K"
+         elif spaltennummer == 12:
+             return "L"
+         elif spaltennummer == 13:
+             return "M"
+         elif spaltennummer == 14:
+             return "N"
+         elif spaltennummer == 15:
+             return "O"
+         elif spaltennummer == 16:
+             return "P"
+         elif spaltennummer == 17:
+             return "Q"
+         elif spaltennummer == 18:
+             return "R"
+         elif spaltennummer == 19:
+             return "S"
+         elif spaltennummer == 20:
+             return "T"
+         elif spaltennummer == 21:
+             return "U"
+         elif spaltennummer == 22:
+             return "V"
+         elif spaltennummer == 23:
+             return "W"
+         elif spaltennummer == 24:
+             return "X"
+         elif spaltennummer == 25:
+             return "Y"
+         elif spaltennummer == 26:
+             return "Z"
+         elif spaltennummer == 27:
+             return "AA"
+         elif spaltennummer == 28:
+             return "AB"
+         elif spaltennummer == 29:
+             return "AC"
+         elif spaltennummer == 30:
+             return "AD"
+         elif spaltennummer == 31:
+             return "AE"
+         elif spaltennummer == 32:
+             return "AF"
+         elif spaltennummer == 33:
+             return "AG"
+         elif spaltennummer == 34:
+             return "AH"
+         elif spaltennummer == 35:
+             return "AI"
+         elif spaltennummer == 36:
+             return "AJ"
+         elif spaltennummer == 37:
+             return "AK"
+         elif spaltennummer == 38:
+             return "AL"
+         elif spaltennummer == 39:
+             return "AM"
+         elif spaltennummer == 40:
+             return "AN"
+         elif spaltennummer == 41:
+             return "AO"
+         elif spaltennummer == 42:
+             return "AP"
+         elif spaltennummer == 43:
+             return "AQ"
+         elif spaltennummer == 44:
+             return "AR"
+         elif spaltennummer == 45:
+             return "AS"
+         elif spaltennummer == 46:
+             return "AT"
+         elif spaltennummer == 47:
+             return "AU"
+         elif spaltennummer == 48:
+             return "AV"
+         elif spaltennummer == 49:
+             return "AW"
+         elif spaltennummer == 50:
+             return "AX"
+         elif spaltennummer == 51:
+             return "AY"
+         elif spaltennummer == 52:
+             return "AZ"
+         elif spaltennummer == 53:
+             return "BA"
+         elif spaltennummer == 54:
+             return "BB"
+         elif spaltennummer == 55:
+             return "BC"
+         elif spaltennummer == 56:
+             return "BD"
+         elif spaltennummer == 57:
+             return "BE"
+         elif spaltennummer == 58:
+             return "BF"
+         elif spaltennummer == 59:
+             return "BG"
+         elif spaltennummer == 60:
+             return "BH"
+         elif spaltennummer == 61:
+             return "BI"
+         elif spaltennummer == 62:
+             return "BJ"
+         elif spaltennummer == 63:
+             return "BK"
+         elif spaltennummer == 64:
+             return "BL"
+         elif spaltennummer == 65:
+             return "BM"
+         elif spaltennummer == 66:
+             return "BN"
+         elif spaltennummer == 67:
+             return "BO"
+         elif spaltennummer == 68:
+             return "BP"
+         elif spaltennummer == 69:
+             return "BQ"
+         elif spaltennummer == 70:
+             return "BR"
+         elif spaltennummer == 71:
+             return "BS"
+         elif spaltennummer == 72:
+             return "BT"
+         elif spaltennummer == 73:
+             return "BU"
+         elif spaltennummer == 74:
+             return "BV"
+         elif spaltennummer == 75:
+             return "BW"
+         elif spaltennummer == 76:
+             return "BX"
+         elif spaltennummer == 77:
+             return "BY"
+         elif spaltennummer == 78:
+             return "BZ"
+         elif spaltennummer == 79:
+             return "CA"
+         elif spaltennummer == 80:
+             return "CB"
+         elif spaltennummer == 81:
+             return "CC"
+         elif spaltennummer == 82:
+             return "CD"
+         elif spaltennummer == 83:
+             return "CE"
+         elif spaltennummer == 84:
+             return "CF"
+         elif spaltennummer == 85:
+             return "CG"
+         elif spaltennummer == 86:
+             return "CH"
+         elif spaltennummer == 87:
+             return "CI"
+         elif spaltennummer == 88:
+             return "CJ"
+         elif spaltennummer == 89:
+             return "CK"
+         elif spaltennummer == 90:
+             return "CL"
+         elif spaltennummer == 91:
+             return "CM"
+         else:
+             return "ZZZ"
+         pass
+     def RB_Blankoliste(self):
+         # ---------
+         tabname = "Raumbuch"
+         self.t.tab_anlegen(tabname, 99)
+         self.t.set_tabfokus_s(tabname)
+         # ---------
+         self.t.set_Rahmen_komplett_s("D1:I1", 20)
+         self.t.set_Rahmen_komplett_s("A2:I11", 20)
+         self.t.set_zellfarbe_s("A2:I2", self.grau)
+         self.t.set_zellfarbe_s("A2:C11", self.grau)
+         self.t.set_zellfarbe_s("I2:I11", self.grau)
+         # ---------
+         self.t.set_spaltenbreite_i(1, 5000) # B == Bezeichnung
+         self.t.set_spaltenbreite_i(2, 6000) # C == Dateiname
+         self.t.set_spaltenbreite_i(3, 2000) # WE
+         self.t.set_spaltenbreite_i(4, 2000) # WE
+         self.t.set_spaltenbreite_i(5, 2000) # WE
+         self.t.set_spaltenbreite_i(6, 2000) # WE
+         self.t.set_spaltenbreite_i(7, 2000) # WE
+         self.t.set_spaltenbreite_i(8, 2000) # Summe
+         self.t.set_spaltenbreite_i(10, 2500) # VK-Preis
+         self.t.set_spaltenbreite_i(11, 2500) # Montagebudget
+         # ---------
+         self.t.set_spaltenausrichtung_i(8, "mi")
+         # ---------
+         self.t.set_zelltext_s("A1", "Projekt xy")
+         self.t.set_zelltext_s("A2", "Pos")
+         self.t.set_zelltext_s("B2", "Bezeichnung")
+         self.t.set_zelltext_s("C2", "Datei")
+         self.t.set_zelltext_s("D2", "WE001")
+         self.t.set_zelltext_s("E2", "WE002")
+         self.t.set_zelltext_s("F2", "WE003")
+         self.t.set_zelltext_s("G2", "WE004")
+         self.t.set_zelltext_s("H2", "leer")
+         self.t.set_zelltext_s("I2", "Summe")
+         # ---------
+         for i in range (2, 11):
+            formel = "=SUM(D" + str(i+1) + ":H" + str(i+1) + ")"
+            self.t.set_zellformel_i(i, 8, formel)
+            pass
+         # ---------Grundrisse:
+         self.t.set_zelltext_s("C13", "Grundrissname:")
+         self.t.set_Rahmen_komplett_s("C13:H13", 20)
+         self.t.set_zellfarbe_s("C13:C13", self.grau)
+         # ---------Kalkulatorische Auswertung untere Zellen:
+         self.t.set_zelltext_s("C15", "VK-Preis:")
+         self.t.set_zelltext_s("C16", "Montagebudget:")
+         self.t.set_Rahmen_komplett_s("C15:H16", 20)
+         self.t.set_zellfarbe_s("C15:C16", self.grau)
+         for spa in range (3, 8):
+            spaAplha = self.spalten_umwandeln_num(spa+1)
+            #VK_Preis:
+            formel  = "=SUMPRODUCT(" + spaAplha + "3:" + spaAplha + "11*$K3:$K11)"
+            self.t.set_zellformel_i(15-1, spa, formel)
+            #Montagebudget:
+            formel  = "=SUMPRODUCT(" + spaAplha + "3:" + spaAplha + "11*$L3:$L11)"
+            self.t.set_zellformel_i(16-1, spa, formel)
+            pass
+         self.t.set_zellformat_s("D15:H16", "#.##0,00 [$€-407];[ROT]-#.##0,00 [$€-407]") # Währung
+         # ---------Kalkulatorische Auswertung rechte Zellen:
+         self.t.set_zelltext_s("K2", "VK-Preis:")
+         self.t.set_zelltext_s("L2", "Montagebudget:")
+         self.t.set_Rahmen_komplett_s("K2:L11", 20)
+         self.t.set_zellfarbe_s("K2:L2", self.grau)
+         self.t.set_zellformat_s("K3:L11", "#.##0,00 [$€-407];[ROT]-#.##0,00 [$€-407]") # Währung
+         # ---------
+         pass
+     def LList_Formblatt (self):
+         # ---------
+         tabname = "Lieferlisten"
+         self.t.tab_anlegen(tabname, 99)
+         self.t.set_tabfokus_s(tabname)
+         self.t.set_spaltenbreite_i(0, 4500)
+         # ---------Verzeichnisse:
+         text = "Quell-Verzeichnis"
+         pos = "A1"
+         self.t.set_zelltext_s(pos, text)
+         text = "Bitte hier den Pfad eintragen"
+         pos = "B1"
+         self.t.set_zelltext_s(pos, text)
+         text = "Ziel-Verzeichnis"
+         pos = "A2"
+         self.t.set_zelltext_s(pos, text)
+         text = "Bitte hier den Pfad eintragen"
+         pos = "B2"
+         self.t.set_zelltext_s(pos, text)
+         text = "Grundrisse-Verzeichnis"
+         pos = "A3"
+         self.t.set_zelltext_s(pos, text)
+         text = "Bitte hier den Pfad eintragen"
+         pos = "B3"
+         self.t.set_zelltext_s(pos, text)
+         # ---------Erste Tabelle:
+         text = "WE-Bezeichnungen"
+         pos = "A6"
+         self.t.set_zelltext_s(pos, text)
+         text = "Grundrisse"
+         pos = "A7"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile"
+         pos = "B5"
+         self.t.set_zelltext_s(pos, text)
+         text = "Spalte-Start"
+         pos = "C5"
+         self.t.set_zelltext_s(pos, text)
+         text = "Spalte-Ende"
+         pos = "D5"
+         self.t.set_zelltext_s(pos, text)
+
+         self.t.set_zellfarbe_s("A5:D5", self.grau)
+         self.t.set_zellfarbe_s("A5:A7", self.grau)
+         self.t.set_zellfarbe_s("C7:D7", self.grau)
+         self.t.set_Rahmen_komplett_s("A5:D7", 20)
+         self.t.set_zellausrichtungHori_s("B6:D7", "mi")
+         text = "2"
+         pos = "B6"
+         self.t.set_zelltext_s(pos, text)
+         text = "D"
+         pos = "C6"
+         self.t.set_zelltext_s(pos, text)
+         text = "H"
+         pos = "D6"
+         self.t.set_zelltext_s(pos, text)
+         text = "13"
+         pos = "B7"
+         self.t.set_zelltext_s(pos, text)
+         # ---------Zweite Tabelle:
+         text = "Dateinamen"
+         pos = "A10"
+         self.t.set_zelltext_s(pos, text)
+         text = "Pos-Nummern"
+         pos = "A11"
+         self.t.set_zelltext_s(pos, text)
+         text = "Pos-Bez."
+         pos = "A12"
+         self.t.set_zelltext_s(pos, text)
+         text = "Montagebudget"
+         pos = "A13"
+         self.t.set_zelltext_s(pos, text)
+         text = "Spalte"
+         pos = "B9"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile-Start"
+         pos = "C9"
+         self.t.set_zelltext_s(pos, text)
+         text = "Zeile-Ende"
+         pos = "D9"
+         self.t.set_zelltext_s(pos, text)
+
+         self.t.set_zellfarbe_s("A9:D9", self.grau)
+         self.t.set_zellfarbe_s("A9:A13", self.grau)
+         self.t.set_zellfarbe_s("C11:D13", self.grau)
+         self.t.set_Rahmen_komplett_s("A9:D13", 20)
+         self.t.set_zellausrichtungHori_s("B10:D13", "mi")
+         text = "C"
+         pos = "B10"
+         self.t.set_zelltext_s(pos, text)
+         text = "A"
+         pos = "B11"
+         self.t.set_zelltext_s(pos, text)
+         text = "B"
+         pos = "B12"
+         self.t.set_zelltext_s(pos, text)
+         text = "L"
+         pos = "B13"
+         self.t.set_zelltext_s(pos, text)
+         text = "3"
+         pos = "C10"
+         self.t.set_zelltext_s(pos, text)
+         text = "11"
+         pos = "D10"
+         self.t.set_zelltext_s(pos, text)
+         # ---------Bedienerhinweise:
+         text = "Der Platzhalter [WE] kann bei der Benennung der Dateinamen für"
+         pos = "A15"
+         self.t.set_zelltext_s(pos, text)
+         text = "die Zeichnungen und Grundrisse verwendet werden. Das Makro tauscht"
+         pos = "A16"
+         self.t.set_zelltext_s(pos, text)
+         text = "den Platzhalter dann mit der Bezeichnung der jeweiligen Wohnung aus."
+         pos = "A17"
+         self.t.set_zelltext_s(pos, text)
+         # ---------
+         pass
+     def csvZelle(self, msg):
+         ret = "\""
+         ret += msg
+         ret += "\""
+         ret += ";"
+         return ret
+     def LList_start(self):
+         # ------------------------------------------------------ ist die richtige Registerkarte geöffnet? :
+         reg = self.t.get_tabname()
+         if reg != "Lieferlisten":
+             msgbox('Bitte in die Registerkarte \"Lieferlisten\" wechseln', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------
+         self.quelle = self.t.get_zelltext_s(self.quelle_zelle)
+         self.ziel = self.t.get_zelltext_s(self.ziel_zelle)
+         self.grundrisse = self.t.get_zelltext_s(self.grundrisse_zelle)
+         # ------------------------------------------------------ WE Zeile:
+         we_zei = 0
+         tmp = self.t.get_zelltext_s(self.we_info_zeile)
+         if len(tmp) == 0:
+             msgbox('Eingabe von WE-Zeile ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             we_zei = tmp
+         # ------------------------------------------------------ WE Spalte Start:
+         we_spaS = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.we_info_spalte_start))
+         if tmp != 0:
+            we_spaS = tmp
+         else:
+             msgbox('Eingabe von WE-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------ WE Spalte Ende:
+         we_spaE = 0 
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.we_info_spalte_ende))
+         if tmp != 0:
+            we_spaE = tmp
+         else:
+             msgbox('Eingabe von WE-Spalte Ende ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------ Grundrisse Zeile:
+         gru_zei = 0
+         tmp = self.t.get_zelltext_s(self.grundrisse_info_zeile)
+         if len(tmp) == 0:
+             msgbox('Eingabe von Grundrisse ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             gru_zei  = tmp
+         # ------------------------------------------------------
+         # ------------------------------------------------------ Dateinahmen Spalte:
+         dn_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.datei_info_spalte))
+         if tmp != 0:
+            dn_spa = tmp
+         else:
+             msgbox('Eingabe von Dateinamen-Spalte Start ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
+         # ------------------------------------------------------ Dateinahmen Zeile Start:
+         dn_zeiS = 0
+         tmp = self.t.get_zelltext_s(self.datei_info_zeile_start)
+         if len(tmp) == 0:
+             msgbox('Eingabe von WE-Zeile ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             dn_zeiS = tmp
+         # ------------------------------------------------------ Dateinahmen Zeile Ende:
+         dn_zeiE = 0
+         tmp = self.t.get_zelltext_s(self.datei_info_zeile_ende)
+         if len(tmp) == 0:
+             msgbox('Eingabe von WE-Zeile ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return
+         else:
+             dn_zeiE = tmp
+         # ------------------------------------------------------ Position Spalte:
+         pos_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.pos_info_spalte))
+         if tmp != 0:
+            pos_spa = tmp
+         else:
+             msgbox('Eingabe von Pos-Nummer-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
+         # ------------------------------------------------------ Positios-Bezeichnung Spalte:
+         bez_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.bez_info_spalte))
+         if tmp != 0:
+            bez_spa = tmp
+         else:
+             msgbox('Eingabe von Pos.Bez.-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
+         # ------------------------------------------------------ Montagebudget Spalte:
+         montage_spa = 0
+         tmp = self.spalten_umwandeln(self.t.get_zelltext_s(self.montage_info_spalte))
+         if tmp != 0:
+            montage_spa = tmp
+         else:
+             msgbox('Eingabe von Montage.-Spalte ungültig', 'Makro Lieferlisten', 1, 'QUERYBOX')
+             return  
+         # ------------------------------------------------------ Prüfen ob alle Dateien existieren:
+         # Dateinamen mit Platzhaltern nicht prüfen
+         # Platzhalter:
+         # [WE] --> Wird durch die jeweiligewohnungsnummer ersetzt
+         PLATZHALTER_WE = "[WE]" # Konstante
+         tabname_raumbuch = "Raumbuch"
+         if self.t.tab_existiert(tabname_raumbuch) == True:
+             self.t.set_tabfokus_s(tabname_raumbuch)
+             for i in range (int(dn_zeiS), int(dn_zeiE)+1):
+                datnam = self.t.get_zelltext_i(int(i)-1, int(dn_spa)-1)
+                # msgbox(datnam, 'msgbox', 1, 'QUERYBOX')
+                if ((len(datnam) > 4) and (PLATZHALTER_WE not in datnam)):
+                    datnam = self.quelle + "\\" + datnam
+                    fileObj = Path(datnam)
+                    if fileObj.is_file() == False:
+                        msg = "Die Datei \""
+                        msg += datnam
+                        msg += "\" wurde ncht gefunden!"
+                        msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                        return
+                    pass
+             pass
+         else:
+             msg =  "Die Registerkarte \""
+             msg += tabname_raumbuch
+             msg += "\" existiert nicht!"
+             msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+         # ------------------------------------------------------ WE Prüfen:
+         WEs = []
+         for i in range (we_spaS-1, we_spaE):              
+             we = self.t.get_zelltext_i(int(we_zei)-1, i)
+             if len(we) == 0:
+                 msg  = "Bitte Raumbuch prüfen!\n"
+                 msg += "Im angegebenen Bereich fehlen WE-Angaben.\n"
+                 msg += "Spalte "
+                 msg += str(i+1)
+                 msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                 return
+             elif we in WEs:
+                 msg = "Die WE \""
+                 msg += we
+                 msg += "\" ist mehrfach vorhanden!"
+                 msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+                 return
+             else:
+                WEs += [we] 
+             pass
+         # ------------------------------------------------------Ordner für WEs erstellen:
+         if(os.path.isdir(self.ziel)):
+             for i in WEs:
+                 dir = self.ziel
+                 dir += "\\"
+                 dir += i
+                 if os.path.isdir(dir) == False:
+                    try: 
+                        os.makedirs(dir)
+                    except OSError:
+                        titel = "Ordner erstellen"
+                        msg = "Der Ordner \n"
+                        msg += dir
+                        msg += "\n"
+                        msg += "kann nicht erstellt werden! Makro wird abgebrochen."
+                        msgbox(msg, titel, 1, 'QUERYBOX')
+                        return
+         else:
+             msg  = "Das angegebene Zielverzeichnis\n"
+             msg += self.ziel
+             msg += "ist nicht zugreifbar."
+             msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+             return
+         # ------------------------------------------------------Dateien in WE-Ordnern ablegen:
+         msg_zaehler = 0
+         for spa in range (we_spaS-1, we_spaE): # WE für WE durchgehen
+             weName = self.t.get_zelltext_i(int(we_zei)-1, spa)
+             sRBtext  = self.csvZelle("Raumbuch ")
+             sRBtext += self.csvZelle("")
+             sRBtext += self.csvZelle(weName)
+             sRBtext += "\n"
+             sRBtext += "\n"
+             sRBtext += self.csvZelle("Pos")
+             sRBtext += self.csvZelle("Bezeichnung")
+             sRBtext += self.csvZelle("Menge")
+             sRBtext += self.csvZelle("Montagebudget")
+             sRBtext += "\n"
+             
+             for zei in range (int(dn_zeiS), int(dn_zeiE)+1): # Pos für Pos durchgehen
+                 zelakt = self.t.get_zelltext_i(zei-1, spa) # Mengenangabe in dieser WE
+                 datnam = self.t.get_zelltext_i(int(zei)-1, int(dn_spa)-1) # Dateiname
+                 if( len(zelakt) > 0 ):
+                    if( len(datnam) > 0 ): # Dateien nur ablegen wenn Dateinamen angegeben worden sind.
+                                           # Ohne diese Prüfung kommt es zu Fehlern bei fehlender Dateiangabe.
+                        if(PLATZHALTER_WE in datnam):
+                            datnam = datnam.replace(PLATZHALTER_WE, weName, 1) 
+                            datnam_ohne_daterw = datnam.replace(".pdf", "", 1)
+                            quelldateien = findeDateien(datnam_ohne_daterw, self.quelle) 
+                            for i in quelldateien:
+                                aktZieldatei = self.ziel + "\\"
+                                aktZieldatei += self.t.get_zelltext_i(int(we_zei)-1, spa) + "\\"
+                                aktZieldatei += os.path.basename(i)
+                                if(os.path.isfile(i) == True):
+                                    copyfile(i, aktZieldatei)
+                        else:
+                            zieldatei = self.ziel
+                            zieldatei += "\\"
+                            zieldatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                            zieldatei += "\\" 
+                            zieldatei += datnam
+                            quelldatei  = self.quelle 
+                            quelldatei += "\\" 
+                            quelldatei += datnam
+                            if(os.path.isfile(quelldatei) == True):                            
+                                copyfile(quelldatei, zieldatei)
+                            else:
+                                if(msg_zaehler < 5):
+                                    msg = "Die Datei: \n"
+                                    msg += quelldatei
+                                    msg += "\n wurde nicht gefunden und wird übersprungen."
+                                    fenstertitel = "Datei nicht gefunden (" + str(msg_zaehler+1) + ")"
+                                    msgbox(msg, fenstertitel, 1, 'QUERYBOX')
+                                    msg_zaehler = msg_zaehler + 1
+                                elif(msg_zaehler == 5):
+                                    msg = "Alle weiteren nicht vorhandenen Dateien werden ohne weitere Meldungen übersprungen."
+                                    msgbox(msg, 'Datei nicht gefunden', 1, 'QUERYBOX')
+                                    msg_zaehler = msg_zaehler + 1                            
+                    # Auch wenn keine Datei angegeben wurde soll das Bauteil im Raumbuch
+                    # dieser Wohnung aufgeführt werden:
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, pos_spa-1)) #Pos
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, bez_spa-1))#Bez
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, spa))#Menge
+                    sRBtext += self.csvZelle(self.t.get_zelltext_i(int(zei)-1, montage_spa-1))#Montagebudget
+                    sRBtext += "\n"
+                 pass
+             
+             rbDatNam = self.ziel
+             rbDatNam += "\\\\"
+             rbDatNam += weName
+             rbDatNam += "\\\\"
+             rbDatNam += "Raumbuch "
+             rbDatNam += weName
+             rbDatNam += ".csv"
+             file = open(rbDatNam, "w")
+             file.write(sRBtext)
+             file.close()
+             pass
+         # ------------------------------------------------------Grundrisse in WE-Ordnern ablegen:
+         for spa in range (we_spaS-1, we_spaE): # WE für WE durchgehen
+             weName = self.t.get_zelltext_i(int(we_zei)-1, spa)
+             datnam = self.t.get_zelltext_i(int(gru_zei)-1, spa) # Dateiname
+             if( len(datnam) > 0 ):
+                 if(PLATZHALTER_WE in datnam):
+                     datnam = datnam.replace(PLATZHALTER_WE, weName, 1)
+                     pass
+                 quelldatei  = self.grundrisse
+                 quelldatei += "\\" 
+                 quelldatei += datnam
+                 zieldatei = self.ziel
+                 zieldatei += "\\"
+                 zieldatei += self.t.get_zelltext_i(int(we_zei)-1, spa)
+                 zieldatei += "\\" 
+                 zieldatei += datnam
+                 if(os.path.isfile(quelldatei) == True):                            
+                    copyfile(quelldatei, zieldatei)
+                 else:
+                     msg = "Die Datei: \n"
+                     msg += quelldatei
+                     msg += "\n wurde nicht gefunden und wird übersprungen."
+                     fenstertitel = "Datei für Grundris nicht gefunden (" + str(msg_zaehler+1) + ")"
+                     msgbox(msg, fenstertitel, 1, 'QUERYBOX')
+             pass
+         # ------------------------------------------------------
+         msg = "Makro erfolgreich abgeschlossen."
+         msgbox(msg, 'Makro Lieferlisten', 1, 'QUERYBOX')
+         pass
+        
+#----------------------------------------------------------------------------------
+
 #----------------------------------------------------------------------------------
 class WoPlan: # Calc
     def __init__(self):
@@ -1180,7 +2533,9 @@ class WoPlan: # Calc
         self.tab = ol_tabelle()
         self.tabGrundlagen = ol_tabelle()
         self.setup_tab_grundlagen()
-        self.tabGrundlagen.set_tabname("Grundlagen")              
+        self.tabGrundlagen.set_tabname("Grundlagen")   
+        self.jahr = 2020 
+        self.kw = 1          
         pass
     def setup_tab_grundlagen(self):
         anzFehler = self.tabelle_anlegen("Grundlagen", True)
@@ -1191,34 +2546,37 @@ class WoPlan: # Calc
             t.set_zelltext_s("A1", "Mitarbeiter")
             t.set_zelltext_s("B1", "Gruppe")
             t.set_zelltext_s("C1", "Tätigkeit")   
-            t.set_SchriftFett_s("A1:C1", True)
-            t.set_zellfarbe_s("A1:C1", self.grau)
-            t.set_Rahmen_komplett_s("A1:C20", self.RahLinDi)
+            t.set_zelltext_s("D1", "Geburtstag") 
+            t.set_SchriftFett_s("A1:D1", True)
+            t.set_zellfarbe_s("A1:D1", self.grau)
+            t.set_Rahmen_komplett_s("A1:D20", self.RahLinDi)
             t.set_spaltenbreite_i(0, 4100)
             t.set_spaltenbreite_i(1, 2260)
             t.set_spaltenbreite_i(2, 2260)
+            t.set_spaltenbreite_i(3, 2260)
+            t.set_zellformat_s("D2:D20", "TT.MM.JJJJ")
             #---
-            t.set_zelltext_s("E1", "Kalender-Jahr")
-            t.set_zelltext_s("F1", "2020")
-            t.set_zelltext_s("E2", "KW1 beginnt am")
-            t.set_zelltext_datum_s("F2", "2019", "12", "30")
-            t.set_zelltext_s("E3", "KW")
-            t.set_zelltext_s("F3", "1")
-            t.set_SchriftFett_s("E1:E3", True)            
-            t.set_zellfarbe_s("E1:E3", self.grau)            
-            t.set_Rahmen_komplett_s("E1:F3", self.RahLinDi)
-            t.set_spaltenbreite_i(4, 3250) 
+            t.set_zelltext_s("F1", "Kalender-Jahr")
+            t.set_zelltext_s("G1", "2020")
+            t.set_zelltext_s("F2", "KW1 beginnt am")
+            t.set_zelltext_datum_s("G2", "2021", "12", "30")
+            t.set_zelltext_s("F3", "KW")
+            t.set_zelltext_s("G3", "1")
+            t.set_SchriftFett_s("F1:F3", True)            
+            t.set_zellfarbe_s("F1:F3", self.grau)            
+            t.set_Rahmen_komplett_s("F1:G3", self.RahLinDi)
+            t.set_spaltenbreite_i(5, 3250) 
             #---
-            t.set_zelltext_s("E5", "Gruppen")
-            t.set_SchriftFett_s("E5", True)            
-            t.set_zellfarbe_s("E5", self.grau)            
-            t.set_Rahmen_komplett_s("E5:E15", self.RahLinDi)
-            t.set_zelltext_s("E6", "Halle1")
-            t.set_zelltext_s("E7", "Halle2")
-            t.set_zelltext_s("E8", "Halle3")
-            t.set_zelltext_s("E9", "Kraftfahrer")
-            t.set_zelltext_s("E10", "Lehrlinge")
-            t.set_zelltext_s("E11", "Büro")
+            t.set_zelltext_s("F5", "Gruppen")
+            t.set_SchriftFett_s("F5", True)            
+            t.set_zellfarbe_s("F5", self.grau)            
+            t.set_Rahmen_komplett_s("F5:F15", self.RahLinDi)
+            t.set_zelltext_s("F6", "Halle1")
+            t.set_zelltext_s("F7", "Halle2")
+            t.set_zelltext_s("F8", "Halle3")
+            t.set_zelltext_s("F9", "Kraftfahrer")
+            t.set_zelltext_s("F10", "Lehrlinge")
+            t.set_zelltext_s("F11", "Büro")
             #---
         pass
     def tab_Grundlagen(self):
@@ -1257,9 +2615,11 @@ class WoPlan: # Calc
     def set_fokus_tab_kw(self):
         self.tab.set_tabfokus_s(self.get_kw())
     def get_kw(self):
-        return self.tabGrundlagen.get_zelltext_s("F3")
+        self.kw = self.tabGrundlagen.get_zelltext_s("G3")
+        return self.kw
     def get_jahr(self):
-        return self.tabGrundlagen.get_zelltext_s("F1")
+        self.jahr = self.tabGrundlagen.get_zelltext_s("G1")
+        return self.jahr
     def set_spaltenbreiten(self):
         t = ol_tabelle()
         t.set_tabname(self.get_kw())
@@ -1295,7 +2655,7 @@ class WoPlan: # Calc
         t.set_zelltext_s("B3", "Tätigkeit")
         t.set_zelltext_s("C3", "KFZ")
         # Beschriftung Montag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)" # startdatum + ( (KW-1) * 7 )
         t.set_zellformel_s("D3", formel)
         t.set_zellformat_s("D3", "TT.MM.JJJJ")
@@ -1303,7 +2663,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("D3")
         t.set_zelltext_s("D3", tmp)
         # Beschriftung Dienstag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+1" # startdatum + ( (KW-1) * 7 ) + 1 Tag
         t.set_zellformel_s("E3", formel)
         t.set_zellformat_s("E3", "TT.MM.JJJJ")
@@ -1311,7 +2671,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("E3")
         t.set_zelltext_s("E3", tmp)
         # Beschriftung Mittwoch:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+2" # startdatum + ( (KW-1) * 7 ) + 2 Tage
         t.set_zellformel_s("F3", formel)
         t.set_zellformat_s("F3", "TT.MM.JJJJ")
@@ -1319,7 +2679,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("F3")
         t.set_zelltext_s("F3", tmp)
         # Beschriftung Donnerstag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+3" # startdatum + ( (KW-1) * 7 ) + 3 Tage
         t.set_zellformel_s("G3", formel)
         t.set_zellformat_s("G3", "TT.MM.JJJJ")
@@ -1327,7 +2687,7 @@ class WoPlan: # Calc
         tmp += t.get_zelltext_s("G3")
         t.set_zelltext_s("G3", tmp)
         # Beschriftung Freitag:
-        startdatum = "$Grundlagen.F2"
+        startdatum = "$Grundlagen.G2"
         formel = "=" + startdatum + "+((D1-1)" + "*7)+4" # startdatum + ( (KW-1) * 7 ) + 4 Tage
         t.set_zellformel_s("H3", formel)
         t.set_zellformat_s("H3", "TT.MM.JJJJ")
@@ -1341,7 +2701,7 @@ class WoPlan: # Calc
         # Namen und Anzahl der Gruppen ermitteln:
         gruppenNamen = []
         idZeile = 5
-        idSpalte = 4
+        idSpalte = 5
         for i in range(0, 10):
             tmp = t.get_zelltext_i(idZeile+i, idSpalte)
             if(len(tmp) > 0):
@@ -1358,17 +2718,21 @@ class WoPlan: # Calc
         mitarb = []
         gruppe = []
         taetig = []
+        gebtag = []
         idZeile = 1
         idSpalte = 0
         for i in range(0, 50):
             tmp_mitarb = t.get_zelltext_i(idZeile+i, idSpalte)
             tmp_gruppe = t.get_zelltext_i(idZeile+i, idSpalte+1)
             tmp_taetig = t.get_zelltext_i(idZeile+i, idSpalte+2)
+            tmp_gebtag = t.get_zelltext_i(idZeile+i, idSpalte+3)
             if(len(tmp_gruppe) > 0):
                 mitarb += [tmp_mitarb] # Kapselung nötig da sonst jeder einzelne Buchstabe als Einzelwert gedeutet wird
                 gruppe += [tmp_gruppe]
                 taetig += [tmp_taetig]
+                gebtag += [tmp_gebtag]
             pass
+        #msgbox(gebtag, 'msgbox', 1, 'QUERYBOX')
         # Tabellenrumpf füllen:
         t.set_tabname(self.get_kw()) # ab jetzt tab der KW ansprechen
         aktZeile = 3
@@ -1392,6 +2756,38 @@ class WoPlan: # Calc
                     if(gruppe[ii] == gruppenNamen[i]):
                         t.set_zelltext_i(aktZeile, 0, mitarb[ii])
                         t.set_zelltext_i(aktZeile, 1, taetig[ii])
+                        # Prüfen ob Mitarbeiter Geburtstag hat:
+                        if(len(gebtag[ii])>0):
+                            zeitformat = "%d.%m.%Y"
+                            tmp_s = t.get_zelltext_s("D3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            montag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("E3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            dienstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("F3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            mitwoch = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("G3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            donnerstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("H3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            freitag = time.strptime(tmp_s, zeitformat)
+                            geburtstag = time.strptime(gebtag[ii], zeitformat)
+                            alter = int(self.jahr) - int(geburtstag.tm_year)                            
+                            gebtagtext = mitarb[ii] + " hat " + str(alter) + ". Geburtstag"
+                            if geburtstag.tm_yday == montag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 3, gebtagtext)
+                            if geburtstag.tm_yday == dienstag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 4, gebtagtext)
+                            if geburtstag.tm_yday == mitwoch.tm_yday:
+                                t.set_zelltext_i(aktZeile, 5, gebtagtext)
+                            if geburtstag.tm_yday == donnerstag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 6, gebtagtext)
+                            if geburtstag.tm_yday == freitag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 7, gebtagtext)
+                            pass
                         aktZeile += 1
                     pass
                 zellname = "A" + str(aktZeile+1) + ":I" + str(aktZeile+1)
@@ -1443,6 +2839,38 @@ class WoPlan: # Calc
                     if(gruppe[ii] == gruppenNamen[i]):
                         t.set_zelltext_i(aktZeile, 0, mitarb[ii])
                         t.set_zelltext_i(aktZeile, 1, taetig[ii])
+                        # Prüfen ob Mitarbeiter Geburtstag hat:
+                        if(len(gebtag[ii])>0):
+                            zeitformat = "%d.%m.%Y"
+                            tmp_s = t.get_zelltext_s("D3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            montag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("E3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            dienstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("F3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            mitwoch = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("G3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            donnerstag = time.strptime(tmp_s, zeitformat)
+                            tmp_s = t.get_zelltext_s("H3")
+                            tmp_s = tmp_s[len(tmp_s)-10: ]
+                            freitag = time.strptime(tmp_s, zeitformat)
+                            geburtstag = time.strptime(gebtag[ii], zeitformat)
+                            alter = int(self.jahr) - int(geburtstag.tm_year)                            
+                            gebtagtext = mitarb[ii] + " hat " + str(alter) + ". Geburtstag"
+                            if geburtstag.tm_yday == montag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 3, gebtagtext)
+                            if geburtstag.tm_yday == dienstag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 4, gebtagtext)
+                            if geburtstag.tm_yday == mitwoch.tm_yday:
+                                t.set_zelltext_i(aktZeile, 5, gebtagtext)
+                            if geburtstag.tm_yday == donnerstag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 6, gebtagtext)
+                            if geburtstag.tm_yday == freitag.tm_yday:
+                                t.set_zelltext_i(aktZeile, 7, gebtagtext)
+                            pass
                         aktZeile += 1
                     pass
                 aktZeile += 1
@@ -1744,6 +3172,41 @@ class TaPlan: # Writer
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+class baugrpetk_writer: # Writer
+    def __init__(self):      
+        self.t = ol_textdatei()
+        pass
+    def formartieren(self):
+        self.t.set_text_hoehe(24)
+        self.set_text_fett()
+        self.t.set_seitenformat("A6", True, 2000,1000,1000,1000)
+        pass
+    def set_text_fett(self):
+        fettMachen = []
+        fettMachen += ["Projekt  :"]
+        fettMachen += ["Opti     :"]
+        fettMachen += ["Pos      :"]
+        fettMachen += ["Baugruppe:"]
+        fettMachen += ["Ort:"]
+        for i in range(0, len(fettMachen)):
+            suche = self.t.doc.createSearchDescriptor()
+            # suche.SearchString = "Montag"
+            suche.SearchString = fettMachen[i]
+            suche.SearchWords = True # nur ganze Wörter suchen
+            suche.SearchCaseSensitive = True # Groß/Klein-Schreibung beachten
+            funde = self.t.doc.findAll(suche)
+            for ii in range(0, funde.getCount()):
+                fund = funde.getByIndex(ii)
+                fund.CharWeight = FONT_BOLD
+                fund.CharUnderline = FONT_UNDERLINED_SINGLE
+                # fund.setString("neuer text") # Suchergebnis ersetzen durch
+                pass
+            pass
+        pass
+
+#----------------------------------------------------------------------------------
+
 def test_123():
     # sli = slist()
     # sli.reduzieren()
@@ -1762,6 +3225,9 @@ def test_123():
     # t = TaPlan()
     # t.set_text_hoehe(12)
     # t.set_text_fett()
+    #sli = slist()
+    #sTabname = sli.t.get_tabname()
+    #sli.t.tab_kopieren("hans", 99)
     msg = "Die Testfunktion ist derzeit nicht in Nutzung."
     msgbox(msg, 'msgbox', 1, 'QUERYBOX')
     pass
@@ -1801,6 +3267,34 @@ def SList_sortieren_reduzieren():
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
+    pass
+#---------
+def RB_Blancoliste():
+    l = raumbuch()
+    l.RB_Blankoliste()
+    pass
+def RB_LList_Formblatt():
+    l = raumbuch()
+    l.LList_Formblatt()
+    pass
+def RB_LList_start():
+    l = raumbuch()
+    l.LList_start()
+    pass
+#---------
+def baugrpetk_calc_ermitteln():
+    sli = baugrpetk_calc()
+    sli.ermitteln()
+    sli.auflisten()
+    pass
+def baugrpetk_calc_speichern():
+    sli = baugrpetk_calc()
+    sli.speichern()
+    pass
+#---------
+def baugrpetk_writer_formartieren():
+    obj = baugrpetk_writer()
+    obj.formartieren()
     pass
 #---------
 def WoPlan_tab_Grundlagen():
@@ -1884,6 +3378,19 @@ def SList_sortieren_reduzieren_BTN(self):
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
+    pass
+#---------
+def RB_Blancoliste_BTN(self):
+    l = raumbuch()
+    l.RB_Blankoliste()
+    pass
+def RB_LList_Formblatt_BTN(self):
+    l = raumbuch()
+    l.LList_Formblatt()
+    pass
+def RB_LList_start_BTN(self):
+    l = raumbuch()
+    l.LList_start()
     pass
 #---------
 def WoPlan_tab_Grundlagen_BTN(self):
