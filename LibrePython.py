@@ -1614,6 +1614,7 @@ class raumbuch: #calc
              return 25
          elif buchstabe == "Z":
              return 26
+             #---------------------------
          elif buchstabe == "AA":
              return 27
          elif buchstabe == "AB":
@@ -1666,6 +1667,7 @@ class raumbuch: #calc
              return 51
          elif buchstabe == "AZ":
              return 52
+             #---------------------------
          elif buchstabe == "BA":
              return 53
          elif buchstabe == "BB":
@@ -1718,6 +1720,7 @@ class raumbuch: #calc
              return 77
          elif buchstabe == "BZ":
              return 78
+             #---------------------------
          elif buchstabe == "CA":
              return 79
          elif buchstabe == "CB":
@@ -1770,6 +1773,7 @@ class raumbuch: #calc
              return 103
          elif buchstabe == "CZ":
              return 104
+             #---------------------------
          elif buchstabe == "DA":
              return 105
          elif buchstabe == "DB":
@@ -1822,6 +1826,7 @@ class raumbuch: #calc
              return 129
          elif buchstabe == "DZ":
              return 130
+             #---------------------------
          elif buchstabe == "EA":
              return 131
          elif buchstabe == "EB":
@@ -1874,8 +1879,378 @@ class raumbuch: #calc
              return 155
          elif buchstabe == "EZ":
              return 156
+             #---------------------------
          elif buchstabe == "FA":
              return 157
+         elif buchstabe == "FB":
+             return 158
+         elif buchstabe == "FC":
+             return 159
+         elif buchstabe == "FD":
+             return 160
+         elif buchstabe == "FE":
+             return 161
+         elif buchstabe == "FF":
+             return 162
+         elif buchstabe == "FG":
+             return 163
+         elif buchstabe == "FH":
+             return 164
+         elif buchstabe == "FI":
+             return 165
+         elif buchstabe == "FJ":
+             return 166
+         elif buchstabe == "FK":
+             return 167
+         elif buchstabe == "FL":
+             return 168
+         elif buchstabe == "FM":
+             return 169
+         elif buchstabe == "FN":
+             return 170
+         elif buchstabe == "FO":
+             return 171
+         elif buchstabe == "FP":
+             return 172
+         elif buchstabe == "FQ":
+             return 173
+         elif buchstabe == "FR":
+             return 174
+         elif buchstabe == "FS":
+             return 175
+         elif buchstabe == "FT":
+             return 176
+         elif buchstabe == "FU":
+             return 177
+         elif buchstabe == "FV":
+             return 178
+         elif buchstabe == "FW":
+             return 179
+         elif buchstabe == "FX":
+             return 180
+         elif buchstabe == "FY":
+             return 181
+         elif buchstabe == "FZ":
+             return 182
+             #---------------------------
+         elif buchstabe == "GA":
+             return 183
+         elif buchstabe == "GB":
+             return 184
+         elif buchstabe == "GC":
+             return 185
+         elif buchstabe == "GD":
+             return 186
+         elif buchstabe == "GE":
+             return 187
+         elif buchstabe == "GF":
+             return 188
+         elif buchstabe == "GG":
+             return 189
+         elif buchstabe == "GH":
+             return 190
+         elif buchstabe == "GI":
+             return 191
+         elif buchstabe == "GJ":
+             return 192
+         elif buchstabe == "GK":
+             return 193
+         elif buchstabe == "GL":
+             return 194
+         elif buchstabe == "GM":
+             return 195
+         elif buchstabe == "GN":
+             return 196
+         elif buchstabe == "GO":
+             return 197
+         elif buchstabe == "GP":
+             return 198
+         elif buchstabe == "GQ":
+             return 199
+         elif buchstabe == "GR":
+             return 200
+         elif buchstabe == "GS":
+             return 201
+         elif buchstabe == "GT":
+             return 202
+         elif buchstabe == "GU":
+             return 203
+         elif buchstabe == "GV":
+             return 204
+         elif buchstabe == "GW":
+             return 205
+         elif buchstabe == "GX":
+             return 206
+         elif buchstabe == "GY":
+             return 207
+         elif buchstabe == "GZ":
+             return 208
+             #---------------------------
+         elif buchstabe == "HA":
+             return 209
+         elif buchstabe == "HB":
+             return 210
+         elif buchstabe == "HC":
+             return 211
+         elif buchstabe == "HD":
+             return 212
+         elif buchstabe == "HE":
+             return 213
+         elif buchstabe == "HF":
+             return 214
+         elif buchstabe == "HG":
+             return 215
+         elif buchstabe == "HH":
+             return 216
+         elif buchstabe == "HI":
+             return 217
+         elif buchstabe == "HJ":
+             return 218
+         elif buchstabe == "HK":
+             return 219
+         elif buchstabe == "HL":
+             return 220
+         elif buchstabe == "HM":
+             return 221
+         elif buchstabe == "HN":
+             return 222
+         elif buchstabe == "HO":
+             return 223
+         elif buchstabe == "HP":
+             return 224
+         elif buchstabe == "HQ":
+             return 225
+         elif buchstabe == "HR":
+             return 226
+         elif buchstabe == "HS":
+             return 227
+         elif buchstabe == "HT":
+             return 228
+         elif buchstabe == "HU":
+             return 229
+         elif buchstabe == "HV":
+             return 230
+         elif buchstabe == "HW":
+             return 231
+         elif buchstabe == "HX":
+             return 232
+         elif buchstabe == "HY":
+             return 233
+         elif buchstabe == "HZ":
+             return 234
+             #---------------------------
+         elif buchstabe == "IA":
+             return 235
+         elif buchstabe == "IB":
+             return 236
+         elif buchstabe == "IC":
+             return 237
+         elif buchstabe == "ID":
+             return 238
+         elif buchstabe == "IE":
+             return 239
+         elif buchstabe == "IF":
+             return 240
+         elif buchstabe == "IG":
+             return 241
+         elif buchstabe == "IH":
+             return 242
+         elif buchstabe == "II":
+             return 243
+         elif buchstabe == "IJ":
+             return 244
+         elif buchstabe == "IK":
+             return 245
+         elif buchstabe == "IL":
+             return 246
+         elif buchstabe == "IM":
+             return 247
+         elif buchstabe == "IN":
+             return 248
+         elif buchstabe == "IO":
+             return 249
+         elif buchstabe == "IP":
+             return 250
+         elif buchstabe == "IQ":
+             return 251
+         elif buchstabe == "IR":
+             return 252
+         elif buchstabe == "IS":
+             return 253
+         elif buchstabe == "IT":
+             return 254
+         elif buchstabe == "IU":
+             return 255
+         elif buchstabe == "IV":
+             return 256
+         elif buchstabe == "IW":
+             return 257
+         elif buchstabe == "IX":
+             return 258
+         elif buchstabe == "IY":
+             return 259
+         elif buchstabe == "IZ":
+             return 260
+             #---------------------------
+         elif buchstabe == "JA":
+             return 261
+         elif buchstabe == "JB":
+             return 262
+         elif buchstabe == "JC":
+             return 263
+         elif buchstabe == "JD":
+             return 264
+         elif buchstabe == "JE":
+             return 265
+         elif buchstabe == "JF":
+             return 266
+         elif buchstabe == "JG":
+             return 267
+         elif buchstabe == "JH":
+             return 268
+         elif buchstabe == "JI":
+             return 269
+         elif buchstabe == "JJ":
+             return 270
+         elif buchstabe == "JK":
+             return 271
+         elif buchstabe == "JL":
+             return 272
+         elif buchstabe == "JM":
+             return 273
+         elif buchstabe == "JN":
+             return 274
+         elif buchstabe == "JO":
+             return 275
+         elif buchstabe == "JP":
+             return 276
+         elif buchstabe == "JQ":
+             return 277
+         elif buchstabe == "JR":
+             return 278
+         elif buchstabe == "JS":
+             return 279
+         elif buchstabe == "JT":
+             return 280
+         elif buchstabe == "JU":
+             return 281
+         elif buchstabe == "JV":
+             return 282
+         elif buchstabe == "JW":
+             return 283
+         elif buchstabe == "JX":
+             return 284
+         elif buchstabe == "JY":
+             return 285
+         elif buchstabe == "JZ":
+             return 286
+             #---------------------------
+         elif buchstabe == "KA":
+             return 287
+         elif buchstabe == "KB":
+             return 288
+         elif buchstabe == "KC":
+             return 289
+         elif buchstabe == "KD":
+             return 290
+         elif buchstabe == "KE":
+             return 291
+         elif buchstabe == "KF":
+             return 292
+         elif buchstabe == "KG":
+             return 293
+         elif buchstabe == "KH":
+             return 294
+         elif buchstabe == "KI":
+             return 295
+         elif buchstabe == "KJ":
+             return 296
+         elif buchstabe == "KK":
+             return 297
+         elif buchstabe == "KL":
+             return 298
+         elif buchstabe == "KM":
+             return 299
+         elif buchstabe == "KN":
+             return 300
+         elif buchstabe == "KO":
+             return 301
+         elif buchstabe == "KP":
+             return 302
+         elif buchstabe == "KQ":
+             return 303
+         elif buchstabe == "KR":
+             return 304
+         elif buchstabe == "KS":
+             return 305
+         elif buchstabe == "KT":
+             return 306
+         elif buchstabe == "KU":
+             return 307
+         elif buchstabe == "KV":
+             return 308
+         elif buchstabe == "KW":
+             return 309
+         elif buchstabe == "KX":
+             return 310
+         elif buchstabe == "KY":
+             return 311
+         elif buchstabe == "KZ":
+             return 312
+             #---------------------------
+         elif buchstabe == "LA":
+             return 313
+         elif buchstabe == "LB":
+             return 314
+         elif buchstabe == "LC":
+             return 315
+         elif buchstabe == "LD":
+             return 316
+         elif buchstabe == "LE":
+             return 317
+         elif buchstabe == "LF":
+             return 318
+         elif buchstabe == "LG":
+             return 319
+         elif buchstabe == "LH":
+             return 320
+         elif buchstabe == "LI":
+             return 321
+         elif buchstabe == "LJ":
+             return 322
+         elif buchstabe == "LK":
+             return 323
+         elif buchstabe == "LL":
+             return 324
+         elif buchstabe == "LM":
+             return 325
+         elif buchstabe == "LN":
+             return 326
+         elif buchstabe == "LO":
+             return 327
+         elif buchstabe == "LP":
+             return 328
+         elif buchstabe == "LQ":
+             return 329
+         elif buchstabe == "LR":
+             return 330
+         elif buchstabe == "LS":
+             return 331
+         elif buchstabe == "LT":
+             return 332
+         elif buchstabe == "LU":
+             return 333
+         elif buchstabe == "LV":
+             return 334
+         elif buchstabe == "LW":
+             return 335
+         elif buchstabe == "LX":
+             return 336
+         elif buchstabe == "LY":
+             return 337
+         elif buchstabe == "LZ":
+             return 338
+             #---------------------------
          else:
              return 0
          pass
@@ -1932,6 +2307,7 @@ class raumbuch: #calc
              return "Y"
          elif spaltennummer == 26:
              return "Z"
+             #---------------------------
          elif spaltennummer == 27:
              return "AA"
          elif spaltennummer == 28:
@@ -1984,6 +2360,7 @@ class raumbuch: #calc
              return "AY"
          elif spaltennummer == 52:
              return "AZ"
+             #---------------------------
          elif spaltennummer == 53:
              return "BA"
          elif spaltennummer == 54:
@@ -2036,6 +2413,7 @@ class raumbuch: #calc
              return "BY"
          elif spaltennummer == 78:
              return "BZ"
+             #---------------------------
          elif spaltennummer == 79:
              return "CA"
          elif spaltennummer == 80:
@@ -2062,6 +2440,510 @@ class raumbuch: #calc
              return "CL"
          elif spaltennummer == 91:
              return "CM"
+         elif spaltennummer == 92:
+             return "CN"
+         elif spaltennummer == 93:
+             return "CO"
+         elif spaltennummer == 94:
+             return "CP"
+         elif spaltennummer == 95:
+             return "CQ"
+         elif spaltennummer == 96:
+             return "CR"
+         elif spaltennummer == 97:
+             return "CS"
+         elif spaltennummer == 98:
+             return "CT"
+         elif spaltennummer == 99:
+             return "CU"
+         elif spaltennummer == 100:
+             return "CV"
+         elif spaltennummer == 101:
+             return "CW"
+         elif spaltennummer == 102:
+             return "CX"
+         elif spaltennummer == 103:
+             return "CY"
+         elif spaltennummer == 104:
+             return "CZ"
+             #---------------------------
+         elif spaltennummer == 105:
+             return "DA"
+         elif spaltennummer == 106:
+             return "DB"
+         elif spaltennummer == 107:
+             return "DC"
+         elif spaltennummer == 108:
+             return "DD"
+         elif spaltennummer == 109:
+             return "DE"
+         elif spaltennummer == 110:
+             return "DF"
+         elif spaltennummer == 111:
+             return "DG"
+         elif spaltennummer == 112:
+             return "DH"
+         elif spaltennummer == 113:
+             return "DI"
+         elif spaltennummer == 114:
+             return "DJ"
+         elif spaltennummer == 115:
+             return "DK"
+         elif spaltennummer == 116:
+             return "DL"
+         elif spaltennummer == 117:
+             return "DM"
+         elif spaltennummer == 118:
+             return "DN"
+         elif spaltennummer == 119:
+             return "DO"
+         elif spaltennummer == 120:
+             return "DP"
+         elif spaltennummer == 121:
+             return "DQ"
+         elif spaltennummer == 122:
+             return "DR"
+         elif spaltennummer == 123:
+             return "DS"
+         elif spaltennummer == 124:
+             return "DT"
+         elif spaltennummer == 125:
+             return "DU"
+         elif spaltennummer == 126:
+             return "DV"
+         elif spaltennummer == 127:
+             return "DW"
+         elif spaltennummer == 128:
+             return "DX"
+         elif spaltennummer == 129:
+             return "DY"
+         elif spaltennummer == 130:
+             return "DZ"
+             #---------------------------
+         elif spaltennummer == 131:
+             return "EA"
+         elif spaltennummer == 132:
+             return "EB"
+         elif spaltennummer == 133:
+             return "EC"
+         elif spaltennummer == 134:
+             return "ED"
+         elif spaltennummer == 135:
+             return "EE"
+         elif spaltennummer == 136:
+             return "EF"
+         elif spaltennummer == 137:
+             return "EG"
+         elif spaltennummer == 138:
+             return "EH"
+         elif spaltennummer == 139:
+             return "EI"
+         elif spaltennummer == 140:
+             return "EJ"
+         elif spaltennummer == 141:
+             return "EK"
+         elif spaltennummer == 142:
+             return "EL"
+         elif spaltennummer == 143:
+             return "EM"
+         elif spaltennummer == 144:
+             return "EN"
+         elif spaltennummer == 145:
+             return "EO"
+         elif spaltennummer == 146:
+             return "EP"
+         elif spaltennummer == 147:
+             return "EQ"
+         elif spaltennummer == 148:
+             return "ER"
+         elif spaltennummer == 149:
+             return "ES"
+         elif spaltennummer == 150:
+             return "ET"
+         elif spaltennummer == 151:
+             return "EU"
+         elif spaltennummer == 152:
+             return "EV"
+         elif spaltennummer == 153:
+             return "EW"
+         elif spaltennummer == 154:
+             return "EX"
+         elif spaltennummer == 155:
+             return "EY"
+         elif spaltennummer == 156:
+             return "EZ"
+             #---------------------------
+         elif spaltennummer == 157:
+             return "FA"
+         elif spaltennummer == 158:
+             return "FB"
+         elif spaltennummer == 159:
+             return "FC"
+         elif spaltennummer == 160:
+             return "FD"
+         elif spaltennummer == 161:
+             return "FE"
+         elif spaltennummer == 162:
+             return "FF"
+         elif spaltennummer == 163:
+             return "FG"
+         elif spaltennummer == 164:
+             return "FH"
+         elif spaltennummer == 165:
+             return "FI"
+         elif spaltennummer == 166:
+             return "FJ"
+         elif spaltennummer == 167:
+             return "FK"
+         elif spaltennummer == 168:
+             return "FL"
+         elif spaltennummer == 169:
+             return "FM"
+         elif spaltennummer == 170:
+             return "FN"
+         elif spaltennummer == 171:
+             return "FO"
+         elif spaltennummer == 172:
+             return "FP"
+         elif spaltennummer == 173:
+             return "FQ"
+         elif spaltennummer == 174:
+             return "FR"
+         elif spaltennummer == 175:
+             return "FS"
+         elif spaltennummer == 176:
+             return "FT"
+         elif spaltennummer == 177:
+             return "FU"
+         elif spaltennummer == 178:
+             return "FV"
+         elif spaltennummer == 179:
+             return "FW"
+         elif spaltennummer == 180:
+             return "FX"
+         elif spaltennummer == 181:
+             return "FY"
+         elif spaltennummer == 182:
+             return "FZ"
+             #---------------------------
+         elif spaltennummer == 183:
+             return "GA"
+         elif spaltennummer == 184:
+             return "GB"
+         elif spaltennummer == 185:
+             return "GC"
+         elif spaltennummer == 186:
+             return "GD"
+         elif spaltennummer == 187:
+             return "GE"
+         elif spaltennummer == 188:
+             return "GF"
+         elif spaltennummer == 189:
+             return "GG"
+         elif spaltennummer == 190:
+             return "GH"
+         elif spaltennummer == 191:
+             return "GI"
+         elif spaltennummer == 192:
+             return "GJ"
+         elif spaltennummer == 193:
+             return "GK"
+         elif spaltennummer == 194:
+             return "GL"
+         elif spaltennummer == 195:
+             return "GM"
+         elif spaltennummer == 196:
+             return "GN"
+         elif spaltennummer == 197:
+             return "GO"
+         elif spaltennummer == 198:
+             return "GP"
+         elif spaltennummer == 199:
+             return "GQ"
+         elif spaltennummer == 200:
+             return "GR"
+         elif spaltennummer == 201:
+             return "GS"
+         elif spaltennummer == 202:
+             return "GT"
+         elif spaltennummer == 203:
+             return "GU"
+         elif spaltennummer == 204:
+             return "GV"
+         elif spaltennummer == 205:
+             return "GW"
+         elif spaltennummer == 206:
+             return "GX"
+         elif spaltennummer == 207:
+             return "GY"
+         elif spaltennummer == 208:
+             return "GZ"
+             #---------------------------
+         elif spaltennummer == 209:
+             return "HA"
+         elif spaltennummer == 210:
+             return "HB"
+         elif spaltennummer == 211:
+             return "HC"
+         elif spaltennummer == 212:
+             return "HD"
+         elif spaltennummer == 213:
+             return "HE"
+         elif spaltennummer == 214:
+             return "HF"
+         elif spaltennummer == 215:
+             return "HG"
+         elif spaltennummer == 216:
+             return "HH"
+         elif spaltennummer == 217:
+             return "HI"
+         elif spaltennummer == 218:
+             return "HJ"
+         elif spaltennummer == 219:
+             return "HK"
+         elif spaltennummer == 220:
+             return "HL"
+         elif spaltennummer == 221:
+             return "HM"
+         elif spaltennummer == 222:
+             return "HN"
+         elif spaltennummer == 223:
+             return "HO"
+         elif spaltennummer == 224:
+             return "HP"
+         elif spaltennummer == 225:
+             return "HQ"
+         elif spaltennummer == 226:
+             return "HR"
+         elif spaltennummer == 227:
+             return "HS"
+         elif spaltennummer == 228:
+             return "HT"
+         elif spaltennummer == 229:
+             return "HU"
+         elif spaltennummer == 230:
+             return "HV"
+         elif spaltennummer == 231:
+             return "HW"
+         elif spaltennummer == 232:
+             return "HX"
+         elif spaltennummer == 233:
+             return "HY"
+         elif spaltennummer == 234:
+             return "HZ"
+             #---------------------------
+         elif spaltennummer == 235:
+             return "IA"
+         elif spaltennummer == 236:
+             return "IB"
+         elif spaltennummer == 237:
+             return "IC"
+         elif spaltennummer == 238:
+             return "ID"
+         elif spaltennummer == 239:
+             return "IE"
+         elif spaltennummer == 240:
+             return "IF"
+         elif spaltennummer == 241:
+             return "IG"
+         elif spaltennummer == 242:
+             return "IH"
+         elif spaltennummer == 243:
+             return "II"
+         elif spaltennummer == 244:
+             return "IJ"
+         elif spaltennummer == 245:
+             return "IK"
+         elif spaltennummer == 246:
+             return "IL"
+         elif spaltennummer == 247:
+             return "IM"
+         elif spaltennummer == 248:
+             return "IN"
+         elif spaltennummer == 249:
+             return "IO"
+         elif spaltennummer == 250:
+             return "IP"
+         elif spaltennummer == 251:
+             return "IQ"
+         elif spaltennummer == 252:
+             return "IR"
+         elif spaltennummer == 253:
+             return "IS"
+         elif spaltennummer == 254:
+             return "IT"
+         elif spaltennummer == 255:
+             return "IU"
+         elif spaltennummer == 256:
+             return "IV"
+         elif spaltennummer == 257:
+             return "IW"
+         elif spaltennummer == 258:
+             return "IX"
+         elif spaltennummer == 259:
+             return "IY"
+         elif spaltennummer == 260:
+             return "IZ"
+             #---------------------------
+         elif spaltennummer == 261:
+             return "JA"
+         elif spaltennummer == 262:
+             return "JB"
+         elif spaltennummer == 263:
+             return "JC"
+         elif spaltennummer == 264:
+             return "JD"
+         elif spaltennummer == 265:
+             return "JE"
+         elif spaltennummer == 266:
+             return "JF"
+         elif spaltennummer == 267:
+             return "JG"
+         elif spaltennummer == 268:
+             return "JH"
+         elif spaltennummer == 269:
+             return "JI"
+         elif spaltennummer == 270:
+             return "JJ"
+         elif spaltennummer == 271:
+             return "JK"
+         elif spaltennummer == 272:
+             return "JL"
+         elif spaltennummer == 273:
+             return "JM"
+         elif spaltennummer == 274:
+             return "JN"
+         elif spaltennummer == 275:
+             return "JO"
+         elif spaltennummer == 276:
+             return "JP"
+         elif spaltennummer == 277:
+             return "JQ"
+         elif spaltennummer == 278:
+             return "JR"
+         elif spaltennummer == 279:
+             return "JS"
+         elif spaltennummer == 280:
+             return "JT"
+         elif spaltennummer == 281:
+             return "JU"
+         elif spaltennummer == 282:
+             return "JV"
+         elif spaltennummer == 283:
+             return "JW"
+         elif spaltennummer == 284:
+             return "JX"
+         elif spaltennummer == 285:
+             return "JY"
+         elif spaltennummer == 286:
+             return "JZ"
+             #---------------------------
+         elif spaltennummer == 287:
+             return "KA"
+         elif spaltennummer == 288:
+             return "KB"
+         elif spaltennummer == 289:
+             return "KC"
+         elif spaltennummer == 290:
+             return "KD"
+         elif spaltennummer == 291:
+             return "KE"
+         elif spaltennummer == 292:
+             return "KF"
+         elif spaltennummer == 293:
+             return "KG"
+         elif spaltennummer == 294:
+             return "KH"
+         elif spaltennummer == 295:
+             return "KI"
+         elif spaltennummer == 296:
+             return "KJ"
+         elif spaltennummer == 297:
+             return "KK"
+         elif spaltennummer == 298:
+             return "KL"
+         elif spaltennummer == 299:
+             return "KM"
+         elif spaltennummer == 300:
+             return "KN"
+         elif spaltennummer == 301:
+             return "KO"
+         elif spaltennummer == 302:
+             return "KP"
+         elif spaltennummer == 303:
+             return "KQ"
+         elif spaltennummer == 304:
+             return "KR"
+         elif spaltennummer == 305:
+             return "KS"
+         elif spaltennummer == 306:
+             return "KT"
+         elif spaltennummer == 307:
+             return "KU"
+         elif spaltennummer == 308:
+             return "KV"
+         elif spaltennummer == 309:
+             return "KW"
+         elif spaltennummer == 310:
+             return "KX"
+         elif spaltennummer == 311:
+             return "KY"
+         elif spaltennummer == 312:
+             return "KZ"
+             #---------------------------
+         elif spaltennummer == 313:
+             return "LA"
+         elif spaltennummer == 314:
+             return "LB"
+         elif spaltennummer == 315:
+             return "LC"
+         elif spaltennummer == 316:
+             return "LD"
+         elif spaltennummer == 317:
+             return "LE"
+         elif spaltennummer == 318:
+             return "LF"
+         elif spaltennummer == 319:
+             return "LG"
+         elif spaltennummer == 320:
+             return "LH"
+         elif spaltennummer == 321:
+             return "LI"
+         elif spaltennummer == 322:
+             return "LJ"
+         elif spaltennummer == 323:
+             return "LK"
+         elif spaltennummer == 324:
+             return "LL"
+         elif spaltennummer == 325:
+             return "LM"
+         elif spaltennummer == 326:
+             return "LN"
+         elif spaltennummer == 327:
+             return "LO"
+         elif spaltennummer == 328:
+             return "LP"
+         elif spaltennummer == 329:
+             return "LQ"
+         elif spaltennummer == 330:
+             return "LR"
+         elif spaltennummer == 331:
+             return "LS"
+         elif spaltennummer == 332:
+             return "LT"
+         elif spaltennummer == 333:
+             return "LU"
+         elif spaltennummer == 334:
+             return "LV"
+         elif spaltennummer == 335:
+             return "LW"
+         elif spaltennummer == 336:
+             return "LX"
+         elif spaltennummer == 337:
+             return "LY"
+         elif spaltennummer == 338:
+             return "LZ"
+             #---------------------------
          else:
              return "ZZZ"
          pass
