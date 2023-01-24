@@ -1460,12 +1460,12 @@ class baugrpetk_calc: # Calc
         self.t.set_zelltext_s("C1", "Pos")
         self.t.set_zelltext_s("D1", "Baugruppe")
         self.t.set_zelltext_s("E1", "Menge")
+        self.t.set_zelltext_s("F1", "Orte")
         self.t.set_spaltenausrichtung_i(0, "li")
         self.t.set_spaltenausrichtung_i(1, "mi")
         self.t.set_spaltenausrichtung_i(2, "mi")
         self.t.set_spaltenausrichtung_i(3, "mi")
         self.t.set_spaltenausrichtung_i(4, "mi")
-        self.t.set_spaltenausrichtung_i(5, "mi")
         # Tabelle füllen:
         for i in range (0, len(self.listBaugrp)):
             iStartZeile = 1
@@ -1509,8 +1509,8 @@ class baugrpetk_calc: # Calc
             tmp += "\n"
             # Ort:
             tmp += "Ort: " 
-            tmp += "\n"
-            tmp += "\n"
+            #tmp += "\n"
+            #tmp += "\n"
 
             gesund = True
             try:
@@ -1519,7 +1519,11 @@ class baugrpetk_calc: # Calc
                 gesund = False
             if gesund == True:
                 for ii in range (0, int(iMenge)):
+                    sOrt  = self.t.get_zelltext_i(i+1, iSpalteStart+5+ii)
                     msg += tmp
+                    msg += sOrt
+                    msg += "\n"
+                    msg += "\n"
         
         path = get_userpath()
         path += "\\Desktop\\label"
