@@ -1368,6 +1368,7 @@ class slist: # Calc
             sName = sName.replace("Rückwand", "S#_RW")
             sName = sName.replace("Tür", "S#_Tuer")
             sName = sName.replace("Klappe", "S#_Klappe")
+            sName = sName.replace("Blindfront", "S#_Front")
             sName = sName.replace("Schubkasten Front", "S#_SF")
             sName = sName.replace("Travers Vorne", "S#_Trav_vo")
             sName = sName.replace("Travers Hinten", "S#_Trav_hi")
