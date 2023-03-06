@@ -1378,6 +1378,42 @@ class slist: # Calc
             self.t.set_zelltext_i(i, 0, sName)
             pass
         pass
+    def gehr_masszugabe(self):
+        iZeileStart = self.t.get_selection_zeile_start()
+        iZeileEnde  = self.t.get_selection_zeile_ende()
+        iIndexSpalte_L = 2
+        iIndexSpalte_B = 3
+        iIndexSpalte_KaLi = 6
+        iIndexSpalte_KaRe = 8
+        iIndexSpalte_KaOb = 10
+        iIndexSpalte_KaUn = 12
+        for i in range(iZeileStart, iZeileEnde+1):
+            sLaenge = self.t.get_zelltext_i(i, iIndexSpalte_L)
+            sBreite = self.t.get_zelltext_i(i, iIndexSpalte_B)
+            sKaLi = self.t.get_zelltext_i(i, iIndexSpalte_KaLi)
+            sKaRe = self.t.get_zelltext_i(i, iIndexSpalte_KaRe)
+            sKaOb = self.t.get_zelltext_i(i, iIndexSpalte_KaOb)
+            sKaUn = self.t.get_zelltext_i(i, iIndexSpalte_KaUn)
+            iZugabe_L = 0
+            iZugabe_B = 0
+            if "Gehr" in sKaLi:
+                iZugabe_B += 20
+            if "Gehr" in sKaRe:
+                iZugabe_B += 20
+            if "Gehr" in sKaOb:
+                iZugabe_L += 20
+            if "Gehr" in sKaUn:
+                iZugabe_L += 20
+            if iZugabe_L > 0:
+                sNeue_L = "=" + sLaenge + "+" + str(iZugabe_L)
+                self.t.set_zellformel_i(i, iIndexSpalte_L, sNeue_L)
+                self.t.set_zellfarbe_i(i, iIndexSpalte_L, self.gelb)
+            if iZugabe_B > 0:
+                sNeue_B = "=" + sBreite + "+" + str(iZugabe_B)
+                self.t.set_zellformel_i(i, iIndexSpalte_B, sNeue_B)
+                self.t.set_zellfarbe_i(i, iIndexSpalte_B, self.gelb)
+            pass #for
+        pass
         
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
@@ -4155,6 +4191,10 @@ def SList_sortieren_reduzieren():
     sli.reduzieren()
     sli.sortieren()
     pass
+def SList_gehr_masszugabe():
+    sli = slist()
+    sli.gehr_masszugabe()
+    pass
 #---------
 def RB_Blancoliste():
     l = raumbuch()
@@ -4265,6 +4305,10 @@ def SList_sortieren_reduzieren_BTN(self):
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
+    pass
+def SList_gehr_masszugabe_BTN(self):
+    sli = slist()
+    sli.gehr_masszugabe()
     pass
 #---------
 def RB_Blancoliste_BTN(self):
