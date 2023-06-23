@@ -59,7 +59,8 @@ def erstelle_datei(full_path):
     my_file = Path(full_path)
     if my_file.is_file():
         msg = "Die Datei existiert bereits und wird nicht überschrieben."
-        msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        titel = "erstelle_datei(full_path)"
+        msgbox(msg, titel, 1, 'QUERYBOX')
         erfolg = False
     else:
         new_file = open(full_path, "w")
@@ -286,8 +287,9 @@ class ol_tabelle:
         else:
             msg = "Die Registerkarte \""
             msg += sAlterTabName
+            titel = "tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex)"
             msg += "\" ist nicht vorhanden und kann desshalb nicht kopiert werden!"
-            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            msgbox(msg, titel, 1, 'QUERYBOX')
         pass
     def tab_setName(self, sNeuerTabName):
         namen = []
