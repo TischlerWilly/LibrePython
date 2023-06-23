@@ -285,13 +285,18 @@ class ol_tabelle:
                 break #for i
         tab_neu_schon_vorhanden = 0
         for i in range (0, len(namen)):
-            if namen[i] == sAlterTabName:
+            if namen[i] == sNeuerTabName:
                 tab_neu_schon_vorhanden = 1
                 break #for i
         if tab_alt_schon_vorhanden == 1:
             if tab_neu_schon_vorhanden == 0:
                 self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
             else:
+                msg = "Die Registerkarte \""
+                msg += sNeuerTabName
+                titel = "tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex)"
+                msg += "\" ist schon vorhanden und kann desshalb nicht kopiert werden!"
+                msgbox(msg, titel, 1, 'QUERYBOX')
                 retwert = 2
         else:
             msg = "Die Registerkarte \""
