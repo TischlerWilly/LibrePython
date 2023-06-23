@@ -1,3 +1,4 @@
+# alles einfalten: strg+K --> strg+0
 from __future__ import unicode_literals
 from ast import Not
 from genericpath import exists
@@ -4051,6 +4052,34 @@ class WoPlan: # Calc
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
+class kalkulation: #Calc
+    def __init__(self):
+        self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
+        self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
+        self.tab = ol_tabelle()        
+        pass
+    def get_zelltext(self):
+        iZeile = 0
+        iSpalte = 0
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):# wird gebraucht zur Typenumwandlung
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                iZeile = z
+                iSpalte = s
+                break # nur 1 durchlauf erwünscht
+            break # nur 1 durchlauf erwünscht
+        return self.tab.get_zelltext_i(iZeile, iSpalte)
+    def set_fokus_tab(self, tabname):
+        if self.tab.tab_existiert(tabname):
+            self.tab.set_tabfokus_s(tabname)
+        pass
+#----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
 class TaPlan: # Writer
     def __init__(self):
         self.doc = XSCRIPTCONTEXT.getDocument()
@@ -4265,6 +4294,11 @@ def WoPlan_Tagesplan():
     wpl.get_tagesplan()
     pass
 #---------
+def Kalkulation_set_tab_fokus():
+    kal = kalkulation()
+    kal.set_fokus_tab(kal.get_zelltext())    
+    pass
+#---------
 def TaPlan_formartieren(): 
     tpl = TaPlan()
     tpl.formartieren()
@@ -4363,6 +4397,11 @@ def WoPlan_ist_Berufsschule_BTN(self):
 def WoPlan_Tagesplan_BTN(self):
     wpl = WoPlan()
     wpl.get_tagesplan()
+    pass
+#---------
+def Kalkulation_set_tab_fokus_BTN(self):
+    kal = kalkulation()
+    kal.set_fokus_tab(kal.get_zelltext())    
     pass
 #---------
 def TaPlan_formartieren_BTN(self): 
