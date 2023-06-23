@@ -277,12 +277,17 @@ class ol_tabelle:
         namen = []
         namen = self.doc.Sheets.ElementNames
         tab_schon_vorhanden = 0
-        for i in range (1, len(namen)):
+        for i in range (0, len(namen)):
             if namen[i] == sAlterTabName:
                 tab_schon_vorhanden = 1
                 break #for i
         if tab_schon_vorhanden == 1:
             self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+        else:
+            msg = "Die Registerkarte \""
+            msg += sAlterTabName
+            msg += "\" ist nicht vorhanden und kann desshalb nicht kopiert werden!"
+            msgbox(msg, 'msgbox', 1, 'QUERYBOX')
         pass
     def tab_setName(self, sNeuerTabName):
         namen = []
@@ -4077,6 +4082,14 @@ class kalkulation: #Calc
         if self.tab.tab_existiert(tabname):
             self.tab.set_tabfokus_s(tabname)
         pass
+    def erstelle_tab(self):
+        sPosNr = self.get_zelltext()
+        tab = ol_tabelle()
+        tab.tab_kopieren2("leer", sPosNr, 9999)
+        if self.tab.tab_existiert(sPosNr):
+            tab.set_tabfokus_s(sPosNr)
+            tab.set_zelltext_s("B3", sPosNr)
+        pass
 #----------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------
@@ -4298,6 +4311,10 @@ def Kalkulation_set_tab_fokus():
     kal = kalkulation()
     kal.set_fokus_tab(kal.get_zelltext())    
     pass
+def Kalkulation_pos_erstellen():
+    kal = kalkulation()
+    kal.erstelle_tab()    
+    pass
 #---------
 def TaPlan_formartieren(): 
     tpl = TaPlan()
@@ -4402,6 +4419,10 @@ def WoPlan_Tagesplan_BTN(self):
 def Kalkulation_set_tab_fokus_BTN(self):
     kal = kalkulation()
     kal.set_fokus_tab(kal.get_zelltext())    
+    pass
+def Kalkulation_pos_erstellen_BTN(self):
+    kal = kalkulation()
+    kal.erstelle_tab()    
     pass
 #---------
 def TaPlan_formartieren_BTN(self): 
