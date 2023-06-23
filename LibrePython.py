@@ -275,22 +275,32 @@ class ol_tabelle:
             return 0
         return 0
     def tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex):
+        retwert = 0
         namen = []
         namen = self.doc.Sheets.ElementNames
-        tab_schon_vorhanden = 0
+        tab_alt_schon_vorhanden = 0
         for i in range (0, len(namen)):
             if namen[i] == sAlterTabName:
-                tab_schon_vorhanden = 1
+                tab_alt_schon_vorhanden = 1
                 break #for i
-        if tab_schon_vorhanden == 1:
-            self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+        tab_neu_schon_vorhanden = 0
+        for i in range (0, len(namen)):
+            if namen[i] == sAlterTabName:
+                tab_neu_schon_vorhanden = 1
+                break #for i
+        if tab_alt_schon_vorhanden == 1:
+            if tab_neu_schon_vorhanden == 0:
+                self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+            else:
+                retwert = 2
         else:
             msg = "Die Registerkarte \""
             msg += sAlterTabName
             titel = "tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex)"
             msg += "\" ist nicht vorhanden und kann desshalb nicht kopiert werden!"
             msgbox(msg, titel, 1, 'QUERYBOX')
-        pass
+            retwert = 1
+        return retwert
     def tab_setName(self, sNeuerTabName):
         namen = []
         namen = self.doc.Sheets.ElementNames
@@ -4087,10 +4097,11 @@ class kalkulation: #Calc
     def erstelle_tab(self):
         sPosNr = self.get_zelltext()
         tab = ol_tabelle()
-        tab.tab_kopieren2("leer", sPosNr, 9999)
+        gesund = tab.tab_kopieren2("leer", sPosNr, 9999)
         if self.tab.tab_existiert(sPosNr):
             tab.set_tabfokus_s(sPosNr)
-            tab.set_zelltext_s("B3", sPosNr)
+            if gesund == 0:
+                tab.set_zelltext_s("B3", sPosNr)
         pass
 #----------------------------------------------------------------------------------
 
