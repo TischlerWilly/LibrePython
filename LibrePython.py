@@ -1429,10 +1429,12 @@ class slist: # Calc
                 iZugabe_L += 20
             if iZugabe_L > 0:
                 sNeue_L = "=" + sLaenge + "+" + str(iZugabe_L)
+                sNeue_L = sNeue_L.replace(",", ".")
                 self.t.set_zellformel_i(i, iIndexSpalte_L, sNeue_L)
                 self.t.set_zellfarbe_i(i, iIndexSpalte_L, self.gelb)
-            if iZugabe_B > 0:
+            if iZugabe_B > 0:                
                 sNeue_B = "=" + sBreite + "+" + str(iZugabe_B)
+                sNeue_B = sNeue_B.replace(",", ".")
                 self.t.set_zellformel_i(i, iIndexSpalte_B, sNeue_B)
                 self.t.set_zellfarbe_i(i, iIndexSpalte_B, self.gelb)
             pass #for
