@@ -3927,6 +3927,20 @@ class WoPlan: # Calc
                 pass
             pass
         pass
+    def ist_Lehrgang(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Lehrgang")
+                farbe = RGBTo32bitInt(153, 204, 255) # blau
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
     def get_tagesplan(self):
         tab = ol_tabelle()
         kw = tab.get_tabname()
@@ -4322,6 +4336,10 @@ def WoPlan_ist_Berufsschule():
     wpl = WoPlan()
     wpl.ist_Berufsschule()
     pass
+def WoPlan_ist_Lehrgang():
+    wpl = WoPlan()
+    wpl.ist_Lehrgang()
+    pass
 def WoPlan_Tagesplan():
     wpl = WoPlan()
     wpl.get_tagesplan()
@@ -4430,6 +4448,10 @@ def WoPlan_ist_krank_BTN(self):
 def WoPlan_ist_Berufsschule_BTN(self):
     wpl = WoPlan()
     wpl.ist_Berufsschule()
+    pass
+def WoPlan_ist_Lehrgang_BTN(self):
+    wpl = WoPlan()
+    wpl.ist_Lehrgang()
     pass
 def WoPlan_Tagesplan_BTN(self):
     wpl = WoPlan()
