@@ -1,4 +1,4 @@
-# alles einfalten: strg+K --> strg+0
+# alles einfalten: strg+k --> strg+0
 from __future__ import unicode_literals
 from ast import Not
 from genericpath import exists
@@ -1134,6 +1134,10 @@ class slist: # Calc
             # lfdm gerundet:
             formel = "=ROUNDUP(R" + str(i+2) + "/5;0)*5"
             self.t.set_zellformel_i(i+1, 18, formel)
+            # Kantennummer Ostermann:
+            formel =  "=LEFT(RIGHT(Q" + str(i+2) + ";LEN(Q" + str(i+2) + ")-12);3)&\".\"&RIGHT(Q" + str(i+2) + ";LEN(Q"
+            formel += str(i+2) + ")-15)&\".\"&RIGHT(LEFT(Q" + str(i+2) + ";9);3)&RIGHT(LEFT(Q" + str(i+2) + ";3);2)"
+            self.t.set_zellformel_i(i+1, 19, formel)
             pass
         # Formeln für Kantenfehler einfügen:
         self.t.set_spaltenausrichtung_i(15, "mi")
