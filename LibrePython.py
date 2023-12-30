@@ -475,6 +475,25 @@ class ol_tabelle:
         tableBorder.IsBottomLineValid = True
         self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
         pass
+    def set_Rahmen_s(self, sRange, iLinienbreite, rahmenfarbe):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        borderLine.Color = rahmenfarbe
+        tableBorder.VerticalLine = borderLine
+        tableBorder.IsVerticalLineValid = True
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
+        tableBorder.LeftLine = borderLine
+        tableBorder.IsLeftLineValid = True
+        tableBorder.RightLine = borderLine
+        tableBorder.IsRightLineValid = True
+        tableBorder.TopLine = borderLine
+        tableBorder.IsTopLineValid = True
+        tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
+        self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
     #-----------------------------------------------------------------------------------------------
     # Spalten:
     #-----------------------------------------------------------------------------------------------
@@ -656,6 +675,7 @@ class slist: # Calc
         self.rot = RGBTo32bitInt(204, 0, 0)
         self.gelb = RGBTo32bitInt(255, 255, 0) 
         self.grau = RGBTo32bitInt(204, 204, 204) 
+        self.gruen = RGBTo32bitInt(129, 212, 26) 
         pass
     def tabkopf_anlegen(self):
         self.t.set_zelltext_s("A1", "Bezeichnung")
@@ -1473,10 +1493,6 @@ class slist: # Calc
             self.t.set_zelltext_s("A1", "Projekt:")
             self.t.set_zelltext_s("B1", "Abc01")
             self.t.set_zelltext_s("C1", "CNC-Pfad:")
-            #windowsuser = os.getlogin()
-            #cnc_pfad = "C:\\Users\\"
-            #cnc_pfad += windowsuser
-            #cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
             self.t.set_zelltext_s("D1", self.cnc_pfad)
             self.t.set_zelltext_s("A3", "Pos")
             self.t.set_zelltext_s("B3", "Bezeichnung")
@@ -1501,7 +1517,217 @@ class slist: # Calc
             msg   = "Bitte in die Registerkarte \"Grundlagen\" wechseln und die Zelle mit der gewünschten Positionsnummer anklicken um diese Funktion zu nutzen"
             msgbox(msg, titel, 1, 'QUERYBOX')
         pass
-        
+    def check_cncdata(self):
+        if self.autoformat() == True:
+            projekt = self.t.get_zelltext_s("P2")
+            pos_nr = self.t.get_tabname()
+            grundpfad = self.cnc_pfad
+            grundpfad += "\\"
+            grundpfad += projekt
+            if os.path.isdir(grundpfad):
+                grundpfad += "\\"
+                grundpfad += self.posnr_formartieren(pos_nr)
+                if os.path.isdir(grundpfad):
+                    anz_leerzeilen = 0
+                    for i in range (1, self.maxistklen):
+                        bezeichnung = self.t.get_zelltext_i(i, 0)
+                        if len(bezeichnung) == 0:
+                            anz_leerzeilen = anz_leerzeilen + 1
+                            if anz_leerzeilen > 20:
+                                break #for
+                        else: # Bezeichnung ist nicht leer
+                            baugruppe = self.baugruppe(bezeichnung)
+                            wstname = "0"
+                            akt_pfad = grundpfad
+                            if len(baugruppe) == 0: # es gibt keine Baugruppe/Schranknummer
+                                wstname = bezeichnung
+                                akt_pfad = grundpfad
+                            else: # es gibt eine Baugruppe/Schranknummer
+                                wstname = bezeichnung[len(baugruppe)+1:]
+                                akt_pfad = grundpfad
+                                akt_pfad += "\\"
+                                akt_pfad += baugruppe
+                            akt_datei  = akt_pfad
+                            akt_datei += "\\"
+                            akt_datei += wstname
+                            akt_datei += ".ppf"
+                            if os.path.isfile(akt_datei):
+                                self.t.set_zellfarbe_i(i,0, self.gruen)
+                                tabindex_la = 2
+                                tabindex_br = 3
+                                tabindex_di = 4
+                                tabindex_la_s = "C"
+                                tabindex_br_s = "D"
+                                tabindex_di_s = "E"
+                                slist_la = float(self.t.get_zelltext_i(i, tabindex_la))
+                                slist_br = float(self.t.get_zelltext_i(i, tabindex_br))
+                                slist_di = float(self.t.get_zelltext_i(i, tabindex_di))
+                                cnc_la = float(self.ppf_wst_laenge(akt_datei))
+                                cnc_br = float(self.ppf_wst_breite(akt_datei))
+                                cnc_di = float(self.ppf_wst_dicke(akt_datei))
+                                rahmenbreite = 70
+                                if(slist_la == cnc_la):
+                                    self.t.set_Rahmen_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                    if(slist_br == cnc_br):
+                                        self.t.set_Rahmen_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                if(slist_br == cnc_la):
+                                    self.t.set_Rahmen_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                    if(slist_la == cnc_br):
+                                        self.t.set_Rahmen_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                if(slist_di == cnc_di):
+                                    self.t.set_Rahmen_s(tabindex_di_s + str(i+1), rahmenbreite, self.gruen)                            
+                else: # Ordner für Projektpos nicht gefunden
+                    titel = "Klasse: slist, Funktion: check_wstmass()"
+                    msg   = "Ordner wurde nicht gefunden!"
+                    msg  += "\n"
+                    msg  += grundpfad
+                    msgbox(msg, titel, 1, 'QUERYBOX')
+            else: # Projektordner nicht gefunden
+                titel = "Klasse: slist, Funktion: check_wstmass()"
+                msg   = "Projektordner wurde nicht gefunden!"
+                msg  += "\n"
+                msg  += grundpfad
+                msgbox(msg, titel, 1, 'QUERYBOX')
+        else: # ist keine Stückliste
+            titel = "Klasse: slist, Funktion: check_wstmass()"
+            msg   = "Die Tabelle ist keine Stückliste. Die Funktion wird nicht ausgeführt."
+            msgbox(msg, titel, 1, 'QUERYBOX')
+        pass
+    def posnr_formartieren(self, posnr):
+        formartierte_posnr = "0"
+        if "," in posnr:
+            index = posnr.find(",")
+            posnr_ohne_komma = posnr[0:index]
+            nachkommastellen = posnr[index+1:]
+            if len(posnr_ohne_komma) == 4:
+                formartierte_posnr = posnr
+            elif len(posnr_ohne_komma) == 3:
+                formartierte_posnr = "0"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += ","
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 2:
+                formartierte_posnr = "00"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += ","
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 1:
+                formartierte_posnr = "000"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += ","
+                formartierte_posnr += nachkommastellen
+        elif "." in posnr:
+            index = posnr.find(".")
+            posnr_ohne_komma = posnr[0:index]
+            nachkommastellen = posnr[index+1:]
+            if len(posnr_ohne_komma) == 4:
+                formartierte_posnr = posnr
+            elif len(posnr_ohne_komma) == 3:
+                formartierte_posnr = "0"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += "."
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 2:
+                formartierte_posnr = "00"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += "."
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 1:
+                formartierte_posnr = "000"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += "."
+                formartierte_posnr += nachkommastellen
+        else:
+            if len(posnr) == 4:
+                formartierte_posnr = posnr
+            elif len(posnr) == 3:
+                formartierte_posnr = "0"
+                formartierte_posnr += posnr
+            elif len(posnr) == 2:
+                formartierte_posnr = "00"
+                formartierte_posnr += posnr
+            elif len(posnr) == 1:
+                formartierte_posnr = "000"
+                formartierte_posnr += posnr
+        return formartierte_posnr
+    def baugruppe(self, bezeichnung):
+        gruppenbezeichnung = ""
+        if "_" in bezeichnung:
+            index = bezeichnung.find("_")
+            text_links  = bezeichnung[0:index]
+            # text_rechts = bezeichnung[index+1:]
+            if len(text_links)>1:
+                erstes_zeichen = text_links[0:1]
+                zweites_zeichen = text_links[1:2]
+                if erstes_zeichen == "S":
+                    if istZiffer(zweites_zeichen):
+                        gruppenbezeichnung = text_links
+                        # bauteilname = text_rechts
+                elif erstes_zeichen == "#":
+                    gruppenbezeichnung = text_links
+                elif erstes_zeichen == "@":
+                    gruppenbezeichnung = text_links
+        return gruppenbezeichnung
+    def ppf_wst_laenge(self, datipfad):
+        gesuchter_parameter = "0"
+        if os.path.isfile(datipfad):
+            datei = open(datipfad, "r")
+            pkopf = False
+            for zeile in datei:                
+                if "<<Werkstueck>>" in zeile:
+                    pkopf = True
+                if "<</Werkstueck>>" in zeile:
+                    pkopf = False
+                    return gesuchter_parameter
+                if pkopf == True:
+                    parambez_start = "<Wst_Laenge>"
+                    parambez_ende  = "</Wst_Laenge>"
+                    if parambez_start in zeile:
+                        start_index = zeile.find(parambez_start)
+                        start_laenge = len(parambez_start)
+                        ende_index = zeile.find(parambez_ende)
+                        gesuchter_parameter = zeile[start_index+start_laenge:ende_index]
+        return gesuchter_parameter
+    def ppf_wst_breite(self, datipfad):
+        gesuchter_parameter = "0"
+        if os.path.isfile(datipfad):
+            datei = open(datipfad, "r")
+            pkopf = False
+            for zeile in datei:                
+                if "<<Werkstueck>>" in zeile:
+                    pkopf = True
+                if "<</Werkstueck>>" in zeile:
+                    pkopf = False
+                    return gesuchter_parameter
+                if pkopf == True:
+                    parambez_start = "<Wst_Breite>"
+                    parambez_ende  = "</Wst_Breite>"
+                    if parambez_start in zeile:
+                        start_index = zeile.find(parambez_start)
+                        start_laenge = len(parambez_start)
+                        ende_index = zeile.find(parambez_ende)
+                        gesuchter_parameter = zeile[start_index+start_laenge:ende_index] 
+        return gesuchter_parameter
+    def ppf_wst_dicke(self, datipfad):
+        gesuchter_parameter = "0"
+        if os.path.isfile(datipfad):
+            datei = open(datipfad, "r")
+            pkopf = False
+            for zeile in datei:                
+                if "<<Werkstueck>>" in zeile:
+                    pkopf = True
+                if "<</Werkstueck>>" in zeile:
+                    pkopf = False
+                    return gesuchter_parameter
+                if pkopf == True:
+                    parambez_start = "<Wst_Dicke>"
+                    parambez_ende  = "</Wst_Dicke>"
+                    if parambez_start in zeile:
+                        start_index = zeile.find(parambez_start)
+                        start_laenge = len(parambez_start)
+                        ende_index = zeile.find(parambez_ende)
+                        gesuchter_parameter = zeile[start_index+start_laenge:ende_index] 
+        return gesuchter_parameter
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
     def __init__(self):
@@ -4348,6 +4574,10 @@ def SList_tab_anlegen_stklistpos():
     sli = slist()
     sli.tab_anlegen_stklistpos()
     pass
+def SList_check_cncdata():
+    sli = slist()
+    sli.check_cncdata()
+    pass
 #---------
 def RB_Blancoliste():
     l = raumbuch()
@@ -4490,6 +4720,10 @@ def SList_tap_anlegen_uebersicht_BTN(self):
 def SList_tab_anlegen_stklistpos_BTN(self):
     sli = slist()
     sli.tab_anlegen_stklistpos()
+    pass
+def SList_check_cncdata_BTN(self):
+    sli = slist()
+    sli.check_cncdata()
     pass
 #---------
 def RB_Blancoliste_BTN(self):
