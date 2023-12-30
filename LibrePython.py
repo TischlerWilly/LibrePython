@@ -377,6 +377,20 @@ class ol_tabelle:
     def get_zelltext_i(self, zeile, spalte):
         return self.sheet.getCellByPosition(spalte, zeile).String
         # Anwendung: text = t.get_zelltext_i(1,1)
+    def get_zelltext_akt_auswahl(self):
+        iZeile = 0
+        iSpalte = 0
+        iZeileStart = self.get_selection_zeile_start()
+        iZeileEnde  = self.get_selection_zeile_ende()
+        iSpalteStart = self.get_selection_spalte_start()
+        iSpalteEnde = self.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):# wird gebraucht zur Typenumwandlung
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                iZeile = z
+                iSpalte = s
+                break # nur 1 durchlauf erwünscht
+            break # nur 1 durchlauf erwünscht
+        return self.get_zelltext_i(iZeile, iSpalte)
     def set_zellformel_s(self, zellname, formel):
         self.sheet.getCellRangeByName(zellname).Formula = formel
         pass
@@ -631,7 +645,12 @@ class ol_textdatei:
 class slist: # Calc
     def __init__(self):
         self.t = ol_tabelle()
-        self.maxistklen = 999   
+        self.maxistklen = 999  
+        # CNC-Pfad des Postprozessors:
+        windowsuser = os.getlogin()
+        self.cnc_pfad = "C:\\Users\\"
+        self.cnc_pfad += windowsuser
+        self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
         # Farben bestimmen:
         self.farblos = -1
         self.rot = RGBTo32bitInt(204, 0, 0)
@@ -1442,6 +1461,45 @@ class slist: # Calc
                 self.t.set_zellformel_i(i, iIndexSpalte_B, sNeue_B)
                 self.t.set_zellfarbe_i(i, iIndexSpalte_B, self.gelb)
             pass #for
+        pass
+    def tap_anlegen_uebersicht(self):
+        tabname = "Übersicht"
+        if not self.t.tab_existiert(tabname):            
+            self.t.tab_anlegen(tabname, 0)
+        else:
+            self.t.set_tabfokus_s(tabname)
+        if self.t.tab_existiert(tabname):
+            self.t.set_tabfokus_s(tabname)
+            self.t.set_zelltext_s("A1", "Projekt:")
+            self.t.set_zelltext_s("B1", "Abc01")
+            self.t.set_zelltext_s("C1", "CNC-Pfad:")
+            #windowsuser = os.getlogin()
+            #cnc_pfad = "C:\\Users\\"
+            #cnc_pfad += windowsuser
+            #cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
+            self.t.set_zelltext_s("D1", self.cnc_pfad)
+            self.t.set_zelltext_s("A3", "Pos")
+            self.t.set_zelltext_s("B3", "Bezeichnung")
+            self.t.set_spaltenbreite_i(1, 6000) # Bezeichnung
+            self.t.set_zellausrichtungHori_s("A3:A1000", "mi")
+        pass
+    def tab_anlegen_stklistpos(self):
+        akt_tabname = self.t.get_tabname()
+        if akt_tabname == "Übersicht":
+            projektnummer = self.t.get_zelltext_s("B1")
+            tabname = self.t.get_zelltext_akt_auswahl() # Positionsnummer
+            if self.t.tab_existiert(tabname):
+                self.t.set_tabfokus_s(tabname)
+            else:
+                self.t.tab_anlegen(tabname, 9999)
+                if self.t.tab_existiert(tabname):
+                    self.t.set_tabfokus_s(tabname)
+                    self.formeln_edit()
+                    self.t.set_zelltext_s("P2", projektnummer)
+        else:
+            titel = "Bediener-Fehler"
+            msg   = "Bitte in die Registerkarte \"Grundlagen\" wechseln und die Zelle mit der gewünschten Positionsnummer anklicken um diese Funktion zu nutzen"
+            msgbox(msg, titel, 1, 'QUERYBOX')
         pass
         
 #----------------------------------------------------------------------------------
@@ -4237,6 +4295,13 @@ def test_123():
 
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung im Menü:
+def tabelle_set_tabfokus_uebersicht():
+    tab = ol_tabelle()
+    tabname = "Übersicht"
+    if tab.tab_existiert(tabname):
+        tab.set_tabfokus_s(tabname)
+    pass
+#---------
 def SList_autoformat():
     sli = slist()
     sli.autoformat()
@@ -4274,6 +4339,14 @@ def SList_sortieren_reduzieren():
 def SList_gehr_masszugabe():
     sli = slist()
     sli.gehr_masszugabe()
+    pass
+def SList_tap_anlegen_uebersicht():
+    sli = slist()
+    sli.tap_anlegen_uebersicht()
+    pass
+def SList_tab_anlegen_stklistpos():
+    sli = slist()
+    sli.tab_anlegen_stklistpos()
     pass
 #---------
 def RB_Blancoliste():
@@ -4365,6 +4438,13 @@ def TaPlan_formartieren():
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 # Starter für die Bedienung in der Symbolleiste:
+def tabelle_set_tabfokus_uebersicht_BTN(self):
+    tab = ol_tabelle()
+    tabname = "Übersicht"
+    if tab.tab_existiert(tabname):
+        tab.set_tabfokus_s(tabname)
+    pass
+#---------
 def SList_autoformat_BTN(self):
     sli = slist()
     sli.autoformat()
@@ -4402,6 +4482,14 @@ def SList_sortieren_reduzieren_BTN(self):
 def SList_gehr_masszugabe_BTN(self):
     sli = slist()
     sli.gehr_masszugabe()
+    pass
+def SList_tap_anlegen_uebersicht_BTN(self):
+    sli = slist()
+    sli.tap_anlegen_uebersicht()
+    pass
+def SList_tab_anlegen_stklistpos_BTN(self):
+    sli = slist()
+    sli.tab_anlegen_stklistpos()
     pass
 #---------
 def RB_Blancoliste_BTN(self):
