@@ -1517,6 +1517,141 @@ class slist: # Calc
             msg   = "Bitte in die Registerkarte \"Grundlagen\" wechseln und die Zelle mit der gewünschten Positionsnummer anklicken um diese Funktion zu nutzen"
             msgbox(msg, titel, 1, 'QUERYBOX')
         pass
+    def tab_anlegen_kantenanlage(self):
+        tabname = "Kante"
+        if not self.t.tab_existiert(tabname):            
+            self.t.tab_anlegen(tabname, 1)
+        else:
+            self.t.set_tabfokus_s(tabname)
+        if self.t.tab_existiert(tabname):
+            self.t.set_tabfokus_s(tabname)
+            self.t.set_zelltext_s("A1", "Ostermann-Nummer")
+            self.t.set_zelltext_s("B1", "041.0040.02320")
+            self.t.set_zelltext_s("A3", "Plattenart (Fügemaß)")
+            self.t.set_zelltext_s("D3", "mm")
+            self.t.set_zelltext_s("A4", "normal (KaDi)")
+            self.t.set_zelltext_s("B4", "x")
+            self.t.set_zelltext_s("A5", "Multiplex (0,5mm)")
+            self.t.set_zelltext_s("A6", "Metall (0mm)")
+            self.t.set_zelltext_s("A8", "Radius")
+            self.t.set_zelltext_s("D8", "mm")
+            self.t.set_zelltext_s("A9", "automatisch")
+            self.t.set_zelltext_s("B9", "x")
+            self.t.set_zelltext_s("A10", "0mm")
+            self.t.set_zelltext_s("A11", "1mm")
+            self.t.set_zelltext_s("A12", "2mm")
+            self.t.set_zelltext_s("A14", "Nuttyp")
+            self.t.set_zelltext_s("D14", " = Nuttyp")
+            self.t.set_zelltext_s("A15", "(_) keine Nut")
+            self.t.set_zelltext_s("B15", "x")
+            self.t.set_zelltext_s("A16", "(A) Nutprogramm A")
+            self.t.set_zelltext_s("A17", "(B) Nutprogramm B")
+            self.t.set_zelltext_s("A18", "(C) Nutprogramm C")
+            self.t.set_zelltext_s("A19", "(g) Gehrung")
+            self.t.set_zelltext_s("C19", "bei dieser Auswahl automatisch Radius 0mm")
+            self.t.set_zelltext_s("A21", "Daten für die Stückliste")
+            self.t.set_zelltext_s("B23", "Artikelnummer")
+            self.t.set_zelltext_s("C23", "KaDi")
+            self.t.set_zelltext_s("B26", "Dicke")
+            self.t.set_zelltext_s("B27", "Fügemaß")
+            self.t.set_zelltext_s("B28", "Nuttyp")
+            self.t.set_zelltext_s("B29", "Breite")
+            self.t.set_zelltext_s("B30", "Radius")
+            self.t.set_zelltext_s("B31", "Kantenfarbe")
+            self.t.set_zelltext_s("A33", "Sonder-Kanteninformationen")
+            self.t.set_zelltext_s("A34", "Schleifen/Füg ohne Rad")
+            self.t.set_zelltext_s("B34", "00005_00000_schleifen")
+            self.t.set_zelltext_s("A35", "Schleifen/Fügen und R1")
+            self.t.set_zelltext_s("B35", "00005_00010_schleifen")
+            self.t.set_zelltext_s("A36", "Schleifen/Fügen und R2")
+            self.t.set_zelltext_s("B36", "00005_00020_schleifen")
+            self.t.set_spaltenbreite_i(0, 3750)
+            self.t.set_spaltenbreite_i(1, 3750)
+            self.t.set_SchriftFett_s("A1", True)
+            self.t.set_SchriftFett_s("A3", True)
+            self.t.set_SchriftFett_s("A8", True)
+            self.t.set_SchriftFett_s("A14", True)
+            self.t.set_SchriftFett_s("A21", True)
+            self.t.set_SchriftFett_s("A33", True)
+            self.t.set_Rahmen_komplett_s("B1", 25)
+            self.t.set_Rahmen_komplett_s("A4:B6", 25)
+            self.t.set_Rahmen_komplett_s("A9:B12", 25)
+            self.t.set_Rahmen_komplett_s("A15:B19", 25)
+            self.t.set_Rahmen_komplett_s("B23:C24", 25)
+            self.t.set_Rahmen_komplett_s("B26:D31", 25)
+            self.t.set_Rahmen_komplett_s("B34:B36", 25)
+            self.t.set_zellfarbe_s("A1", self.grau)
+            self.t.set_zellfarbe_s("A3:B6", self.grau)
+            self.t.set_zellfarbe_s("A8:B12", self.grau)
+            self.t.set_zellfarbe_s("A14:B19", self.grau)
+            self.t.set_zellfarbe_s("A21:E37", self.grau)
+            self.t.set_zellfarbe_s("B1", self.gruen)
+            self.t.set_zellfarbe_s("B4:B6", self.gruen)
+            self.t.set_zellfarbe_s("B9:B12", self.gruen)
+            self.t.set_zellfarbe_s("B15:B19", self.gruen)
+            self.t.set_zellfarbe_s("B23:C24", self.gelb)
+            self.t.set_zellfarbe_s("B34:B36", self.gelb)
+            self.t.set_zellausrichtungHori_s("B1", "mi")
+            self.t.set_zellausrichtungHori_s("C3", "mi")
+            self.t.set_zellausrichtungHori_s("A4:B6", "mi")
+            self.t.set_zellausrichtungHori_s("C8", "mi")
+            self.t.set_zellausrichtungHori_s("A9:B12", "mi")
+            self.t.set_zellausrichtungHori_s("C14", "mi")
+            self.t.set_zellausrichtungHori_s("A15:B19", "mi")
+            self.t.set_zellausrichtungHori_s("B23:C24", "mi")
+            self.t.set_zellausrichtungHori_s("B26:D31", "mi")
+            self.t.set_SchriftFarbe_s("C1", self.rot)
+            formel  = "=IF(EXACT(B1;LEFT(RIGHT(B24;LEN(B24)-12);3)&\".\"&"
+            formel += "RIGHT(B24;LEN(B24)-15)&\".\"&RIGHT(LEFT(B24;9);3)&"
+            formel += "RIGHT(LEFT(B24;3);2));\"\";\"Fehler bei der Eingabe der "
+            formel += "Ostermann-Artikelnummer\")"
+            self.t.set_zellformel_s("C1", formel)
+            formel  ="=IF(ISBLANK(B4);"
+            formel += "IF(ISBLANK(B5);"
+            formel += "IF(ISBLANK(B6);"
+            formel += "\"bitte wählen\";0);"
+            formel += "0.5);"
+            formel += "(RIGHT(B1;2)/10))"
+            self.t.set_zellformel_s("C3", formel)
+            formel  = "=IF(ISBLANK(B19);IF(ISBLANK(B9);IF(ISBLANK(B10);IF(ISBLANK(B11);"
+            formel += "IF(ISBLANK(B12);\"bitte wählen\";2);1);0);(RIGHT(B1;2)/10));0)"
+            self.t.set_zellformel_s("C8", formel)
+            self.t.set_SchriftFarbe_s("D9", self.rot)
+            formel = "=IF(ISBLANK(B19);\"\";\"Weil Nuttyp Gehrung eingestellt ist!\")"
+            self.t.set_zellformel_s("D9", formel)
+            formel  = "=IF(ISBLANK(B15);IF(ISBLANK(B16);IF(ISBLANK(B17);"
+            formel += "IF(ISBLANK(B18);IF(ISBLANK(B19);\"bitte wählen\";"
+            formel += "\"g\");\"C\");\"B\");\"A\");\"_\")"
+            self.t.set_zellformel_s("C14", formel)
+            formel = "=RIGHT(B1;2)/10"
+            self.t.set_zellformel_s("C26", formel)
+            formel = "=C3"
+            self.t.set_zellformel_s("C27", formel)
+            formel = "=C14"
+            self.t.set_zellformel_s("C28", formel)
+            formel = "=LEFT(RIGHT(B1;5);3)/10*10"
+            self.t.set_zellformel_s("C29", formel)
+            formel = "=C8"
+            self.t.set_zellformel_s("C30", formel)
+            formel = "=LEFT(B1;3)&RIGHT(LEFT(B1;8);4)"
+            self.t.set_zellformel_s("C31", formel)
+            formel = "=IF(LEN(C26*10)=2;0&C26*10;(IF(LEN(C26*10)=1;\"00\"&C26*10;C26*10)))"
+            self.t.set_zellformel_s("D26", formel)
+            formel = "=IF(LEN(C27*10)=1;0&C27*10;C27*10)"
+            self.t.set_zellformel_s("D27", formel)
+            formel = "=C28"
+            self.t.set_zellformel_s("D28", formel)
+            formel = "=IF(LEN(C29)=2;0&C29;C29)"
+            self.t.set_zellformel_s("D29", formel)
+            formel = "=IF(LEN(C30*10)=1;0&C30*10;C30*10)"
+            self.t.set_zellformel_s("D30", formel)
+            formel = "=C31"
+            self.t.set_zellformel_s("D31", formel)
+            formel = "=D26&D27&D28&D29&D30&\"_\"&D31"
+            self.t.set_zellformel_s("B24", formel)
+            formel = "=C26-C27"
+            self.t.set_zellformel_s("C24", formel)
+        pass
     def check_cncdata(self):
         if self.autoformat() == True:
             projekt = self.t.get_zelltext_s("P2")
@@ -4574,6 +4709,10 @@ def SList_tab_anlegen_stklistpos():
     sli = slist()
     sli.tab_anlegen_stklistpos()
     pass
+def SList_tab_anlegen_kantenanlage():
+    sli = slist()
+    sli.tab_anlegen_kantenanlage()
+    pass
 def SList_check_cncdata():
     sli = slist()
     sli.check_cncdata()
@@ -4720,6 +4859,10 @@ def SList_tap_anlegen_uebersicht_BTN(self):
 def SList_tab_anlegen_stklistpos_BTN(self):
     sli = slist()
     sli.tab_anlegen_stklistpos()
+    pass
+def SList_tab_anlegen_kantenanlage_BTN(self):
+    sli = slist()
+    sli.tab_anlegen_kantenanlage()
     pass
 def SList_check_cncdata_BTN(self):
     sli = slist()
