@@ -1694,12 +1694,12 @@ class slist: # Calc
                                 tabindex_la_s = "C"
                                 tabindex_br_s = "D"
                                 tabindex_di_s = "E"
-                                slist_la = float(self.t.get_zelltext_i(i, tabindex_la))
-                                slist_br = float(self.t.get_zelltext_i(i, tabindex_br))
-                                slist_di = float(self.t.get_zelltext_i(i, tabindex_di))
-                                cnc_la = float(self.ppf_wst_laenge(akt_datei))
-                                cnc_br = float(self.ppf_wst_breite(akt_datei))
-                                cnc_di = float(self.ppf_wst_dicke(akt_datei))
+                                slist_la = float(self.t.get_zelltext_i(i, tabindex_la).replace(",","."))
+                                slist_br = float(self.t.get_zelltext_i(i, tabindex_br).replace(",","."))
+                                slist_di = float(self.t.get_zelltext_i(i, tabindex_di).replace(",","."))
+                                cnc_la = float(self.ppf_wst_laenge(akt_datei).replace(",","."))
+                                cnc_br = float(self.ppf_wst_breite(akt_datei).replace(",","."))
+                                cnc_di = float(self.ppf_wst_dicke(akt_datei).replace(",","."))
                                 rahmenbreite = 70
                                 if(slist_la == cnc_la):
                                     self.t.set_Rahmen_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
