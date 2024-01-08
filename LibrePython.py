@@ -494,6 +494,25 @@ class ol_tabelle:
         tableBorder.IsBottomLineValid = True
         self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
         pass
+    def set_Rahmen_unten_s(self, sRange, iLinienbreite, rahmenfarbe):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        borderLine.Color = rahmenfarbe
+        #tableBorder.VerticalLine = borderLine
+        #tableBorder.IsVerticalLineValid = True
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
+        #tableBorder.LeftLine = borderLine
+        #tableBorder.IsLeftLineValid = True
+        #tableBorder.RightLine = borderLine
+        #tableBorder.IsRightLineValid = True
+        #tableBorder.TopLine = borderLine
+        #tableBorder.IsTopLineValid = True
+        tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
+        self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
     #-----------------------------------------------------------------------------------------------
     # Spalten:
     #-----------------------------------------------------------------------------------------------
@@ -1702,15 +1721,15 @@ class slist: # Calc
                                 cnc_di = float(self.ppf_wst_dicke(akt_datei).replace(",","."))
                                 rahmenbreite = 70
                                 if(slist_la == cnc_la):
-                                    self.t.set_Rahmen_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                    self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
                                     if(slist_br == cnc_br):
-                                        self.t.set_Rahmen_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                        self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
                                 if(slist_br == cnc_la):
-                                    self.t.set_Rahmen_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                    self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
                                     if(slist_la == cnc_br):
-                                        self.t.set_Rahmen_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                        self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
                                 if(slist_di == cnc_di):
-                                    self.t.set_Rahmen_s(tabindex_di_s + str(i+1), rahmenbreite, self.gruen)                            
+                                    self.t.set_Rahmen_unten_s(tabindex_di_s + str(i+1), rahmenbreite, self.gruen)                            
                 else: # Ordner für Projektpos nicht gefunden
                     titel = "Klasse: slist, Funktion: check_wstmass()"
                     msg   = "Ordner wurde nicht gefunden!"
