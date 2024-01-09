@@ -10,6 +10,7 @@ import string
 import uno
 import datetime
 import time
+from decimal import Decimal, ROUND_05UP, ROUND_DOWN, ROUND_HALF_DOWN, ROUND_UP, ROUND_HALF_UP, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_EVEN
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.sheet.CellInsertMode import RIGHT as INSERT_RE
 from com.sun.star.sheet.CellInsertMode import DOWN as INSERT_UN
@@ -1713,23 +1714,34 @@ class slist: # Calc
                                 tabindex_la_s = "C"
                                 tabindex_br_s = "D"
                                 tabindex_di_s = "E"
-                                slist_la = float(self.t.get_zelltext_i(i, tabindex_la).replace(",","."))
-                                slist_br = float(self.t.get_zelltext_i(i, tabindex_br).replace(",","."))
-                                slist_di = float(self.t.get_zelltext_i(i, tabindex_di).replace(",","."))
-                                cnc_la = float(self.ppf_wst_laenge(akt_datei).replace(",","."))
-                                cnc_br = float(self.ppf_wst_breite(akt_datei).replace(",","."))
-                                cnc_di = float(self.ppf_wst_dicke(akt_datei).replace(",","."))
-                                rahmenbreite = 70
-                                if(slist_la == cnc_la):
-                                    self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
-                                    if(slist_br == cnc_br):
-                                        self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
-                                if(slist_br == cnc_la):
-                                    self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
-                                    if(slist_la == cnc_br):
+                                slist_la = 0
+                                slist_br = 0
+                                slist_di = 0
+                                cnc_la = 0
+                                cnc_br = 0
+                                cnc_di = 0
+                                gesund = True
+                                try:
+                                    slist_la = Decimal(self.t.get_zelltext_i(i, tabindex_la).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    slist_br = Decimal(self.t.get_zelltext_i(i, tabindex_br).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    slist_di = Decimal(self.t.get_zelltext_i(i, tabindex_di).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    cnc_la = Decimal(self.ppf_wst_laenge(akt_datei).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    cnc_br = Decimal(self.ppf_wst_breite(akt_datei).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    cnc_di = Decimal(self.ppf_wst_dicke(akt_datei).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                except:
+                                    gesund = False
+                                if gesund == True:
+                                    rahmenbreite = 70
+                                    if(slist_la == cnc_la):
                                         self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
-                                if(slist_di == cnc_di):
-                                    self.t.set_Rahmen_unten_s(tabindex_di_s + str(i+1), rahmenbreite, self.gruen)                            
+                                        if(slist_br == cnc_br):
+                                            self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                    if(slist_br == cnc_la):
+                                        self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                        if(slist_la == cnc_br):
+                                            self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                    if(slist_di == cnc_di):
+                                        self.t.set_Rahmen_unten_s(tabindex_di_s + str(i+1), rahmenbreite, self.gruen)                            
                 else: # Ordner für Projektpos nicht gefunden
                     titel = "Klasse: slist, Funktion: check_wstmass()"
                     msg   = "Ordner wurde nicht gefunden!"
