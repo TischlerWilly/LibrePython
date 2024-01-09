@@ -898,7 +898,7 @@ class slist: # Calc
         self.entferneKaDiNull()
         # Formeln einfügen:
         # Es müssen immer die englischen Funktionsnamen für die Calc-Funktionen verwendet werden!
-        for i in range (1, 25):
+        for i in range (1, 10):
             sZellname = "Q" + str(i+1)
             sFormel = "=IF(SUM(S" + str(i+1) + ":AB" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
@@ -912,22 +912,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi links:
             sZellname = "T" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -943,22 +927,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi rechts:
             sZellname = "U" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -974,22 +942,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi oben:
             sZellname = "V" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -1005,22 +957,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi unten:
             sZellname = "W" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -1621,6 +1557,7 @@ class slist: # Calc
             self.t.set_zellausrichtungHori_s("B23:C24", "mi")
             self.t.set_zellausrichtungHori_s("B26:D31", "mi")
             self.t.set_SchriftFarbe_s("C1", self.rot)
+            self.t.set_SchriftFarbe_s("E29", self.rot)
             formel  = "=IF(EXACT(B1;LEFT(RIGHT(B24;LEN(B24)-12);3)&\".\"&"
             formel += "RIGHT(B24;LEN(B24)-15)&\".\"&RIGHT(LEFT(B24;9);3)&"
             formel += "RIGHT(LEFT(B24;3);2));\"\";\"Fehler bei der Eingabe der "
@@ -1671,6 +1608,8 @@ class slist: # Calc
             self.t.set_zellformel_s("B24", formel)
             formel = "=C26-C27"
             self.t.set_zellformel_s("C24", formel)
+            formel = "=IF(C29<16;\"Achtung! Kantenbreite < 16mm an unserer Kantenmaschine nicht möglich!\";\"\")"
+            self.t.set_zellformel_s("E29", formel)
         pass
     def check_cncdata(self):
         if self.autoformat() == True:
