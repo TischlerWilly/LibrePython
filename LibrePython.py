@@ -686,10 +686,16 @@ class slist: # Calc
         self.t = ol_tabelle()
         self.maxistklen = 999  
         # CNC-Pfad des Postprozessors:
-        windowsuser = os.getlogin()
-        self.cnc_pfad = "C:\\Users\\"
-        self.cnc_pfad += windowsuser
-        self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
+        try:
+            windowsuser = os.getlogin()
+            self.cnc_pfad = "C:\\Users\\"
+            self.cnc_pfad += windowsuser
+            self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
+        except:
+            windowsuser = "nicht_auf_windows"
+            self.cnc_pfad = "C:\\Users\\"
+            self.cnc_pfad += windowsuser
+            self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"        
         # Farben bestimmen:
         self.farblos = -1
         self.rot = RGBTo32bitInt(204, 0, 0)
@@ -4633,292 +4639,159 @@ def test_123():
     pass
 
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung im Menü:
-def tabelle_set_tabfokus_uebersicht():
+# Starter für LibreOffice:
+# "*event" wird benötigt als Funktionsparameter damit die makros auch über Buttons im LibreOffice gestartet werden können
+def tabelle_set_tabfokus_uebersicht(*event):
     tab = ol_tabelle()
     tabname = "Übersicht"
     if tab.tab_existiert(tabname):
         tab.set_tabfokus_s(tabname)
     pass
 #---------
-def SList_autoformat():
+def SList_autoformat(*event):
     sli = slist()
     sli.autoformat()
     pass
-def SList_Formeln_edit():
+def SList_Formeln_edit(*event):
     sli = slist()
     sli.formeln_edit()
     pass
-def SList_Formeln_Kante():
+def SList_Formeln_Kante(*event):
     sli = slist()
     sli.formeln_kante()
     pass
-def SList_Kanteninfo_beraeumen():
+def SList_Kanteninfo_beraeumen(*event):
     sli = slist()
     sli.kanteninfo_beraeumen()
     pass
-def SList_Teil_drehen():
+def SList_Teil_drehen(*event):
     sli = slist()
     sli.teil_drehen()
     pass
-def SList_sortieren():
+def SList_sortieren(*event):
     sli = slist()
     sli.sortieren()
     pass
-def SList_reduzieren():
+def SList_reduzieren(*event):
     sli = slist()
     sli.reduzieren()
     pass
-def SList_sortieren_reduzieren():
+def SList_sortieren_reduzieren(*event):
     sli = slist()
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
     pass
-def SList_gehr_masszugabe():
+def SList_gehr_masszugabe(*event):
     sli = slist()
     sli.gehr_masszugabe()
     pass
-def SList_tap_anlegen_uebersicht():
+def SList_tap_anlegen_uebersicht(*event):
     sli = slist()
     sli.tap_anlegen_uebersicht()
     pass
-def SList_tab_anlegen_stklistpos():
+def SList_tab_anlegen_stklistpos(*event):
     sli = slist()
     sli.tab_anlegen_stklistpos()
     pass
-def SList_tab_anlegen_kantenanlage():
+def SList_tab_anlegen_kantenanlage(*event):
     sli = slist()
     sli.tab_anlegen_kantenanlage()
     pass
-def SList_check_cncdata():
+def SList_check_cncdata(*event):
     sli = slist()
     sli.check_cncdata()
     pass
 #---------
-def RB_Blancoliste():
+def RB_Blancoliste(*event):
     l = raumbuch()
     l.RB_Blankoliste()
     pass
-def RB_LList_Formblatt():
+def RB_LList_Formblatt(*event):
     l = raumbuch()
     l.LList_Formblatt()
     pass
-def RB_LList_start():
+def RB_LList_start(*event):
     l = raumbuch()
     l.LList_start()
     pass
 #---------
-def baugrpetk_calc_ermitteln():
+def baugrpetk_calc_ermitteln(*event):
     sli = baugrpetk_calc()
     sli.ermitteln()
     sli.auflisten()
     pass
-def baugrpetk_calc_speichern():
+def baugrpetk_calc_speichern(*event):
     sli = baugrpetk_calc()
     sli.speichern()
     pass
 #---------
-def baugrpetk_writer_formartieren():
+def baugrpetk_writer_formartieren(*event):
     obj = baugrpetk_writer()
     obj.formartieren()
     pass
 #---------
-def WoPlan_tab_Grundlagen():
+def WoPlan_tab_Grundlagen(*event):
     wpl = WoPlan()
     wpl.tab_Grundlagen()
     pass
-def WoPlan_tab_KW():
+def WoPlan_tab_KW(*event):
     wpl = WoPlan()
     wpl.wochenplan_erstellen()
     pass
-def WoPlan_ist_Urlaub():
+def WoPlan_ist_Urlaub(*event):
     wpl = WoPlan()
     wpl.ist_Urlaub()
     pass
-def WoPlan_ist_Zeitausgleich():
+def WoPlan_ist_Zeitausgleich(*event):
     wpl = WoPlan()
     wpl.ist_Zeitausgleich()
     pass
-def WoPlan_ist_Lieferung():
+def WoPlan_ist_Lieferung(*event):
     wpl = WoPlan()
     wpl.ist_Lieferung()
     pass
-def WoPlan_ist_Kurzarbeit():
+def WoPlan_ist_Kurzarbeit(*event):
     wpl = WoPlan()
     wpl.ist_Kurzarbeit()
     pass
-def WoPlan_ist_Montage():
+def WoPlan_ist_Montage(*event):
     wpl = WoPlan()
     wpl.ist_Montage()
     pass
-def WoPlan_ist_krank():
+def WoPlan_ist_krank(*event):
     wpl = WoPlan()
     wpl.ist_krank()
     pass
-def WoPlan_ist_Berufsschule():
+def WoPlan_ist_Berufsschule(*event):
     wpl = WoPlan()
     wpl.ist_Berufsschule()
     pass
-def WoPlan_ist_Lehrgang():
+def WoPlan_ist_Lehrgang(*event):
     wpl = WoPlan()
     wpl.ist_Lehrgang()
     pass
-def WoPlan_Tagesplan():
+def WoPlan_Tagesplan(*event):
     wpl = WoPlan()
     wpl.get_tagesplan()
     pass
 #---------
-def Kalkulation_set_tab_fokus():
+def Kalkulation_set_tab_fokus(*event):
     kal = kalkulation()
     kal.set_fokus_tab(kal.get_zelltext())    
     pass
-def Kalkulation_pos_erstellen():
+def Kalkulation_pos_erstellen(*event):
     kal = kalkulation()
     kal.erstelle_tab()    
     pass
 #---------
-def TaPlan_formartieren(): 
+def TaPlan_formartieren(*event): 
     tpl = TaPlan()
     tpl.formartieren()
     pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung in der Symbolleiste:
-def tabelle_set_tabfokus_uebersicht_BTN(self):
-    tab = ol_tabelle()
-    tabname = "Übersicht"
-    if tab.tab_existiert(tabname):
-        tab.set_tabfokus_s(tabname)
-    pass
-#---------
-def SList_autoformat_BTN(self):
-    sli = slist()
-    sli.autoformat()
-    pass
-def SList_Formeln_edit_BTN(self):
-    sli = slist()
-    sli.formeln_edit()
-    pass
-def SList_Formeln_Kante_BTN(self):
-    sli = slist()
-    sli.formeln_kante()
-    pass
-def SList_Kanteninfo_beraeumen_BTN(self):
-    sli = slist()
-    sli.kanteninfo_beraeumen()
-    pass
-def SList_Teil_drehen_BTN(self):
-    sli = slist()
-    sli.teil_drehen()
-    pass
-def SList_sortieren_BTN(self):
-    sli = slist()
-    sli.sortieren()
-    pass
-def SList_reduzieren_BTN(self):
-    sli = slist()
-    sli.reduzieren()
-    pass
-def SList_sortieren_reduzieren_BTN(self):
-    sli = slist()
-    sli.std_namen()
-    sli.reduzieren()
-    sli.sortieren()
-    pass
-def SList_gehr_masszugabe_BTN(self):
-    sli = slist()
-    sli.gehr_masszugabe()
-    pass
-def SList_tap_anlegen_uebersicht_BTN(self):
-    sli = slist()
-    sli.tap_anlegen_uebersicht()
-    pass
-def SList_tab_anlegen_stklistpos_BTN(self):
-    sli = slist()
-    sli.tab_anlegen_stklistpos()
-    pass
-def SList_tab_anlegen_kantenanlage_BTN(self):
-    sli = slist()
-    sli.tab_anlegen_kantenanlage()
-    pass
-def SList_check_cncdata_BTN(self):
-    sli = slist()
-    sli.check_cncdata()
-    pass
-#---------
-def RB_Blancoliste_BTN(self):
-    l = raumbuch()
-    l.RB_Blankoliste()
-    pass
-def RB_LList_Formblatt_BTN(self):
-    l = raumbuch()
-    l.LList_Formblatt()
-    pass
-def RB_LList_start_BTN(self):
-    l = raumbuch()
-    l.LList_start()
-    pass
-#---------
-def WoPlan_tab_Grundlagen_BTN(self):
-    wpl = WoPlan()
-    wpl.tab_Grundlagen()
-    pass
-def WoPlan_tab_KW_BTN(self):
-    wpl = WoPlan()
-    wpl.wochenplan_erstellen()
-    pass
-def WoPlan_ist_Urlaub_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Urlaub()
-    pass
-def WoPlan_ist_Zeitausgleich_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Zeitausgleich()
-    pass
-def WoPlan_ist_Lieferung_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Lieferung()
-    pass
-def WoPlan_ist_Kurzarbeit_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Kurzarbeit()
-    pass
-def WoPlan_ist_Montage_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Montage()
-    pass
-def WoPlan_ist_krank_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_krank()
-    pass
-def WoPlan_ist_Berufsschule_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Berufsschule()
-    pass
-def WoPlan_ist_Lehrgang_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Lehrgang()
-    pass
-def WoPlan_Tagesplan_BTN(self):
-    wpl = WoPlan()
-    wpl.get_tagesplan()
-    pass
-#---------
-def Kalkulation_set_tab_fokus_BTN(self):
-    kal = kalkulation()
-    kal.set_fokus_tab(kal.get_zelltext())    
-    pass
-def Kalkulation_pos_erstellen_BTN(self):
-    kal = kalkulation()
-    kal.erstelle_tab()    
-    pass
-#---------
-def TaPlan_formartieren_BTN(self): 
-    tpl = TaPlan()
-    tpl.formartieren()
-    pass
-#----------------------------------------------------------------------------------
+
 
 # Notizen:
 
