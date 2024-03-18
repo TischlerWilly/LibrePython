@@ -514,6 +514,12 @@ class ol_tabelle:
         tableBorder.IsBottomLineValid = True
         self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
         pass
+    def zellen_verbinden_s(self, sRange, bIstVerbunden):
+        self.sheet.getCellRangeByName(sRange).merge(bIstVerbunden)
+        pass
+    def zellen_verbinden_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, bIstVerbunden):
+        self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).merge(bIstVerbunden)
+        pass
     #-----------------------------------------------------------------------------------------------
     # Spalten:
     #-----------------------------------------------------------------------------------------------
@@ -871,6 +877,73 @@ class slist: # Calc
             return True
         return False
         # Anwendung: self.autoformat()
+    def formartieren_zum_ausdrucken(self):
+        index_nr = 0
+        index_artikel = 1
+        index_menge = 2
+        index_bez = 3
+        index_la = 4
+        index_br = 5
+        index_di =6
+        index_ka_li = 7
+        index_ka_re = 7
+        index_ka_ob = 8
+        index_ka_un = 8
+        index_kom = 9
+        zeilennummer_tabkopf = 1
+        # Zellgrößen anpassen:
+        self.t.set_spaltenbreite_i(index_nr, 1000)
+        self.t.set_spaltenbreite_i(index_artikel, 4000)
+        self.t.set_spaltenbreite_i(index_menge, 1000)
+        self.t.set_spaltenbreite_i(index_bez, 4000)
+        self.t.set_spaltenbreite_i(index_la, 1500)
+        self.t.set_spaltenbreite_i(index_br, 1500)
+        self.t.set_spaltenbreite_i(index_di, 1000)
+        self.t.set_spaltenbreite_i(index_ka_li, 4000)
+        # self.t.set_spaltenbreite_i(index_ka_re, 4000)
+        self.t.set_spaltenbreite_i(index_ka_ob, 4000)
+        # self.t.set_spaltenbreite_i(index_ka_un, 4000)
+        self.t.set_spaltenbreite_i(index_kom, 6500)
+        # Kopfdaten:
+        self.t.set_zelltext_s("C1", "Projekt:")
+        self.t.set_zellausrichtungHori_s("C1", "re")
+        self.t.set_zellausrichtungHori_s("D1", "mi")
+        self.t.set_SchriftFett_s("D1", True)
+        self.t.set_zelltext_s("E1", "Position:")
+        self.t.set_zellausrichtungHori_s("E1", "re")
+        self.t.set_zellausrichtungHori_s("F1", "mi")
+        self.t.set_SchriftFett_s("F1", True)
+        self.t.set_zelltext_s("I1", "Datum Druck:")
+        self.t.set_zellausrichtungHori_s("I1", "re")
+        self.t.set_zellformel_s("J1", "=TODAY()")
+        self.t.set_zellausrichtungHori_s("J1", "li")
+        # Tabellenkopf:
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_nr, "Nr.")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_artikel, "Artikel")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_menge, "Stück")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_bez, "Bezeichnung")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_la, "Länge")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_br, "Breite")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_di, "Dicke")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_ka_li, "Kante links")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_ka_re, "Kante rechts")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_ka_ob, "Kante oben")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_ka_un, "Kante unten")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kom, "Bemerkung")
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_nr, zeilennummer_tabkopf+1, index_nr, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_artikel, zeilennummer_tabkopf+1, index_artikel, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_menge, zeilennummer_tabkopf+1, index_menge, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_bez, zeilennummer_tabkopf+1, index_bez, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_la, zeilennummer_tabkopf+1, index_la, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_br, zeilennummer_tabkopf+1, index_br, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_di, zeilennummer_tabkopf+1, index_di, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_kom, zeilennummer_tabkopf+1, index_kom, True)        
+        # Tabellenkopf farbig machen:
+        for i in range(0,10):
+            self.t.set_zellfarbe_i(zeilennummer_tabkopf, i, self.grau)
+            self.t.set_zellfarbe_i(zeilennummer_tabkopf+1, i, self.grau)
+            pass
+        pass
     def formeln_edit(self):
         if self.autoformat() != True:
             return False
@@ -4655,6 +4728,10 @@ def SList_autoformat(*event):
 def SList_Formeln_edit(*event):
     sli = slist()
     sli.formeln_edit()
+    pass
+def SList_formartieren_zum_ausdrucken(*event):
+    sli = slist()
+    sli.formartieren_zum_ausdrucken()
     pass
 def SList_Formeln_Kante(*event):
     sli = slist()
