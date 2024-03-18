@@ -23,6 +23,7 @@ from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
+from com.sun.star.beans import PropertyValue
 from shutil import copyfile
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -213,6 +214,20 @@ class ol_tabelle:
         page = pageStyle.getByName("Default")
         # page.PageScale = 25 # 25%
         page.PageScale = iSkaling
+        pass
+    def set_wiederholungszeilen_oben(self, sRange, iAnzZeilen):
+        #rows = self.sheet.getRows()
+        #for i in range(iAnzZeilen):
+        #    rows.getByIndex(i).IsRepeated = True
+        #---------------------------------------------
+        #table_range = self.sheet.getCellRangeByName(sRange)
+        #table_range.IsRepeatHead = True
+        #table_range.RepeatHeadCount = iAnzZeilen
+        #-----------------------------------------------
+        #table_range.IsRepeatRow = True
+        #table_range.RepeatRowEnd = 3
+
+        # funktioniert noch alles nicht!!!
         pass
     #-----------------------------------------------------------------------------------------------
     # Tabs:
@@ -937,12 +952,19 @@ class slist: # Calc
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_la, zeilennummer_tabkopf+1, index_la, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_br, zeilennummer_tabkopf+1, index_br, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_di, zeilennummer_tabkopf+1, index_di, True)        
-        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_kom, zeilennummer_tabkopf+1, index_kom, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_kom, zeilennummer_tabkopf+1, index_kom, True)   
+        self.t.set_zellausrichtungHori_s("A2:G3", "mi")
         # Tabellenkopf farbig machen:
         for i in range(0,10):
             self.t.set_zellfarbe_i(zeilennummer_tabkopf, i, self.grau)
             self.t.set_zellfarbe_i(zeilennummer_tabkopf+1, i, self.grau)
             pass
+        # Seitenlayout:
+        tab = ol_tabelle()
+        tab.set_seitenformat("A4", True, 500, 500, 2000 , 500, False, False)
+
+        # funktioniert noch nicht:
+        tab.set_wiederholungszeilen_oben("A1:J3", 3)
         pass
     def formeln_edit(self):
         if self.autoformat() != True:
