@@ -23,7 +23,7 @@ from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
-from com.sun.star.beans import PropertyValue
+from com.sun.star.table import CellRangeAddress
 from shutil import copyfile
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -215,19 +215,16 @@ class ol_tabelle:
         # page.PageScale = 25 # 25%
         page.PageScale = iSkaling
         pass
-    def set_wiederholungszeilen_oben(self, sRange, iAnzZeilen):
-        #rows = self.sheet.getRows()
-        #for i in range(iAnzZeilen):
-        #    rows.getByIndex(i).IsRepeated = True
-        #---------------------------------------------
-        #table_range = self.sheet.getCellRangeByName(sRange)
-        #table_range.IsRepeatHead = True
-        #table_range.RepeatHeadCount = iAnzZeilen
-        #-----------------------------------------------
-        #table_range.IsRepeatRow = True
-        #table_range.RepeatRowEnd = 3
-
-        # funktioniert noch alles nicht!!!
+    def set_wiederholungszeilen_oben_i(self, iStartZeile, iEndZeile):
+        self.sheet.setPrintTitleRows(True)
+        # Erstelle ein CellRangeAddress-Objekt:
+        cell_range_address = CellRangeAddress()
+        cell_range_address.StartColumn = 0
+        cell_range_address.StartRow = iStartZeile
+        cell_range_address.EndColumn = 0
+        cell_range_address.EndRow = iEndZeile
+        # Bereich zuweisen:
+        self.sheet.setTitleRows(cell_range_address)
         pass
     #-----------------------------------------------------------------------------------------------
     # Tabs:
@@ -961,10 +958,8 @@ class slist: # Calc
             pass
         # Seitenlayout:
         tab = ol_tabelle()
-        tab.set_seitenformat("A4", True, 500, 500, 2000 , 500, False, False)
-
-        # funktioniert noch nicht:
-        tab.set_wiederholungszeilen_oben("A1:J3", 3)
+        tab.set_seitenformat("A4", True, 500, 500, 2500 , 500, False, False) 
+        tab.set_wiederholungszeilen_oben_i(0,2) # iStartZeile, iEndZeile
         pass
     def formeln_edit(self):
         if self.autoformat() != True:
