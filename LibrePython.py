@@ -128,6 +128,696 @@ def findeDateien(name, pfad):
         if name in i:
             dateien += [os.path.join(pfad, i)]
     return dateien
+def index_to_buchstabe(index):
+    if index == 1:
+        return "A"
+    elif index == 2:
+        return "B"
+    elif index == 3:
+        return "C"
+    elif index == 4:
+        return "D"
+    elif index == 5:
+        return "E"
+    elif index == 6:
+        return "F"
+    elif index == 7:
+        return "G"
+    elif index == 8:
+        return "H"
+    elif index == 9:
+        return "I"
+    elif index == 10:
+        return "J"
+    elif index == 11:
+        return "K"
+    elif index == 12:
+        return "L"
+    elif index == 13:
+        return "M"
+    elif index == 14:
+        return "N"
+    elif index == 15:
+        return "O"
+    elif index == 16:
+        return "P"
+    elif index == 17:
+        return "Q"
+    elif index == 18:
+        return "R"
+    elif index == 19:
+        return "S"
+    elif index == 20:
+        return "T"
+    elif index == 21:
+        return "U"
+    elif index == 22:
+        return "V"
+    elif index == 23:
+        return "W"
+    elif index == 24:
+        return "X"
+    elif index == 25:
+        return "Y"
+    elif index == 26:
+        return "Z"
+        #---------------------------
+    elif index == 27:
+        return "AA"
+    elif index == 28:
+        return "AB"
+    elif index == 29:
+        return "AC"
+    elif index == 30:
+        return "AD"
+    elif index == 31:
+        return "AE"
+    elif index == 32:
+        return "AF"
+    elif index == 33:
+        return "AG"
+    elif index == 34:
+        return "AH"
+    elif index == 35:
+        return "AI"
+    elif index == 36:
+        return "AJ"
+    elif index == 37:
+        return "AK"
+    elif index == 38:
+        return "AL"
+    elif index == 39:
+        return "AM"
+    elif index == 40:
+        return "AN"
+    elif index == 41:
+        return "AO"
+    elif index == 42:
+        return "AP"
+    elif index == 43:
+        return "AQ"
+    elif index == 44:
+        return "AR"
+    elif index == 45:
+        return "AS"
+    elif index == 46:
+        return "AT"
+    elif index == 47:
+        return "AU"
+    elif index == 48:
+        return "AV"
+    elif index == 49:
+        return "AW"
+    elif index == 50:
+        return "AX"
+    elif index == 51:
+        return "AY"
+    elif index == 52:
+        return "AZ"
+        #---------------------------
+    elif index == 53:
+        return "BA"
+    elif index == 54:
+        return "BB"
+    elif index == 55:
+        return "BC"
+    elif index == 56:
+        return "BD"
+    elif index == 57:
+        return "BE"
+    elif index == 58:
+        return "BF"
+    elif index == 59:
+        return "BG"
+    elif index == 60:
+        return "BH"
+    elif index == 61:
+        return "BI"
+    elif index == 62:
+        return "BJ"
+    elif index == 63:
+        return "BK"
+    elif index == 64:
+        return "BL"
+    elif index == 65:
+        return "BM"
+    elif index == 66:
+        return "BN"
+    elif index == 67:
+        return "BO"
+    elif index == 68:
+        return "BP"
+    elif index == 69:
+        return "BQ"
+    elif index == 70:
+        return "BR"
+    elif index == 71:
+        return "BS"
+    elif index == 72:
+        return "BT"
+    elif index == 73:
+        return "BU"
+    elif index == 74:
+        return "BV"
+    elif index == 75:
+        return "BW"
+    elif index == 76:
+        return "BX"
+    elif index == 77:
+        return "BY"
+    elif index == 78:
+        return "BZ"
+        #---------------------------
+    elif index == 79:
+        return "CA"
+    elif index == 80:
+        return "CB"
+    elif index == 81:
+        return "CC"
+    elif index == 82:
+        return "CD"
+    elif index == 83:
+        return "CE"
+    elif index == 84:
+        return "CF"
+    elif index == 85:
+        return "CG"
+    elif index == 86:
+        return "CH"
+    elif index == 87:
+        return "CI"
+    elif index == 88:
+        return "CJ"
+    elif index == 89:
+        return "CK"
+    elif index == 90:
+        return "CL"
+    elif index == 91:
+        return "CM"
+    elif index == 92:
+        return "CN"
+    elif index == 93:
+        return "CO"
+    elif index == 94:
+        return "CP"
+    elif index == 95:
+        return "CQ"
+    elif index == 96:
+        return "CR"
+    elif index == 97:
+        return "CS"
+    elif index == 98:
+        return "CT"
+    elif index == 99:
+        return "CU"
+    elif index == 100:
+        return "CV"
+    elif index == 101:
+        return "CW"
+    elif index == 102:
+        return "CX"
+    elif index == 103:
+        return "CY"
+    elif index == 104:
+        return "CZ"
+        #---------------------------
+    elif index == 105:
+        return "DA"
+    elif index == 106:
+        return "DB"
+    elif index == 107:
+        return "DC"
+    elif index == 108:
+        return "DD"
+    elif index == 109:
+        return "DE"
+    elif index == 110:
+        return "DF"
+    elif index == 111:
+        return "DG"
+    elif index == 112:
+        return "DH"
+    elif index == 113:
+        return "DI"
+    elif index == 114:
+        return "DJ"
+    elif index == 115:
+        return "DK"
+    elif index == 116:
+        return "DL"
+    elif index == 117:
+        return "DM"
+    elif index == 118:
+        return "DN"
+    elif index == 119:
+        return "DO"
+    elif index == 120:
+        return "DP"
+    elif index == 121:
+        return "DQ"
+    elif index == 122:
+        return "DR"
+    elif index == 123:
+        return "DS"
+    elif index == 124:
+        return "DT"
+    elif index == 125:
+        return "DU"
+    elif index == 126:
+        return "DV"
+    elif index == 127:
+        return "DW"
+    elif index == 128:
+        return "DX"
+    elif index == 129:
+        return "DY"
+    elif index == 130:
+        return "DZ"
+        #---------------------------
+    elif index == 131:
+        return "EA"
+    elif index == 132:
+        return "EB"
+    elif index == 133:
+        return "EC"
+    elif index == 134:
+        return "ED"
+    elif index == 135:
+        return "EE"
+    elif index == 136:
+        return "EF"
+    elif index == 137:
+        return "EG"
+    elif index == 138:
+        return "EH"
+    elif index == 139:
+        return "EI"
+    elif index == 140:
+        return "EJ"
+    elif index == 141:
+        return "EK"
+    elif index == 142:
+        return "EL"
+    elif index == 143:
+        return "EM"
+    elif index == 144:
+        return "EN"
+    elif index == 145:
+        return "EO"
+    elif index == 146:
+        return "EP"
+    elif index == 147:
+        return "EQ"
+    elif index == 148:
+        return "ER"
+    elif index == 149:
+        return "ES"
+    elif index == 150:
+        return "ET"
+    elif index == 151:
+        return "EU"
+    elif index == 152:
+        return "EV"
+    elif index == 153:
+        return "EW"
+    elif index == 154:
+        return "EX"
+    elif index == 155:
+        return "EY"
+    elif index == 156:
+        return "EZ"
+        #---------------------------
+    elif index == 157:
+        return "FA"
+    elif index == 158:
+        return "FB"
+    elif index == 159:
+        return "FC"
+    elif index == 160:
+        return "FD"
+    elif index == 161:
+        return "FE"
+    elif index == 162:
+        return "FF"
+    elif index == 163:
+        return "FG"
+    elif index == 164:
+        return "FH"
+    elif index == 165:
+        return "FI"
+    elif index == 166:
+        return "FJ"
+    elif index == 167:
+        return "FK"
+    elif index == 168:
+        return "FL"
+    elif index == 169:
+        return "FM"
+    elif index == 170:
+        return "FN"
+    elif index == 171:
+        return "FO"
+    elif index == 172:
+        return "FP"
+    elif index == 173:
+        return "FQ"
+    elif index == 174:
+        return "FR"
+    elif index == 175:
+        return "FS"
+    elif index == 176:
+        return "FT"
+    elif index == 177:
+        return "FU"
+    elif index == 178:
+        return "FV"
+    elif index == 179:
+        return "FW"
+    elif index == 180:
+        return "FX"
+    elif index == 181:
+        return "FY"
+    elif index == 182:
+        return "FZ"
+        #---------------------------
+    elif index == 183:
+        return "GA"
+    elif index == 184:
+        return "GB"
+    elif index == 185:
+        return "GC"
+    elif index == 186:
+        return "GD"
+    elif index == 187:
+        return "GE"
+    elif index == 188:
+        return "GF"
+    elif index == 189:
+        return "GG"
+    elif index == 190:
+        return "GH"
+    elif index == 191:
+        return "GI"
+    elif index == 192:
+        return "GJ"
+    elif index == 193:
+        return "GK"
+    elif index == 194:
+        return "GL"
+    elif index == 195:
+        return "GM"
+    elif index == 196:
+        return "GN"
+    elif index == 197:
+        return "GO"
+    elif index == 198:
+        return "GP"
+    elif index == 199:
+        return "GQ"
+    elif index == 200:
+        return "GR"
+    elif index == 201:
+        return "GS"
+    elif index == 202:
+        return "GT"
+    elif index == 203:
+        return "GU"
+    elif index == 204:
+        return "GV"
+    elif index == 205:
+        return "GW"
+    elif index == 206:
+        return "GX"
+    elif index == 207:
+        return "GY"
+    elif index == 208:
+        return "GZ"
+        #---------------------------
+    elif index == 209:
+        return "HA"
+    elif index == 210:
+        return "HB"
+    elif index == 211:
+        return "HC"
+    elif index == 212:
+        return "HD"
+    elif index == 213:
+        return "HE"
+    elif index == 214:
+        return "HF"
+    elif index == 215:
+        return "HG"
+    elif index == 216:
+        return "HH"
+    elif index == 217:
+        return "HI"
+    elif index == 218:
+        return "HJ"
+    elif index == 219:
+        return "HK"
+    elif index == 220:
+        return "HL"
+    elif index == 221:
+        return "HM"
+    elif index == 222:
+        return "HN"
+    elif index == 223:
+        return "HO"
+    elif index == 224:
+        return "HP"
+    elif index == 225:
+        return "HQ"
+    elif index == 226:
+        return "HR"
+    elif index == 227:
+        return "HS"
+    elif index == 228:
+        return "HT"
+    elif index == 229:
+        return "HU"
+    elif index == 230:
+        return "HV"
+    elif index == 231:
+        return "HW"
+    elif index == 232:
+        return "HX"
+    elif index == 233:
+        return "HY"
+    elif index == 234:
+        return "HZ"
+        #---------------------------
+    elif index == 235:
+        return "IA"
+    elif index == 236:
+        return "IB"
+    elif index == 237:
+        return "IC"
+    elif index == 238:
+        return "ID"
+    elif index == 239:
+        return "IE"
+    elif index == 240:
+        return "IF"
+    elif index == 241:
+        return "IG"
+    elif index == 242:
+        return "IH"
+    elif index == 243:
+        return "II"
+    elif index == 244:
+        return "IJ"
+    elif index == 245:
+        return "IK"
+    elif index == 246:
+        return "IL"
+    elif index == 247:
+        return "IM"
+    elif index == 248:
+        return "IN"
+    elif index == 249:
+        return "IO"
+    elif index == 250:
+        return "IP"
+    elif index == 251:
+        return "IQ"
+    elif index == 252:
+        return "IR"
+    elif index == 253:
+        return "IS"
+    elif index == 254:
+        return "IT"
+    elif index == 255:
+        return "IU"
+    elif index == 256:
+        return "IV"
+    elif index == 257:
+        return "IW"
+    elif index == 258:
+        return "IX"
+    elif index == 259:
+        return "IY"
+    elif index == 260:
+        return "IZ"
+        #---------------------------
+    elif index == 261:
+        return "JA"
+    elif index == 262:
+        return "JB"
+    elif index == 263:
+        return "JC"
+    elif index == 264:
+        return "JD"
+    elif index == 265:
+        return "JE"
+    elif index == 266:
+        return "JF"
+    elif index == 267:
+        return "JG"
+    elif index == 268:
+        return "JH"
+    elif index == 269:
+        return "JI"
+    elif index == 270:
+        return "JJ"
+    elif index == 271:
+        return "JK"
+    elif index == 272:
+        return "JL"
+    elif index == 273:
+        return "JM"
+    elif index == 274:
+        return "JN"
+    elif index == 275:
+        return "JO"
+    elif index == 276:
+        return "JP"
+    elif index == 277:
+        return "JQ"
+    elif index == 278:
+        return "JR"
+    elif index == 279:
+        return "JS"
+    elif index == 280:
+        return "JT"
+    elif index == 281:
+        return "JU"
+    elif index == 282:
+        return "JV"
+    elif index == 283:
+        return "JW"
+    elif index == 284:
+        return "JX"
+    elif index == 285:
+        return "JY"
+    elif index == 286:
+        return "JZ"
+        #---------------------------
+    elif index == 287:
+        return "KA"
+    elif index == 288:
+        return "KB"
+    elif index == 289:
+        return "KC"
+    elif index == 290:
+        return "KD"
+    elif index == 291:
+        return "KE"
+    elif index == 292:
+        return "KF"
+    elif index == 293:
+        return "KG"
+    elif index == 294:
+        return "KH"
+    elif index == 295:
+        return "KI"
+    elif index == 296:
+        return "KJ"
+    elif index == 297:
+        return "KK"
+    elif index == 298:
+        return "KL"
+    elif index == 299:
+        return "KM"
+    elif index == 300:
+        return "KN"
+    elif index == 301:
+        return "KO"
+    elif index == 302:
+        return "KP"
+    elif index == 303:
+        return "KQ"
+    elif index == 304:
+        return "KR"
+    elif index == 305:
+        return "KS"
+    elif index == 306:
+        return "KT"
+    elif index == 307:
+        return "KU"
+    elif index == 308:
+        return "KV"
+    elif index == 309:
+        return "KW"
+    elif index == 310:
+        return "KX"
+    elif index == 311:
+        return "KY"
+    elif index == 312:
+        return "KZ"
+        #---------------------------
+    elif index == 313:
+        return "LA"
+    elif index == 314:
+        return "LB"
+    elif index == 315:
+        return "LC"
+    elif index == 316:
+        return "LD"
+    elif index == 317:
+        return "LE"
+    elif index == 318:
+        return "LF"
+    elif index == 319:
+        return "LG"
+    elif index == 320:
+        return "LH"
+    elif index == 321:
+        return "LI"
+    elif index == 322:
+        return "LJ"
+    elif index == 323:
+        return "LK"
+    elif index == 324:
+        return "LL"
+    elif index == 325:
+        return "LM"
+    elif index == 326:
+        return "LN"
+    elif index == 327:
+        return "LO"
+    elif index == 328:
+        return "LP"
+    elif index == 329:
+        return "LQ"
+    elif index == 330:
+        return "LR"
+    elif index == 331:
+        return "LS"
+    elif index == 332:
+        return "LT"
+    elif index == 333:
+        return "LU"
+    elif index == 334:
+        return "LV"
+    elif index == 335:
+        return "LW"
+    elif index == 336:
+        return "LX"
+    elif index == 337:
+        return "LY"
+    elif index == 338:
+        return "LZ"
+    return ""
 #----------------------------------------------------------------------------------
 
 class ol_tabelle:
@@ -459,6 +1149,15 @@ class ol_tabelle:
             oRange.HoriJustify = AUSRICHTUNG_HORI_RE
         pass
         #Anwendung: t.set_zellausrichtungHori_s("B2:C3", "re")
+    def set_zellausrichtungHori_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, sAusrichtung):
+        oRange = self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde)
+        if sAusrichtung == "li":
+            oRange.HoriJustify = AUSRICHTUNG_HORI_Li
+        elif sAusrichtung == "mi":
+            oRange.HoriJustify = AUSRICHTUNG_HORI_MI
+        elif sAusrichtung == "re":
+            oRange.HoriJustify = AUSRICHTUNG_HORI_RE
+        pass
     def set_SchriftGroesse_s(self, sRange, iGroesse):
         self.sheet.getCellRangeByName(sRange).CharHeight = iGroesse
         pass
@@ -490,6 +1189,24 @@ class ol_tabelle:
         tableBorder.BottomLine = borderLine
         tableBorder.IsBottomLineValid = True
         self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
+    def set_Rahmen_komplett_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, iLinienbreite):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        tableBorder.VerticalLine = borderLine
+        tableBorder.IsVerticalLineValid = True
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
+        tableBorder.LeftLine = borderLine
+        tableBorder.IsLeftLineValid = True
+        tableBorder.RightLine = borderLine
+        tableBorder.IsRightLineValid = True
+        tableBorder.TopLine = borderLine
+        tableBorder.IsTopLineValid = True
+        tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
+        self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).setPropertyValue("TableBorder", tableBorder)
         pass
     def set_Rahmen_s(self, sRange, iLinienbreite, rahmenfarbe):
         tableBorder = self.sheet.getPropertyValue("TableBorder")
@@ -534,6 +1251,9 @@ class ol_tabelle:
         pass
     def zellen_verbinden_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, bIstVerbunden):
         self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).merge(bIstVerbunden)
+        pass
+    def zellen_textumbruch_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, bMitTextumruch):
+        self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).IsTextWrapped = bMitTextumruch
         pass
     #-----------------------------------------------------------------------------------------------
     # Spalten:
@@ -1016,30 +1736,54 @@ class slist: # Calc
             # neue Registerkarte erstellen:
             projektpos = self.t.get_tabname()
             tabname = projektpos + "_print"
-            if(self.t.tab_existiert(tabname) == False):
-                self.t.tab_anlegen(tabname, self.t.get_tabindex()+1)
-            else:
-                # neuen Namen für tab ermitteln
+            if(self.t.tab_existiert(tabname)):
+                titel = "slist_ausdruck_zusammenstellen"
+                msg = "Es gibt bereits eine Registerkarte mit dem Namen \""
+                msg += tabname
+                msg += "\".\n"
+                msg += "Bitte die vorhandene Registerkarte umbenennen oder löschen."
+                msgbox(msg, titel, 1, 'QUERYBOX')
                 pass
-            # Daten in Stückliste schreiben:
-            self.t.set_tabfokus_s(tabname)
-            self.formartieren_zum_ausdrucken()
-            self.t.set_zelltext_s("D1", projekt)
-            self.t.set_zelltext_s("F1", projektpos)
-            startindex = 3
-            for i in range(0, len(bez)):
-                self.t.set_zelltext_i(startindex+i*2, 3, bez[i])
-                self.t.set_zelltext_i(startindex+i*2, 2, anz[i])
-                self.t.set_zelltext_i(startindex+i*2, 4, la[i])
-                self.t.set_zelltext_i(startindex+i*2, 5, br[i])
-                self.t.set_zelltext_i(startindex+i*2, 6, di[i])
-                self.t.set_zelltext_i(startindex+i*2, 1, mat[i])
-                self.t.set_zelltext_i(startindex+i*2, 7, kali[i])
-                self.t.set_zelltext_i(startindex+i*2+1, 7, kare[i])
-                self.t.set_zelltext_i(startindex+i*2, 8, kaob[i])
-                self.t.set_zelltext_i(startindex+i*2+1, 8, kaun[i])
-                self.t.set_zelltext_i(startindex+i*2, 9, kom[i])
-            pass #if
+            else:
+                self.t.tab_anlegen(tabname, self.t.get_tabindex()+1)
+                # Daten in Stückliste schreiben:
+                self.t.set_tabfokus_s(tabname)
+                self.formartieren_zum_ausdrucken()
+                self.t.set_zelltext_s("D1", projekt)
+                self.t.set_zelltext_s("F1", projektpos)
+                startindex = 3
+                for i in range(0, len(bez)):
+                    self.t.set_zelltext_i(startindex+i*2, 3, bez[i])
+                    self.t.set_zelltext_i(startindex+i*2, 2, anz[i])
+                    self.t.set_zelltext_i(startindex+i*2, 4, la[i])
+                    self.t.set_zelltext_i(startindex+i*2, 5, br[i])
+                    self.t.set_zelltext_i(startindex+i*2, 6, di[i])
+                    self.t.set_zelltext_i(startindex+i*2, 1, mat[i])
+                    self.t.set_zelltext_i(startindex+i*2, 7, kali[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, 7, kare[i])
+                    self.t.set_zelltext_i(startindex+i*2, 8, kaob[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, 8, kaun[i])
+                    self.t.set_zelltext_i(startindex+i*2, 9, kom[i])
+                    self.t.zellen_verbinden_i(startindex+i*2, 0, startindex+i*2+1, 0, True) #lfd-nr
+                    self.t.zellen_verbinden_i(startindex+i*2, 1, startindex+i*2+1, 1, True) #Material
+                    self.t.zellen_verbinden_i(startindex+i*2, 2, startindex+i*2+1, 2, True) #Menge
+                    self.t.zellen_verbinden_i(startindex+i*2, 3, startindex+i*2+1, 3, True) #bezeichnung
+                    self.t.zellen_verbinden_i(startindex+i*2, 4, startindex+i*2+1, 4, True) #länge
+                    self.t.zellen_verbinden_i(startindex+i*2, 5, startindex+i*2+1, 5, True) #breite
+                    self.t.zellen_verbinden_i(startindex+i*2, 6, startindex+i*2+1, 6, True) #dicke
+                    self.t.zellen_verbinden_i(startindex+i*2, 9, startindex+i*2+1, 9, True) #Kommentar
+                    if(i == 0):
+                        self.t.set_zelltext_i(startindex, 0, "1")
+                    else:
+                        formel = "=A"
+                        formel += str(startindex+i*2-1)
+                        formel += "+1"
+                        self.t.set_zellformel_i(startindex+i*2, 0, formel)
+                    pass
+                self.t.set_zellausrichtungHori_i(startindex, 0, startindex+len(bez)*2, 2, "mi")
+                self.t.set_zellausrichtungHori_i(startindex, 4, startindex+len(bez)*2, 6, "mi")
+                self.t.set_Rahmen_komplett_i(startindex, 0, startindex+len(bez)*2-1, 9, 25)
+                self.t.zellen_textumbruch_i(startindex, 9, startindex+len(bez)*2-1, 9, True)
         pass
     def formeln_edit(self):
         if self.autoformat() != True:
