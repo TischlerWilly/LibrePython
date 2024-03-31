@@ -25,6 +25,7 @@ from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
 from com.sun.star.table import CellRangeAddress
 from shutil import copyfile
+from com.sun.star.beans import PropertyValue
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 """
@@ -162,6 +163,8 @@ class ol_tabelle:
         self.sheet = self.sheets.getByIndex(i) # erstes Blatt per Index
         pass
         # Anwendung: t.set_tabindex(0) 
+    def get_tabindex(self):
+        return self.sheet.RangeAddress.Sheet
     def set_tabname(self, n): # ist optional
         self.sheet = self.sheets.getByName(n) # 'Tabelle2 per Namen
         pass
@@ -889,6 +892,17 @@ class slist: # Calc
             return True
         return False
         # Anwendung: self.autoformat()
+    def ist_slist(self):
+        a = self.t.get_zelltext_s("A1")
+        b = self.t.get_zelltext_s("B1")
+        c = self.t.get_zelltext_s("C1")
+        d = self.t.get_zelltext_s("D1")
+        e = self.t.get_zelltext_s("E1")
+        f = self.t.get_zelltext_s("F1")
+        if a == "Bezeichnung" and b == "Anzahl" and c == "Länge" and d == "Breite" and e == "Dicke" and f == "Material": # Tabellenkopf prüfen
+            return True
+        else:
+            return False
     def formartieren_zum_ausdrucken(self):
         index_nr = 0
         index_artikel = 1
@@ -955,11 +969,77 @@ class slist: # Calc
         for i in range(0,10):
             self.t.set_zellfarbe_i(zeilennummer_tabkopf, i, self.grau)
             self.t.set_zellfarbe_i(zeilennummer_tabkopf+1, i, self.grau)
+            self.t.set_Rahmen_komplett_s("A2:J3", 25)
             pass
         # Seitenlayout:
         tab = ol_tabelle()
         tab.set_seitenformat("A4", True, 500, 500, 2500 , 500, False, False) 
         tab.set_wiederholungszeilen_oben_i(0,2) # iStartZeile, iEndZeile
+        pass
+    def slist_ausdruck_zusammenstellen(self):
+        if self.ist_slist():
+            iZeileStart = self.t.get_selection_zeile_start()
+            iZeileEnde  = self.t.get_selection_zeile_ende()
+            projekt = self.t.get_zelltext_s("P2")
+            bez = []
+            anz = []
+            la  = []
+            br  = []
+            di  = []
+            mat = []
+            kali = []
+            #kadili = []
+            kare = []
+            #kadire = []
+            kaob = []
+            #kadiob = []
+            kaun = []
+            #kadiun = []
+            kom = []
+            for i in range(iZeileStart, iZeileEnde+1):
+                bez += [self.t.get_zelltext_i(i, 0)]
+                anz += [self.t.get_zelltext_i(i, 1)]
+                la  += [self.t.get_zelltext_i(i, 2)]
+                br  += [self.t.get_zelltext_i(i, 3)]
+                di  += [self.t.get_zelltext_i(i, 4)]
+                mat += [self.t.get_zelltext_i(i, 5)]
+                kali += [self.t.get_zelltext_i(i, 6)]
+                #kadili += [self.t.get_zelltext_i(i, 7)]
+                kare += [self.t.get_zelltext_i(i, 8)]
+                #kadire += [self.t.get_zelltext_i(i, 9)]
+                kaob += [self.t.get_zelltext_i(i, 10)]
+                #kadiob += [self.t.get_zelltext_i(i, 11)]
+                kaun += [self.t.get_zelltext_i(i, 12)]
+                #kadiun += [self.t.get_zelltext_i(i, 13)]
+                kom += [self.t.get_zelltext_i(i, 14)]
+                pass #for
+            # neue Registerkarte erstellen:
+            projektpos = self.t.get_tabname()
+            tabname = projektpos + "_print"
+            if(self.t.tab_existiert(tabname) == False):
+                self.t.tab_anlegen(tabname, self.t.get_tabindex()+1)
+            else:
+                # neuen Namen für tab ermitteln
+                pass
+            # Daten in Stückliste schreiben:
+            self.t.set_tabfokus_s(tabname)
+            self.formartieren_zum_ausdrucken()
+            self.t.set_zelltext_s("D1", projekt)
+            self.t.set_zelltext_s("F1", projektpos)
+            startindex = 3
+            for i in range(0, len(bez)):
+                self.t.set_zelltext_i(startindex+i*2, 3, bez[i])
+                self.t.set_zelltext_i(startindex+i*2, 2, anz[i])
+                self.t.set_zelltext_i(startindex+i*2, 4, la[i])
+                self.t.set_zelltext_i(startindex+i*2, 5, br[i])
+                self.t.set_zelltext_i(startindex+i*2, 6, di[i])
+                self.t.set_zelltext_i(startindex+i*2, 1, mat[i])
+                self.t.set_zelltext_i(startindex+i*2, 7, kali[i])
+                self.t.set_zelltext_i(startindex+i*2+1, 7, kare[i])
+                self.t.set_zelltext_i(startindex+i*2, 8, kaob[i])
+                self.t.set_zelltext_i(startindex+i*2+1, 8, kaun[i])
+                self.t.set_zelltext_i(startindex+i*2, 9, kom[i])
+            pass #if
         pass
     def formeln_edit(self):
         if self.autoformat() != True:
@@ -4749,6 +4829,10 @@ def SList_Formeln_edit(*event):
 def SList_formartieren_zum_ausdrucken(*event):
     sli = slist()
     sli.formartieren_zum_ausdrucken()
+    pass
+def SList_ausdruck_zusammenstellen(*event):
+    sli = slist()
+    sli.slist_ausdruck_zusammenstellen()
     pass
 def SList_Formeln_Kante(*event):
     sli = slist()
