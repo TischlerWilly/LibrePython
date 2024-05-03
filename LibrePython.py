@@ -1167,6 +1167,12 @@ class ol_tabelle:
         else:
             self.sheet.getCellRangeByName(sRange).CharWeight = FONT_NOT_BOLD
         pass
+    def set_SchriftArt_s(self, sRange, schriftart):
+        #schriftart = "Calibri"
+        try:
+            self.sheet.getCellRangeByName(sRange).CharFontName = schriftart
+        except:
+            pass
     def set_SchriftFarbe_s(self, sZelle, farbe): # farbe ist ein long-wert
         zelle = self.sheet.getCellRangeByName(sZelle) # Range ist nich möglich nur eine Zelle siehe nächste Zeile
         cursor = zelle.createTextCursor() # funktioniert nur mit je einer Zelle
@@ -1635,6 +1641,7 @@ class slist: # Calc
         else:
             return False
     def formartieren_zum_ausdrucken(self):
+        self.t.set_SchriftArt_s("A1:Z999", "Calibri")
         index_nr = 0
         index_artikel = 1
         index_menge = 2
