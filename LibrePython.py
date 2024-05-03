@@ -1644,23 +1644,31 @@ class slist: # Calc
         index_di =6
         index_ka_li = 7
         index_ka_re = 7
-        index_ka_ob = 8
-        index_ka_un = 8
-        index_kom = 9
+        index_ka_ob = 9
+        index_ka_un = 9
+        index_kom = 11
+        index_kadi_li = 8
+        index_kadi_re = 8
+        index_kadi_ob = 10
+        index_kadi_un = 10
         zeilennummer_tabkopf = 1
         # Zellgrößen anpassen:
-        self.t.set_spaltenbreite_i(index_nr, 1000)
+        self.t.set_spaltenbreite_i(index_nr, 800)
         self.t.set_spaltenbreite_i(index_artikel, 4000)
-        self.t.set_spaltenbreite_i(index_menge, 1000)
+        self.t.set_spaltenbreite_i(index_menge, 900)
         self.t.set_spaltenbreite_i(index_bez, 4000)
-        self.t.set_spaltenbreite_i(index_la, 1500)
-        self.t.set_spaltenbreite_i(index_br, 1500)
+        self.t.set_spaltenbreite_i(index_la, 1000)
+        self.t.set_spaltenbreite_i(index_br, 1000)
         self.t.set_spaltenbreite_i(index_di, 1000)
         self.t.set_spaltenbreite_i(index_ka_li, 4000)
         # self.t.set_spaltenbreite_i(index_ka_re, 4000)
         self.t.set_spaltenbreite_i(index_ka_ob, 4000)
         # self.t.set_spaltenbreite_i(index_ka_un, 4000)
         self.t.set_spaltenbreite_i(index_kom, 6500)
+        self.t.set_spaltenbreite_i(index_kadi_li, 800)
+        #self.t.set_spaltenbreite_i(index_kadi_re, 800)
+        self.t.set_spaltenbreite_i(index_kadi_ob, 800)
+        #self.t.set_spaltenbreite_i(index_kadi_un, 800)
         # Kopfdaten:
         self.t.set_zelltext_s("C1", "Projekt:")
         self.t.set_zellausrichtungHori_s("C1", "re")
@@ -1687,6 +1695,10 @@ class slist: # Calc
         self.t.set_zelltext_i(zeilennummer_tabkopf, index_ka_ob, "Kante oben")
         self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_ka_un, "Kante unten")
         self.t.set_zelltext_i(zeilennummer_tabkopf, index_kom, "Bemerkung")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_li, "KDiL")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_re, "KDiR")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_ob, "KDiO")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_un, "KDiU")
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_nr, zeilennummer_tabkopf+1, index_nr, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_artikel, zeilennummer_tabkopf+1, index_artikel, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_menge, zeilennummer_tabkopf+1, index_menge, True)        
@@ -1696,15 +1708,16 @@ class slist: # Calc
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_di, zeilennummer_tabkopf+1, index_di, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_kom, zeilennummer_tabkopf+1, index_kom, True)   
         self.t.set_zellausrichtungHori_s("A2:G3", "mi")
+        self.t.set_zellausrichtungHori_s("K2:L3", "mi")
         # Tabellenkopf farbig machen:
-        for i in range(0,10):
+        for i in range(0,12):
             self.t.set_zellfarbe_i(zeilennummer_tabkopf, i, self.grau)
             self.t.set_zellfarbe_i(zeilennummer_tabkopf+1, i, self.grau)
-            self.t.set_Rahmen_komplett_s("A2:J3", 25)
+            self.t.set_Rahmen_komplett_s("A2:L3", 25)
             pass
         # Seitenlayout:
         tab = ol_tabelle()
-        tab.set_seitenformat("A4", True, 500, 500, 2500 , 500, False, False) 
+        tab.set_seitenformat("A4", True, 400, 400, 2500 , 400, False, False) 
         tab.set_wiederholungszeilen_oben_i(0,2) # iStartZeile, iEndZeile
         pass
     def slist_ausdruck_zusammenstellen(self):
@@ -1719,14 +1732,15 @@ class slist: # Calc
             di  = []
             mat = []
             kali = []
-            #kadili = []
+            kadili = []
             kare = []
-            #kadire = []
+            kadire = []
             kaob = []
-            #kadiob = []
+            kadiob = []
             kaun = []
-            #kadiun = []
+            kadiun = []
             kom = []
+
             for i in range(iZeileStart, iZeileEnde+1):
                 bez += [self.t.get_zelltext_i(i, 0)]
                 anz += [self.t.get_zelltext_i(i, 1)]
@@ -1735,13 +1749,13 @@ class slist: # Calc
                 di  += [self.t.get_zelltext_i(i, 4)]
                 mat += [self.t.get_zelltext_i(i, 5)]
                 kali += [self.t.get_zelltext_i(i, 6)]
-                #kadili += [self.t.get_zelltext_i(i, 7)]
+                kadili += [self.t.get_zelltext_i(i, 7)]
                 kare += [self.t.get_zelltext_i(i, 8)]
-                #kadire += [self.t.get_zelltext_i(i, 9)]
+                kadire += [self.t.get_zelltext_i(i, 9)]
                 kaob += [self.t.get_zelltext_i(i, 10)]
-                #kadiob += [self.t.get_zelltext_i(i, 11)]
+                kadiob += [self.t.get_zelltext_i(i, 11)]
                 kaun += [self.t.get_zelltext_i(i, 12)]
-                #kadiun += [self.t.get_zelltext_i(i, 13)]
+                kadiun += [self.t.get_zelltext_i(i, 13)]
                 kom += [self.t.get_zelltext_i(i, 14)]
                 pass #for
             # neue Registerkarte erstellen:
@@ -1763,18 +1777,37 @@ class slist: # Calc
                 self.t.set_zelltext_s("D1", projekt)
                 self.t.set_zelltext_s("F1", projektpos)
                 startindex = 3
+                ziel_index_artikel = 1
+                ziel_index_menge = 2
+                ziel_index_bez = 3
+                ziel_index_la = 4
+                ziel_index_br = 5
+                ziel_index_di =6
+                ziel_index_ka_li = 7
+                ziel_index_ka_re = 7
+                ziel_index_ka_ob = 9
+                ziel_index_ka_un = 9
+                ziel_index_kom = 11
+                ziel_index_kadi_li = 8
+                ziel_index_kadi_re = 8
+                ziel_index_kadi_ob = 10
+                ziel_index_kadi_un = 10
                 for i in range(0, len(bez)):
-                    self.t.set_zelltext_i(startindex+i*2, 3, bez[i])
-                    self.t.set_zelltext_i(startindex+i*2, 2, anz[i])
-                    self.t.set_zelltext_i(startindex+i*2, 4, la[i])
-                    self.t.set_zelltext_i(startindex+i*2, 5, br[i])
-                    self.t.set_zelltext_i(startindex+i*2, 6, di[i])
-                    self.t.set_zelltext_i(startindex+i*2, 1, mat[i])
-                    self.t.set_zelltext_i(startindex+i*2, 7, kali[i])
-                    self.t.set_zelltext_i(startindex+i*2+1, 7, kare[i])
-                    self.t.set_zelltext_i(startindex+i*2, 8, kaob[i])
-                    self.t.set_zelltext_i(startindex+i*2+1, 8, kaun[i])
-                    self.t.set_zelltext_i(startindex+i*2, 9, kom[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_bez, bez[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_menge, anz[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_la, la[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_br, br[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_di, di[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_artikel, mat[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_ka_li, kali[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_ka_re, kare[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_ka_ob, kaob[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_ka_un, kaun[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_kom, kom[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_kadi_li, kadili[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_kadi_re, kadire[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_kadi_ob, kadiob[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_kadi_un, kadiun[i])
                     self.t.zellen_verbinden_i(startindex+i*2, 0, startindex+i*2+1, 0, True) #lfd-nr
                     self.t.zellen_verbinden_i(startindex+i*2, 1, startindex+i*2+1, 1, True) #Material
                     self.t.zellen_verbinden_i(startindex+i*2, 2, startindex+i*2+1, 2, True) #Menge
@@ -1782,7 +1815,7 @@ class slist: # Calc
                     self.t.zellen_verbinden_i(startindex+i*2, 4, startindex+i*2+1, 4, True) #länge
                     self.t.zellen_verbinden_i(startindex+i*2, 5, startindex+i*2+1, 5, True) #breite
                     self.t.zellen_verbinden_i(startindex+i*2, 6, startindex+i*2+1, 6, True) #dicke
-                    self.t.zellen_verbinden_i(startindex+i*2, 9, startindex+i*2+1, 9, True) #Kommentar
+                    self.t.zellen_verbinden_i(startindex+i*2, 11, startindex+i*2+1, 11, True) #Kommentar
                     if(i == 0):
                         self.t.set_zelltext_i(startindex, 0, "1")
                     else:
@@ -1793,8 +1826,8 @@ class slist: # Calc
                     pass
                 self.t.set_zellausrichtungHori_i(startindex, 0, startindex+len(bez)*2, 2, "mi")
                 self.t.set_zellausrichtungHori_i(startindex, 4, startindex+len(bez)*2, 6, "mi")
-                self.t.set_Rahmen_komplett_i(startindex, 0, startindex+len(bez)*2-1, 9, 25)
-                self.t.zellen_textumbruch_i(startindex, 9, startindex+len(bez)*2-1, 9, True)
+                self.t.set_Rahmen_komplett_i(startindex, 0, startindex+len(bez)*2-1, 11, 25)
+                self.t.zellen_textumbruch_i(startindex, 11, startindex+len(bez)*2-1, 11, True)
         pass
     def formeln_edit(self):
         if self.autoformat() != True:
@@ -2808,8 +2841,12 @@ class slist: # Calc
                     di = self.t.get_zelltext_i(i, 6)#Dicke
                     kali = self.t.get_zelltext_i(i, 7)#Kanteninfo links
                     kare = self.t.get_zelltext_i(i+1, 7)#Kanteninfo rechts
-                    kaob = self.t.get_zelltext_i(i, 8)#Kanteninfo oben
-                    kaun = self.t.get_zelltext_i(i+1, 8)#Kanteninfo unten
+                    kaob = self.t.get_zelltext_i(i, 9)#Kanteninfo oben
+                    kaun = self.t.get_zelltext_i(i+1, 9)#Kanteninfo unten
+                    kadili = self.t.get_zelltext_i(i, 8)#Kantendicke links
+                    kadire = self.t.get_zelltext_i(i+1, 8)#Kantendicke rechts
+                    kadiob = self.t.get_zelltext_i(i, 10)#Kantendicke oben
+                    kadiun = self.t.get_zelltext_i(i+1, 10)#Kantendicke unten
 
                     zeile =  "\"" + projektnummer + "\";" #Aufkb
                     zeile += "\"" + artikel + "\";" #Plakb
@@ -2825,10 +2862,10 @@ class slist: # Calc
                     zeile += "\"" + kaob + "\";" #Kantelkb
                     zeile += "\"" + kaun + "\";" #Kanterkb
                     zeile += "\"" + bemerkung + "\";" #Zusinfo
-                    zeile += "\"" + "0" + "\";" #Kantevdicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
-                    zeile += "\"" + "0" + "\";" #Kantehdicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
-                    zeile += "\"" + "0" + "\";" #Kanteldicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
-                    zeile += "\"" + "0" + "\";" #Kanterdicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
+                    zeile += "\"" + kadili + "\";" #Kantevdicke
+                    zeile += "\"" + kadire + "\";" #Kantehdicke
+                    zeile += "\"" + kadiob + "\";" #Kanteldicke
+                    zeile += "\"" + kadiun + "\";" #Kanterdicke
                     zeile += "\"\";" #TInfo1
                     zeile += "\"\";" #TInfo2
                     zeile += "\"" + "0" + "\";" #KantevFuge
