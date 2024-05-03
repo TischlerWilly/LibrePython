@@ -2819,8 +2819,8 @@ class slist: # Calc
     def pios_export(self):
         # Prüfen, ob Stückliste bereits im richtigen Format vorliegt
         a = self.t.get_zelltext_s("C1")#Projekt
-        b = self.t.get_zelltext_s("E1")#Position
-        c = self.t.get_zelltext_s("I1")#Datum Druck
+        b = self.t.get_zelltext_s("F1")#Position
+        c = self.t.get_zelltext_s("K1")#Datum Druck
         if a == "Projekt:" and b == "Position:" and c == "Datum Druck:": # Tabelle liegt im Format zum Ausdrucken bereit
             #Tabellenkopf:
             msg =  "\"Aufkb\";\"Plakb\";\"Elnr\";\"Aufpos\";\"Teilbez\";\"Stuck\";\"ZusLange\";\"ZusBreite\";"
@@ -2834,12 +2834,12 @@ class slist: # Calc
             startindex = 3
             stoppindex = 1000
             projektnummer = self.t.get_zelltext_s("D1")#Projektnummer
-            projekpos = self.t.get_zelltext_s("F1")#Projekposition
+            projekpos = self.t.get_zelltext_s("G1")#Projekposition
             for i in range(startindex, stoppindex, 2):
                 lfdnr = self.t.get_zelltext_i(i, 0)
                 if(len(lfdnr) == 0):
                     break #for-Schleife
-                bemerkung = self.t.get_zelltext_i(i, 9)
+                bemerkung = self.t.get_zelltext_i(i, 11)
                 auslassen = False
                 if(bemerkung[0:2] == "HZ"):
                     auslassen = True
@@ -2903,7 +2903,7 @@ class slist: # Calc
             #Datei speichern:
             dateiname  = projektnummer
             dateiname += "pos"
-            posnr = self.t.get_zelltext_s("F1")#Positionsnummer
+            posnr = self.t.get_zelltext_s("G1")#Positionsnummer
             dateiname += self.posnr_formartieren(posnr)
             dateiname += ".csv"
             dateipfad  = self.downloads_pfad
