@@ -1837,6 +1837,7 @@ class slist: # Calc
                 self.t.set_zellausrichtungHori_i(startindex, 8, startindex+len(bez)*2, 8, "mi")
                 self.t.set_zellausrichtungHori_i(startindex, 10, startindex+len(bez)*2, 10, "mi")
                 self.t.set_Rahmen_komplett_i(startindex, 0, startindex+len(bez)*2-1, 11, 25)
+                self.t.zellen_textumbruch_i(startindex, 1, startindex+len(bez)*2-1, 1, True)
                 self.t.zellen_textumbruch_i(startindex, 11, startindex+len(bez)*2-1, 11, True)
         pass
     def formeln_edit(self):
