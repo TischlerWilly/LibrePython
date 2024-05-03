@@ -1674,10 +1674,10 @@ class slist: # Calc
         self.t.set_zellausrichtungHori_s("C1", "re")
         self.t.set_zellausrichtungHori_s("D1", "mi")
         self.t.set_SchriftFett_s("D1", True)
-        self.t.set_zelltext_s("E1", "Position:")
-        self.t.set_zellausrichtungHori_s("E1", "re")
-        self.t.set_zellausrichtungHori_s("F1", "mi")
-        self.t.set_SchriftFett_s("F1", True)
+        self.t.set_zelltext_s("F1", "Position:")
+        self.t.set_zellausrichtungHori_s("F1", "re")
+        self.t.set_zellausrichtungHori_s("G1", "mi")
+        self.t.set_SchriftFett_s("G1", True)
         self.t.set_zelltext_s("K1", "Datum Druck:")
         self.t.set_zellausrichtungHori_s("K1", "re")
         self.t.set_zellformel_s("L1", "=TODAY()")
@@ -1695,10 +1695,10 @@ class slist: # Calc
         self.t.set_zelltext_i(zeilennummer_tabkopf, index_ka_ob, "Kante oben")
         self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_ka_un, "Kante unten")
         self.t.set_zelltext_i(zeilennummer_tabkopf, index_kom, "Bemerkung")
-        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_li, "KDiL")
-        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_re, "KDiR")
-        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_ob, "KDiO")
-        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_un, "KDiU")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_li, "KDL")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_re, "KDR")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_ob, "KDO")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_un, "KDU")
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_nr, zeilennummer_tabkopf+1, index_nr, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_artikel, zeilennummer_tabkopf+1, index_artikel, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_menge, zeilennummer_tabkopf+1, index_menge, True)        
@@ -1708,7 +1708,8 @@ class slist: # Calc
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_di, zeilennummer_tabkopf+1, index_di, True)        
         self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_kom, zeilennummer_tabkopf+1, index_kom, True)   
         self.t.set_zellausrichtungHori_s("A2:G3", "mi")
-        self.t.set_zellausrichtungHori_s("K2:L3", "mi")
+        self.t.set_zellausrichtungHori_s("I2:I3", "mi")
+        self.t.set_zellausrichtungHori_s("K2:K3", "mi")
         # Tabellenkopf farbig machen:
         for i in range(0,12):
             self.t.set_zellfarbe_i(zeilennummer_tabkopf, i, self.grau)
@@ -1775,7 +1776,7 @@ class slist: # Calc
                 self.t.set_tabfokus_s(tabname)
                 self.formartieren_zum_ausdrucken()
                 self.t.set_zelltext_s("D1", projekt)
-                self.t.set_zelltext_s("F1", projektpos)
+                self.t.set_zelltext_s("G1", projektpos)
                 startindex = 3
                 ziel_index_artikel = 1
                 ziel_index_menge = 2
@@ -1826,6 +1827,8 @@ class slist: # Calc
                     pass
                 self.t.set_zellausrichtungHori_i(startindex, 0, startindex+len(bez)*2, 2, "mi")
                 self.t.set_zellausrichtungHori_i(startindex, 4, startindex+len(bez)*2, 6, "mi")
+                self.t.set_zellausrichtungHori_i(startindex, 8, startindex+len(bez)*2, 8, "mi")
+                self.t.set_zellausrichtungHori_i(startindex, 10, startindex+len(bez)*2, 10, "mi")
                 self.t.set_Rahmen_komplett_i(startindex, 0, startindex+len(bez)*2-1, 11, 25)
                 self.t.zellen_textumbruch_i(startindex, 11, startindex+len(bez)*2-1, 11, True)
         pass
