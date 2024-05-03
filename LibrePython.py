@@ -1432,11 +1432,22 @@ class slist: # Calc
             self.cnc_pfad = "C:\\Users\\"
             self.cnc_pfad += windowsuser
             self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
-        except:
+        except: # die folgende Programmierung muss noch korrigiert werden falls sie gebraucht wird:
             windowsuser = "nicht_auf_windows"
             self.cnc_pfad = "C:\\Users\\"
             self.cnc_pfad += windowsuser
-            self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"        
+            self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen" 
+        # Download-Ordner-Pfad:
+        try:
+            windowsuser = os.getlogin()
+            self.downloads_pfad = "C:\\Users\\"
+            self.downloads_pfad += windowsuser
+            self.downloads_pfad += "\\Downloads"
+        except: # die folgende Programmierung muss noch korrigiert werden falls sie gebraucht wird:
+            windowsuser = "nicht_auf_windows"
+            self.downloads_pfad = "C:\\Users\\"
+            self.downloads_pfad += windowsuser
+            self.downloads_pfad += "\\Downloads"       
         # Farben bestimmen:
         self.farblos = -1
         self.rot = RGBTo32bitInt(204, 0, 0)
@@ -2761,6 +2772,107 @@ class slist: # Calc
                         ende_index = zeile.find(parambez_ende)
                         gesuchter_parameter = zeile[start_index+start_laenge:ende_index] 
         return gesuchter_parameter
+    def pios_export(self):
+        # Prüfen, ob Stückliste bereits im richtigen Format vorliegt
+        a = self.t.get_zelltext_s("C1")#Projekt
+        b = self.t.get_zelltext_s("E1")#Position
+        c = self.t.get_zelltext_s("I1")#Datum Druck
+        if a == "Projekt:" and b == "Position:" and c == "Datum Druck:": # Tabelle liegt im Format zum Ausdrucken bereit
+            #Tabellenkopf:
+            msg =  "\"Aufkb\";\"Plakb\";\"Elnr\";\"Aufpos\";\"Teilbez\";\"Stuck\";\"ZusLange\";\"ZusBreite\";"
+            msg += "\"Drehbar\";\"Kantevkb\";\"Kantehkb\";\"Kantelkb\";\"Kanterkb\";\"Zusinfo\";\"Kantevdicke\";"
+            msg += "\"Kantehdicke\";\"Kanteldicke\";\"Kanterdicke\";\"TInfo1\";\"Tinfo2\";\"KantevFuge\";"
+            msg += "\"KantehFuge\";\"KantelFuge\";\"KanterFuge\";\"KantevSaum\";\"KantehSaum\";\"KantelSaum\";"
+            msg += "\"KanterSaum\";\"Auftrag\";\"KanteAusbVL\";\"KanteAusbVR\";\"KanteAusbHL\";\"KanteAusbHR\";"
+            msg += "\"TInfo3\";\"TInfo4\";\"TInfo5\";\"TInfo6\";\"TInfo7\";\"TInfo8\""
+            msg += "\n"
+            #Tabellenfumpf:
+            startindex = 3
+            stoppindex = 1000
+            projektnummer = self.t.get_zelltext_s("D1")#Projektnummer
+            projekpos = self.t.get_zelltext_s("F1")#Projekposition
+            for i in range(startindex, stoppindex, 2):
+                lfdnr = self.t.get_zelltext_i(i, 0)
+                if(len(lfdnr) == 0):
+                    break #for-Schleife
+                bemerkung = self.t.get_zelltext_i(i, 9)
+                auslassen = False
+                if(bemerkung[0:2] == "HZ"):
+                    auslassen = True
+                if(auslassen == False):
+                    artikel = self.t.get_zelltext_i(i, 1)#Plattenmaterial
+                    menge = self.t.get_zelltext_i(i, 2)#Stück
+                    bez = self.t.get_zelltext_i(i, 3)#Bezeichnung des Bauteils
+                    la = self.t.get_zelltext_i(i, 4)#Länge
+                    br = self.t.get_zelltext_i(i, 5)#Breite
+                    di = self.t.get_zelltext_i(i, 6)#Dicke
+                    kali = self.t.get_zelltext_i(i, 7)#Kanteninfo links
+                    kare = self.t.get_zelltext_i(i+1, 7)#Kanteninfo rechts
+                    kaob = self.t.get_zelltext_i(i, 8)#Kanteninfo oben
+                    kaun = self.t.get_zelltext_i(i+1, 8)#Kanteninfo unten
+
+                    zeile =  "\"" + projektnummer + "\";" #Aufkb
+                    zeile += "\"" + artikel + "\";" #Plakb
+                    zeile += "\"" + lfdnr + "\";" #Elnr
+                    zeile += "\"" + projekpos + "\";" #Aufpos
+                    zeile += "\"" + bez + "\";" #Teilbez
+                    zeile += "\"" + menge + "\";" #Stuck
+                    zeile += "\"" + la + "\";" #ZusLange
+                    zeile += "\"" + br + "\";" #ZusBreite
+                    zeile += "\"" + "0" + "\";" #Drehbar
+                    zeile += "\"" + kali + "\";" #Kantevkb
+                    zeile += "\"" + kare + "\";" #Kantehkb
+                    zeile += "\"" + kaob + "\";" #Kantelkb
+                    zeile += "\"" + kaun + "\";" #Kanterkb
+                    zeile += "\"" + bemerkung + "\";" #Zusinfo
+                    zeile += "\"" + "0" + "\";" #Kantevdicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
+                    zeile += "\"" + "0" + "\";" #Kantehdicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
+                    zeile += "\"" + "0" + "\";" #Kanteldicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
+                    zeile += "\"" + "0" + "\";" #Kanterdicke <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< noch korrekten Wert ergänzen!!!!!!!!!!!!!!!!
+                    zeile += "\"\";" #TInfo1
+                    zeile += "\"\";" #TInfo2
+                    zeile += "\"" + "0" + "\";" #KantevFuge
+                    zeile += "\"" + "0" + "\";" #KantehFuge
+                    zeile += "\"" + "0" + "\";" #KantelFuge
+                    zeile += "\"" + "0" + "\";" #KanterFuge
+                    zeile += "\"" + "0" + "\";" #KantevSaum
+                    zeile += "\"" + "0" + "\";" #KantehSaum
+                    zeile += "\"" + "0" + "\";" #KantelSaum
+                    zeile += "\"" + "0" + "\";" #KanterSaum
+                    zeile += "\"" + projektnummer + "\";" #Auftrag
+                    zeile += "\"" + "6" + "\";" #KanteAusbVL
+                    zeile += "\"" + "6" + "\";" #KanteAusbVR
+                    zeile += "\"" + "6" + "\";" #KanteAusbHL
+                    zeile += "\"" + "6" + "\";" #KanteAusbHR
+                    zeile += "\"" + di + "\";" #TInfo3
+                    zeile += "\"" + "" + "\";" #TInfo4
+                    zeile += "\"" + lfdnr + "\";" #TInfo5
+                    zeile += "\"" + "" + "\";" #TInfo6
+                    zeile += "\"" + "__" + "\";" #TInfo7
+                    zeile += "\"" + "" + "\";" #TInfo8
+                    zeile += "\n"
+                    msg += zeile
+            #Datei speichern:
+            dateiname  = projektnummer
+            dateiname += "pos"
+            posnr = self.t.get_zelltext_s("F1")#Positionsnummer
+            dateiname += self.posnr_formartieren(posnr)
+            dateiname += ".csv"
+            dateipfad  = self.downloads_pfad
+            dateipfad += "\\"
+            dateipfad += dateiname
+            if schreibe_in_datei_entferne_bestehende(dateipfad, msg) == True:
+                msg = "CSV-Datei wurde erfolgreich gespeichert im Download-Ordner."
+                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            else:
+                titel = "Klasse: slist, Funktion: pios_export(self)"
+                msg   = "CSV-Datei konnte nicht geschrieben werden"
+                msgbox(msg, titel, 1, 'QUERYBOX')
+        else: # Tabelle ist falsch formartiert
+            titel = "Klasse: slist, Funktion: pios_export(self)"
+            msg   = "Die Tabelle ist keine druckbare Stückliste. Bitte rufen Sie vorab die Funktion SList_ausdruck_zusammenstellen auf."
+            msgbox(msg, titel, 1, 'QUERYBOX')
+        pass
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
     def __init__(self):
@@ -5623,6 +5735,10 @@ def SList_tab_anlegen_kantenanlage(*event):
 def SList_check_cncdata(*event):
     sli = slist()
     sli.check_cncdata()
+    pass
+def SList_pios_export(*event):
+    sli = slist()
+    sli.pios_export()
     pass
 #---------
 def RB_Blancoliste(*event):
