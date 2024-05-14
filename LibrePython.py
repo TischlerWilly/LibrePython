@@ -1725,7 +1725,7 @@ class slist: # Calc
             pass
         # Seitenlayout:
         tab = ol_tabelle()
-        tab.set_seitenformat("A4", True, 400, 400, 2500 , 400, False, False) 
+        tab.set_seitenformat("A4", True, 400, 400, 2500 , 600, False, False) 
         tab.set_wiederholungszeilen_oben_i(0,2) # iStartZeile, iEndZeile
         pass
     def slist_ausdruck_zusammenstellen(self):
