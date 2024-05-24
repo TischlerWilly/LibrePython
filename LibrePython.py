@@ -87,14 +87,14 @@ def schreibe_in_datei(full_path, sText):
 def schreibe_in_datei_entferne_bestehende(full_path, sText):
     # Pfadtrenner ist auf Windows das \\
     # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
-    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
-    datei_vorhanden = False
-    my_file = Path(full_path)
-    if my_file.is_file():
-        datei_vorhanden = True    
+    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"    
+    my_file = Path(full_path)   
     new_file = open(full_path, "w")
     new_file.write(sText)
     new_file.close()
+    datei_vorhanden = False
+    if my_file.is_file():
+        datei_vorhanden = True 
     return datei_vorhanden
 def get_userpath():
     return expanduser("~")
