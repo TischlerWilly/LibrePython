@@ -17,6 +17,15 @@ from com.sun.star.sheet.CellInsertMode import DOWN as INSERT_UN
 from com.sun.star.table.CellHoriJustify import LEFT as AUSRICHTUNG_HORI_Li
 from com.sun.star.table.CellHoriJustify import CENTER as AUSRICHTUNG_HORI_MI
 from com.sun.star.table.CellHoriJustify import RIGHT as AUSRICHTUNG_HORI_RE
+from com.sun.star.table.CellVertJustify import TOP as AUSRICHTUNG_VERT_OB
+from com.sun.star.table.CellVertJustify import CENTER as AUSRICHTUNG_VERT_MI
+from com.sun.star.table.CellVertJustify import BOTTOM as AUSRICHTUNG_VERT_UN
+
+from com.sun.star.table.CellOrientation import TOPBOTTOM as AUSRICHTUNG_OU
+from com.sun.star.table.CellOrientation import BOTTOMTOP as AUSRICHTUNG_UO
+from com.sun.star.table.CellOrientation import STANDARD as AUSRICHTUNG_LR
+from com.sun.star.table.CellOrientation import STACKED as AUSRICHTUNG_RL
+
 from com.sun.star.sheet.CellDeleteMode import LEFT as DEL_LI
 from com.sun.star.table.CellContentType import TEXT as CELLCONTENTTYP_TEXT
 from com.sun.star.table import BorderLine
@@ -1158,6 +1167,26 @@ class ol_tabelle:
         elif sAusrichtung == "re":
             oRange.HoriJustify = AUSRICHTUNG_HORI_RE
         pass
+    def set_zellausrichtungVert_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, sAusrichtung):
+        oRange = self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde)
+        if sAusrichtung == "ob":
+            oRange.VertJustify = AUSRICHTUNG_VERT_OB
+        elif sAusrichtung == "mi":
+            oRange.VertJustify = AUSRICHTUNG_VERT_MI
+        elif sAusrichtung == "un":
+            oRange.VertJustify = AUSRICHTUNG_VERT_UN
+        pass
+    def set_schriftausrichtung_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, sAusrichtung):
+        oRange = self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde)
+        if sAusrichtung == "vert_ou":
+            oRange.Orientation = AUSRICHTUNG_OU
+        elif sAusrichtung == "vert_uo":
+            oRange.Orientation = AUSRICHTUNG_UO
+        elif sAusrichtung == "vert_lr":
+            oRange.Orientation = AUSRICHTUNG_LR
+        elif sAusrichtung == "vert_rl":
+            oRange.Orientation = AUSRICHTUNG_RL
+        pass
     def set_SchriftGroesse_s(self, sRange, iGroesse):
         self.sheet.getCellRangeByName(sRange).CharHeight = iGroesse
         pass
@@ -1740,6 +1769,8 @@ class slist: # Calc
         if kennung_ausdruck in tabname_ausdruck:
             # Stücklistendaten einlesen:
             projekt = self.t.get_zelltext_s("D1")
+            projektpos = self.t.get_zelltext_s("G1")
+            enr = []
             bez = []
             anz = []
             la  = []
@@ -1747,14 +1778,38 @@ class slist: # Calc
             di  = []
             mat = []
             kali = []
-            kadili = []
+            #kadili = []
             kare = []
-            kadire = []
+            #kadire = []
             kaob = []
-            kadiob = []
+            #kadiob = []
             kaun = []
-            kadiun = []
-            kom = []
+            #kadiun = []
+            #kom = []
+            counter_leere_bez = 0
+            for i in range(3, 50, 2):#-----------------------------<<<<< 25 später range noch anpassen!!!
+                tmp = self.t.get_zelltext_i(i, 3)
+                if(len(tmp) == 0):
+                    counter_leere_bez = counter_leere_bez +1
+                    if counter_leere_bez > 2:
+                        break #for
+                enr += [self.t.get_zelltext_i(i, 0)]
+                bez += [self.t.get_zelltext_i(i, 3)]
+                anz += [self.t.get_zelltext_i(i, 1)]
+                la  += [self.t.get_zelltext_i(i, 4)]
+                br  += [self.t.get_zelltext_i(i, 5)]
+                di  += [self.t.get_zelltext_i(i, 6)]
+                mat += [self.t.get_zelltext_i(i, 1)]
+                kali += [self.t.get_zelltext_i(i, 7)]
+                #kadili += [self.t.get_zelltext_i(i, 8)]
+                kare += [self.t.get_zelltext_i(i+1, 7)]
+                #kadire += [self.t.get_zelltext_i(i+1, 8)]
+                kaob += [self.t.get_zelltext_i(i, 9)]
+                #kadiob += [self.t.get_zelltext_i(i, 10)]
+                kaun += [self.t.get_zelltext_i(i+1, 9)]
+                #kadiun += [self.t.get_zelltext_i(i+1, 10)]
+                #kom += [self.t.get_zelltext_i(i, 11)]
+                pass #for
             # neue Registerkarte erzeugen:
             tabindex = self.t.get_tabindex()
             grundname_laenge = len(tabname_ausdruck) - len(kennung_ausdruck)
@@ -1764,25 +1819,134 @@ class slist: # Calc
             self.t.set_tabfokus_s(tabname_sticker)
             # Registerkarte formartieren:
             self.t.set_spaltenbreiten(500)
-            self.t.set_zeilenhoehen(500)
-            
-            akt_pos_x = 0
-            akt_pos_y = 0            
-            #-------------------------------------------------------------------Projekt:
-            pos_proj_x = akt_pos_x+4
-            pos_proj_y = akt_pos_y+2
-            self.t.zellen_verbinden_i(pos_proj_y, pos_proj_x, 
-                                      pos_proj_y, pos_proj_x+11,
-                                      True)
-            self.t.set_zelltext_i(pos_proj_y, pos_proj_x, projekt)
-            #-------------------------------------------------------------------
-            self.t.set_Rahmen_komplett_i(akt_pos_y,akt_pos_x,16,17,25)
-            # Kante rechts (auf dem Etikett die obere Kante):
-            pos_kare_x = akt_pos_x+2
-            pos_kare_y = akt_pos_y+0
-            self.t.zellen_verbinden_i(pos_kare_y, pos_kare_x, 
-                                      pos_kare_y+1, pos_kare_x+13,
-                                      True)
+            self.t.set_zeilenhoehen(490)
+
+            zeilenflipper = 0 
+            aktstickerzeile = 0
+            for i in range(0, len(bez)): 
+                
+                akt_pos_x = zeilenflipper * 19
+                akt_pos_y = aktstickerzeile * 18
+                #-------------------------------------------------------------------Projekt:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+2
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+13,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, projekt)
+                #-------------------------------------------------------------------Pos:
+                pos_tmp_x = akt_pos_x+4
+                pos_tmp_y = akt_pos_y+3
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+2,
+                                          True)
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+3, 
+                                          pos_tmp_y, pos_tmp_x+11,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "Pos")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+3, projektpos)
+                #-------------------------------------------------------------------Elementnummer:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+3
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+1, pos_tmp_x+1,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, enr[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Bezeichnung:
+                pos_tmp_x = akt_pos_x+4
+                pos_tmp_y = akt_pos_y+4
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+11,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, bez[i])
+                #-------------------------------------------------------------------Länge:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+5
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+1, 
+                                          pos_tmp_y, pos_tmp_x+3,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "L")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+1, la[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Breite:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+6
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+1, 
+                                          pos_tmp_y, pos_tmp_x+3,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "B")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+1, br[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Dicke:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+7
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+1, 
+                                          pos_tmp_y, pos_tmp_x+3,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "D")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+1, di[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Material:
+                pos_tmp_x = akt_pos_x+6
+                pos_tmp_y = akt_pos_y+5
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+9,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, mat[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Kante links:
+                # (auf dem Etikett die untere Kante):
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+15
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+1, pos_tmp_x+13,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kali[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Kante rechts:
+                # (auf dem Etikett die obere Kante):
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+0
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+1, pos_tmp_x+13,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kare[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Kante oben:
+                # (auf dem Etikett die linke Kante):
+                pos_tmp_x = akt_pos_x
+                pos_tmp_y = akt_pos_y+2
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+12, pos_tmp_x+1,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kaob[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_schriftausrichtung_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "vert_uo")
+                #-------------------------------------------------------------------Kante unten:
+                # (auf dem Etikett die rechts Kante):
+                pos_tmp_x = akt_pos_x+16
+                pos_tmp_y = akt_pos_y+2
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+12, pos_tmp_x+1,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kaun[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_schriftausrichtung_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "vert_uo")
+                #-------------------------------------------------------------------
+                self.t.set_Rahmen_komplett_i(akt_pos_y,akt_pos_x,
+                                             akt_pos_y+16, akt_pos_x+17,25)
+                #-------------------------------------------------------------------
+                zeilenflipper = zeilenflipper+1
+                if zeilenflipper > 2:
+                    aktstickerzeile = aktstickerzeile + 1
+                    zeilenflipper = 0  
+                pass #for
             pass
         else:
             titel = "Etiketten erzeugen"
