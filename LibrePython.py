@@ -1,3 +1,4 @@
+# alles einfalten: strg+k --> strg+0
 from __future__ import unicode_literals
 from ast import Not
 from genericpath import exists
@@ -9,19 +10,31 @@ import string
 import uno
 import datetime
 import time
+from decimal import Decimal, ROUND_05UP, ROUND_DOWN, ROUND_HALF_DOWN, ROUND_UP, ROUND_HALF_UP, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_EVEN
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.sheet.CellInsertMode import RIGHT as INSERT_RE
 from com.sun.star.sheet.CellInsertMode import DOWN as INSERT_UN
 from com.sun.star.table.CellHoriJustify import LEFT as AUSRICHTUNG_HORI_Li
 from com.sun.star.table.CellHoriJustify import CENTER as AUSRICHTUNG_HORI_MI
 from com.sun.star.table.CellHoriJustify import RIGHT as AUSRICHTUNG_HORI_RE
+from com.sun.star.table.CellVertJustify import TOP as AUSRICHTUNG_VERT_OB
+from com.sun.star.table.CellVertJustify import CENTER as AUSRICHTUNG_VERT_MI
+from com.sun.star.table.CellVertJustify import BOTTOM as AUSRICHTUNG_VERT_UN
+
+from com.sun.star.table.CellOrientation import TOPBOTTOM as AUSRICHTUNG_OU
+from com.sun.star.table.CellOrientation import BOTTOMTOP as AUSRICHTUNG_UO
+from com.sun.star.table.CellOrientation import STANDARD as AUSRICHTUNG_LR
+from com.sun.star.table.CellOrientation import STACKED as AUSRICHTUNG_RL
+
 from com.sun.star.sheet.CellDeleteMode import LEFT as DEL_LI
 from com.sun.star.table.CellContentType import TEXT as CELLCONTENTTYP_TEXT
 from com.sun.star.table import BorderLine
 from com.sun.star.awt.FontWeight import NORMAL as FONT_NOT_BOLD
 from com.sun.star.awt.FontWeight import BOLD as FONT_BOLD
 from com.sun.star.awt.FontUnderline import SINGLE as FONT_UNDERLINED_SINGLE
+from com.sun.star.table import CellRangeAddress
 from shutil import copyfile
+from com.sun.star.beans import PropertyValue
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 """
@@ -58,7 +71,8 @@ def erstelle_datei(full_path):
     my_file = Path(full_path)
     if my_file.is_file():
         msg = "Die Datei existiert bereits und wird nicht überschrieben."
-        msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+        titel = "erstelle_datei(full_path)"
+        msgbox(msg, titel, 1, 'QUERYBOX')
         erfolg = False
     else:
         new_file = open(full_path, "w")
@@ -82,14 +96,14 @@ def schreibe_in_datei(full_path, sText):
 def schreibe_in_datei_entferne_bestehende(full_path, sText):
     # Pfadtrenner ist auf Windows das \\
     # Beispiel: "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
-    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"
-    datei_vorhanden = False
-    my_file = Path(full_path)
-    if my_file.is_file():
-        datei_vorhanden = True    
+    # full_path = "C:\\Users\\AV6\\Desktop\\Unbekannt.odt"    
+    my_file = Path(full_path)   
     new_file = open(full_path, "w")
     new_file.write(sText)
     new_file.close()
+    datei_vorhanden = False
+    if my_file.is_file():
+        datei_vorhanden = True 
     return datei_vorhanden
 def get_userpath():
     return expanduser("~")
@@ -123,6 +137,696 @@ def findeDateien(name, pfad):
         if name in i:
             dateien += [os.path.join(pfad, i)]
     return dateien
+def index_to_buchstabe(index):
+    if index == 1:
+        return "A"
+    elif index == 2:
+        return "B"
+    elif index == 3:
+        return "C"
+    elif index == 4:
+        return "D"
+    elif index == 5:
+        return "E"
+    elif index == 6:
+        return "F"
+    elif index == 7:
+        return "G"
+    elif index == 8:
+        return "H"
+    elif index == 9:
+        return "I"
+    elif index == 10:
+        return "J"
+    elif index == 11:
+        return "K"
+    elif index == 12:
+        return "L"
+    elif index == 13:
+        return "M"
+    elif index == 14:
+        return "N"
+    elif index == 15:
+        return "O"
+    elif index == 16:
+        return "P"
+    elif index == 17:
+        return "Q"
+    elif index == 18:
+        return "R"
+    elif index == 19:
+        return "S"
+    elif index == 20:
+        return "T"
+    elif index == 21:
+        return "U"
+    elif index == 22:
+        return "V"
+    elif index == 23:
+        return "W"
+    elif index == 24:
+        return "X"
+    elif index == 25:
+        return "Y"
+    elif index == 26:
+        return "Z"
+        #---------------------------
+    elif index == 27:
+        return "AA"
+    elif index == 28:
+        return "AB"
+    elif index == 29:
+        return "AC"
+    elif index == 30:
+        return "AD"
+    elif index == 31:
+        return "AE"
+    elif index == 32:
+        return "AF"
+    elif index == 33:
+        return "AG"
+    elif index == 34:
+        return "AH"
+    elif index == 35:
+        return "AI"
+    elif index == 36:
+        return "AJ"
+    elif index == 37:
+        return "AK"
+    elif index == 38:
+        return "AL"
+    elif index == 39:
+        return "AM"
+    elif index == 40:
+        return "AN"
+    elif index == 41:
+        return "AO"
+    elif index == 42:
+        return "AP"
+    elif index == 43:
+        return "AQ"
+    elif index == 44:
+        return "AR"
+    elif index == 45:
+        return "AS"
+    elif index == 46:
+        return "AT"
+    elif index == 47:
+        return "AU"
+    elif index == 48:
+        return "AV"
+    elif index == 49:
+        return "AW"
+    elif index == 50:
+        return "AX"
+    elif index == 51:
+        return "AY"
+    elif index == 52:
+        return "AZ"
+        #---------------------------
+    elif index == 53:
+        return "BA"
+    elif index == 54:
+        return "BB"
+    elif index == 55:
+        return "BC"
+    elif index == 56:
+        return "BD"
+    elif index == 57:
+        return "BE"
+    elif index == 58:
+        return "BF"
+    elif index == 59:
+        return "BG"
+    elif index == 60:
+        return "BH"
+    elif index == 61:
+        return "BI"
+    elif index == 62:
+        return "BJ"
+    elif index == 63:
+        return "BK"
+    elif index == 64:
+        return "BL"
+    elif index == 65:
+        return "BM"
+    elif index == 66:
+        return "BN"
+    elif index == 67:
+        return "BO"
+    elif index == 68:
+        return "BP"
+    elif index == 69:
+        return "BQ"
+    elif index == 70:
+        return "BR"
+    elif index == 71:
+        return "BS"
+    elif index == 72:
+        return "BT"
+    elif index == 73:
+        return "BU"
+    elif index == 74:
+        return "BV"
+    elif index == 75:
+        return "BW"
+    elif index == 76:
+        return "BX"
+    elif index == 77:
+        return "BY"
+    elif index == 78:
+        return "BZ"
+        #---------------------------
+    elif index == 79:
+        return "CA"
+    elif index == 80:
+        return "CB"
+    elif index == 81:
+        return "CC"
+    elif index == 82:
+        return "CD"
+    elif index == 83:
+        return "CE"
+    elif index == 84:
+        return "CF"
+    elif index == 85:
+        return "CG"
+    elif index == 86:
+        return "CH"
+    elif index == 87:
+        return "CI"
+    elif index == 88:
+        return "CJ"
+    elif index == 89:
+        return "CK"
+    elif index == 90:
+        return "CL"
+    elif index == 91:
+        return "CM"
+    elif index == 92:
+        return "CN"
+    elif index == 93:
+        return "CO"
+    elif index == 94:
+        return "CP"
+    elif index == 95:
+        return "CQ"
+    elif index == 96:
+        return "CR"
+    elif index == 97:
+        return "CS"
+    elif index == 98:
+        return "CT"
+    elif index == 99:
+        return "CU"
+    elif index == 100:
+        return "CV"
+    elif index == 101:
+        return "CW"
+    elif index == 102:
+        return "CX"
+    elif index == 103:
+        return "CY"
+    elif index == 104:
+        return "CZ"
+        #---------------------------
+    elif index == 105:
+        return "DA"
+    elif index == 106:
+        return "DB"
+    elif index == 107:
+        return "DC"
+    elif index == 108:
+        return "DD"
+    elif index == 109:
+        return "DE"
+    elif index == 110:
+        return "DF"
+    elif index == 111:
+        return "DG"
+    elif index == 112:
+        return "DH"
+    elif index == 113:
+        return "DI"
+    elif index == 114:
+        return "DJ"
+    elif index == 115:
+        return "DK"
+    elif index == 116:
+        return "DL"
+    elif index == 117:
+        return "DM"
+    elif index == 118:
+        return "DN"
+    elif index == 119:
+        return "DO"
+    elif index == 120:
+        return "DP"
+    elif index == 121:
+        return "DQ"
+    elif index == 122:
+        return "DR"
+    elif index == 123:
+        return "DS"
+    elif index == 124:
+        return "DT"
+    elif index == 125:
+        return "DU"
+    elif index == 126:
+        return "DV"
+    elif index == 127:
+        return "DW"
+    elif index == 128:
+        return "DX"
+    elif index == 129:
+        return "DY"
+    elif index == 130:
+        return "DZ"
+        #---------------------------
+    elif index == 131:
+        return "EA"
+    elif index == 132:
+        return "EB"
+    elif index == 133:
+        return "EC"
+    elif index == 134:
+        return "ED"
+    elif index == 135:
+        return "EE"
+    elif index == 136:
+        return "EF"
+    elif index == 137:
+        return "EG"
+    elif index == 138:
+        return "EH"
+    elif index == 139:
+        return "EI"
+    elif index == 140:
+        return "EJ"
+    elif index == 141:
+        return "EK"
+    elif index == 142:
+        return "EL"
+    elif index == 143:
+        return "EM"
+    elif index == 144:
+        return "EN"
+    elif index == 145:
+        return "EO"
+    elif index == 146:
+        return "EP"
+    elif index == 147:
+        return "EQ"
+    elif index == 148:
+        return "ER"
+    elif index == 149:
+        return "ES"
+    elif index == 150:
+        return "ET"
+    elif index == 151:
+        return "EU"
+    elif index == 152:
+        return "EV"
+    elif index == 153:
+        return "EW"
+    elif index == 154:
+        return "EX"
+    elif index == 155:
+        return "EY"
+    elif index == 156:
+        return "EZ"
+        #---------------------------
+    elif index == 157:
+        return "FA"
+    elif index == 158:
+        return "FB"
+    elif index == 159:
+        return "FC"
+    elif index == 160:
+        return "FD"
+    elif index == 161:
+        return "FE"
+    elif index == 162:
+        return "FF"
+    elif index == 163:
+        return "FG"
+    elif index == 164:
+        return "FH"
+    elif index == 165:
+        return "FI"
+    elif index == 166:
+        return "FJ"
+    elif index == 167:
+        return "FK"
+    elif index == 168:
+        return "FL"
+    elif index == 169:
+        return "FM"
+    elif index == 170:
+        return "FN"
+    elif index == 171:
+        return "FO"
+    elif index == 172:
+        return "FP"
+    elif index == 173:
+        return "FQ"
+    elif index == 174:
+        return "FR"
+    elif index == 175:
+        return "FS"
+    elif index == 176:
+        return "FT"
+    elif index == 177:
+        return "FU"
+    elif index == 178:
+        return "FV"
+    elif index == 179:
+        return "FW"
+    elif index == 180:
+        return "FX"
+    elif index == 181:
+        return "FY"
+    elif index == 182:
+        return "FZ"
+        #---------------------------
+    elif index == 183:
+        return "GA"
+    elif index == 184:
+        return "GB"
+    elif index == 185:
+        return "GC"
+    elif index == 186:
+        return "GD"
+    elif index == 187:
+        return "GE"
+    elif index == 188:
+        return "GF"
+    elif index == 189:
+        return "GG"
+    elif index == 190:
+        return "GH"
+    elif index == 191:
+        return "GI"
+    elif index == 192:
+        return "GJ"
+    elif index == 193:
+        return "GK"
+    elif index == 194:
+        return "GL"
+    elif index == 195:
+        return "GM"
+    elif index == 196:
+        return "GN"
+    elif index == 197:
+        return "GO"
+    elif index == 198:
+        return "GP"
+    elif index == 199:
+        return "GQ"
+    elif index == 200:
+        return "GR"
+    elif index == 201:
+        return "GS"
+    elif index == 202:
+        return "GT"
+    elif index == 203:
+        return "GU"
+    elif index == 204:
+        return "GV"
+    elif index == 205:
+        return "GW"
+    elif index == 206:
+        return "GX"
+    elif index == 207:
+        return "GY"
+    elif index == 208:
+        return "GZ"
+        #---------------------------
+    elif index == 209:
+        return "HA"
+    elif index == 210:
+        return "HB"
+    elif index == 211:
+        return "HC"
+    elif index == 212:
+        return "HD"
+    elif index == 213:
+        return "HE"
+    elif index == 214:
+        return "HF"
+    elif index == 215:
+        return "HG"
+    elif index == 216:
+        return "HH"
+    elif index == 217:
+        return "HI"
+    elif index == 218:
+        return "HJ"
+    elif index == 219:
+        return "HK"
+    elif index == 220:
+        return "HL"
+    elif index == 221:
+        return "HM"
+    elif index == 222:
+        return "HN"
+    elif index == 223:
+        return "HO"
+    elif index == 224:
+        return "HP"
+    elif index == 225:
+        return "HQ"
+    elif index == 226:
+        return "HR"
+    elif index == 227:
+        return "HS"
+    elif index == 228:
+        return "HT"
+    elif index == 229:
+        return "HU"
+    elif index == 230:
+        return "HV"
+    elif index == 231:
+        return "HW"
+    elif index == 232:
+        return "HX"
+    elif index == 233:
+        return "HY"
+    elif index == 234:
+        return "HZ"
+        #---------------------------
+    elif index == 235:
+        return "IA"
+    elif index == 236:
+        return "IB"
+    elif index == 237:
+        return "IC"
+    elif index == 238:
+        return "ID"
+    elif index == 239:
+        return "IE"
+    elif index == 240:
+        return "IF"
+    elif index == 241:
+        return "IG"
+    elif index == 242:
+        return "IH"
+    elif index == 243:
+        return "II"
+    elif index == 244:
+        return "IJ"
+    elif index == 245:
+        return "IK"
+    elif index == 246:
+        return "IL"
+    elif index == 247:
+        return "IM"
+    elif index == 248:
+        return "IN"
+    elif index == 249:
+        return "IO"
+    elif index == 250:
+        return "IP"
+    elif index == 251:
+        return "IQ"
+    elif index == 252:
+        return "IR"
+    elif index == 253:
+        return "IS"
+    elif index == 254:
+        return "IT"
+    elif index == 255:
+        return "IU"
+    elif index == 256:
+        return "IV"
+    elif index == 257:
+        return "IW"
+    elif index == 258:
+        return "IX"
+    elif index == 259:
+        return "IY"
+    elif index == 260:
+        return "IZ"
+        #---------------------------
+    elif index == 261:
+        return "JA"
+    elif index == 262:
+        return "JB"
+    elif index == 263:
+        return "JC"
+    elif index == 264:
+        return "JD"
+    elif index == 265:
+        return "JE"
+    elif index == 266:
+        return "JF"
+    elif index == 267:
+        return "JG"
+    elif index == 268:
+        return "JH"
+    elif index == 269:
+        return "JI"
+    elif index == 270:
+        return "JJ"
+    elif index == 271:
+        return "JK"
+    elif index == 272:
+        return "JL"
+    elif index == 273:
+        return "JM"
+    elif index == 274:
+        return "JN"
+    elif index == 275:
+        return "JO"
+    elif index == 276:
+        return "JP"
+    elif index == 277:
+        return "JQ"
+    elif index == 278:
+        return "JR"
+    elif index == 279:
+        return "JS"
+    elif index == 280:
+        return "JT"
+    elif index == 281:
+        return "JU"
+    elif index == 282:
+        return "JV"
+    elif index == 283:
+        return "JW"
+    elif index == 284:
+        return "JX"
+    elif index == 285:
+        return "JY"
+    elif index == 286:
+        return "JZ"
+        #---------------------------
+    elif index == 287:
+        return "KA"
+    elif index == 288:
+        return "KB"
+    elif index == 289:
+        return "KC"
+    elif index == 290:
+        return "KD"
+    elif index == 291:
+        return "KE"
+    elif index == 292:
+        return "KF"
+    elif index == 293:
+        return "KG"
+    elif index == 294:
+        return "KH"
+    elif index == 295:
+        return "KI"
+    elif index == 296:
+        return "KJ"
+    elif index == 297:
+        return "KK"
+    elif index == 298:
+        return "KL"
+    elif index == 299:
+        return "KM"
+    elif index == 300:
+        return "KN"
+    elif index == 301:
+        return "KO"
+    elif index == 302:
+        return "KP"
+    elif index == 303:
+        return "KQ"
+    elif index == 304:
+        return "KR"
+    elif index == 305:
+        return "KS"
+    elif index == 306:
+        return "KT"
+    elif index == 307:
+        return "KU"
+    elif index == 308:
+        return "KV"
+    elif index == 309:
+        return "KW"
+    elif index == 310:
+        return "KX"
+    elif index == 311:
+        return "KY"
+    elif index == 312:
+        return "KZ"
+        #---------------------------
+    elif index == 313:
+        return "LA"
+    elif index == 314:
+        return "LB"
+    elif index == 315:
+        return "LC"
+    elif index == 316:
+        return "LD"
+    elif index == 317:
+        return "LE"
+    elif index == 318:
+        return "LF"
+    elif index == 319:
+        return "LG"
+    elif index == 320:
+        return "LH"
+    elif index == 321:
+        return "LI"
+    elif index == 322:
+        return "LJ"
+    elif index == 323:
+        return "LK"
+    elif index == 324:
+        return "LL"
+    elif index == 325:
+        return "LM"
+    elif index == 326:
+        return "LN"
+    elif index == 327:
+        return "LO"
+    elif index == 328:
+        return "LP"
+    elif index == 329:
+        return "LQ"
+    elif index == 330:
+        return "LR"
+    elif index == 331:
+        return "LS"
+    elif index == 332:
+        return "LT"
+    elif index == 333:
+        return "LU"
+    elif index == 334:
+        return "LV"
+    elif index == 335:
+        return "LW"
+    elif index == 336:
+        return "LX"
+    elif index == 337:
+        return "LY"
+    elif index == 338:
+        return "LZ"
+    return ""
 #----------------------------------------------------------------------------------
 
 class ol_tabelle:
@@ -158,6 +862,8 @@ class ol_tabelle:
         self.sheet = self.sheets.getByIndex(i) # erstes Blatt per Index
         pass
         # Anwendung: t.set_tabindex(0) 
+    def get_tabindex(self):
+        return self.sheet.RangeAddress.Sheet
     def set_tabname(self, n): # ist optional
         self.sheet = self.sheets.getByName(n) # 'Tabelle2 per Namen
         pass
@@ -210,6 +916,17 @@ class ol_tabelle:
         page = pageStyle.getByName("Default")
         # page.PageScale = 25 # 25%
         page.PageScale = iSkaling
+        pass
+    def set_wiederholungszeilen_oben_i(self, iStartZeile, iEndZeile):
+        self.sheet.setPrintTitleRows(True)
+        # Erstelle ein CellRangeAddress-Objekt:
+        cell_range_address = CellRangeAddress()
+        cell_range_address.StartColumn = 0
+        cell_range_address.StartRow = iStartZeile
+        cell_range_address.EndColumn = 0
+        cell_range_address.EndRow = iEndZeile
+        # Bereich zuweisen:
+        self.sheet.setTitleRows(cell_range_address)
         pass
     #-----------------------------------------------------------------------------------------------
     # Tabs:
@@ -273,16 +990,37 @@ class ol_tabelle:
             return 0
         return 0
     def tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex):
+        retwert = 0
         namen = []
         namen = self.doc.Sheets.ElementNames
-        tab_schon_vorhanden = 0
-        for i in range (1, len(namen)):
+        tab_alt_schon_vorhanden = 0
+        for i in range (0, len(namen)):
             if namen[i] == sAlterTabName:
-                tab_schon_vorhanden = 1
+                tab_alt_schon_vorhanden = 1
                 break #for i
-        if tab_schon_vorhanden == 1:
-            self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
-        pass
+        tab_neu_schon_vorhanden = 0
+        for i in range (0, len(namen)):
+            if namen[i] == sNeuerTabName:
+                tab_neu_schon_vorhanden = 1
+                break #for i
+        if tab_alt_schon_vorhanden == 1:
+            if tab_neu_schon_vorhanden == 0:
+                self.doc.Sheets.copyByName(sAlterTabName, sNeuerTabName, iTabIndex)
+            else:
+                msg = "Die Registerkarte \""
+                msg += sNeuerTabName
+                titel = "tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex)"
+                msg += "\" ist schon vorhanden und kann desshalb nicht kopiert werden!"
+                msgbox(msg, titel, 1, 'QUERYBOX')
+                retwert = 2
+        else:
+            msg = "Die Registerkarte \""
+            msg += sAlterTabName
+            titel = "tab_kopieren2(self, sAlterTabName, sNeuerTabName, iTabIndex)"
+            msg += "\" ist nicht vorhanden und kann desshalb nicht kopiert werden!"
+            msgbox(msg, titel, 1, 'QUERYBOX')
+            retwert = 1
+        return retwert
     def tab_setName(self, sNeuerTabName):
         namen = []
         namen = self.doc.Sheets.ElementNames
@@ -354,6 +1092,20 @@ class ol_tabelle:
     def get_zelltext_i(self, zeile, spalte):
         return self.sheet.getCellByPosition(spalte, zeile).String
         # Anwendung: text = t.get_zelltext_i(1,1)
+    def get_zelltext_akt_auswahl(self):
+        iZeile = 0
+        iSpalte = 0
+        iZeileStart = self.get_selection_zeile_start()
+        iZeileEnde  = self.get_selection_zeile_ende()
+        iSpalteStart = self.get_selection_spalte_start()
+        iSpalteEnde = self.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):# wird gebraucht zur Typenumwandlung
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                iZeile = z
+                iSpalte = s
+                break # nur 1 durchlauf erwünscht
+            break # nur 1 durchlauf erwünscht
+        return self.get_zelltext_i(iZeile, iSpalte)
     def set_zellformel_s(self, zellname, formel):
         self.sheet.getCellRangeByName(zellname).Formula = formel
         pass
@@ -406,6 +1158,35 @@ class ol_tabelle:
             oRange.HoriJustify = AUSRICHTUNG_HORI_RE
         pass
         #Anwendung: t.set_zellausrichtungHori_s("B2:C3", "re")
+    def set_zellausrichtungHori_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, sAusrichtung):
+        oRange = self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde)
+        if sAusrichtung == "li":
+            oRange.HoriJustify = AUSRICHTUNG_HORI_Li
+        elif sAusrichtung == "mi":
+            oRange.HoriJustify = AUSRICHTUNG_HORI_MI
+        elif sAusrichtung == "re":
+            oRange.HoriJustify = AUSRICHTUNG_HORI_RE
+        pass
+    def set_zellausrichtungVert_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, sAusrichtung):
+        oRange = self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde)
+        if sAusrichtung == "ob":
+            oRange.VertJustify = AUSRICHTUNG_VERT_OB
+        elif sAusrichtung == "mi":
+            oRange.VertJustify = AUSRICHTUNG_VERT_MI
+        elif sAusrichtung == "un":
+            oRange.VertJustify = AUSRICHTUNG_VERT_UN
+        pass
+    def set_schriftausrichtung_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, sAusrichtung):
+        oRange = self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde)
+        if sAusrichtung == "vert_ou":
+            oRange.Orientation = AUSRICHTUNG_OU
+        elif sAusrichtung == "vert_uo":
+            oRange.Orientation = AUSRICHTUNG_UO
+        elif sAusrichtung == "vert_lr":
+            oRange.Orientation = AUSRICHTUNG_LR
+        elif sAusrichtung == "vert_rl":
+            oRange.Orientation = AUSRICHTUNG_RL
+        pass
     def set_SchriftGroesse_s(self, sRange, iGroesse):
         self.sheet.getCellRangeByName(sRange).CharHeight = iGroesse
         pass
@@ -415,6 +1196,12 @@ class ol_tabelle:
         else:
             self.sheet.getCellRangeByName(sRange).CharWeight = FONT_NOT_BOLD
         pass
+    def set_SchriftArt_s(self, sRange, schriftart):
+        #schriftart = "Calibri"
+        try:
+            self.sheet.getCellRangeByName(sRange).CharFontName = schriftart
+        except:
+            pass
     def set_SchriftFarbe_s(self, sZelle, farbe): # farbe ist ein long-wert
         zelle = self.sheet.getCellRangeByName(sZelle) # Range ist nich möglich nur eine Zelle siehe nächste Zeile
         cursor = zelle.createTextCursor() # funktioniert nur mit je einer Zelle
@@ -437,6 +1224,71 @@ class ol_tabelle:
         tableBorder.BottomLine = borderLine
         tableBorder.IsBottomLineValid = True
         self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
+    def set_Rahmen_komplett_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, iLinienbreite):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        tableBorder.VerticalLine = borderLine
+        tableBorder.IsVerticalLineValid = True
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
+        tableBorder.LeftLine = borderLine
+        tableBorder.IsLeftLineValid = True
+        tableBorder.RightLine = borderLine
+        tableBorder.IsRightLineValid = True
+        tableBorder.TopLine = borderLine
+        tableBorder.IsTopLineValid = True
+        tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
+        self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).setPropertyValue("TableBorder", tableBorder)
+        pass
+    def set_Rahmen_s(self, sRange, iLinienbreite, rahmenfarbe):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        borderLine.Color = rahmenfarbe
+        tableBorder.VerticalLine = borderLine
+        tableBorder.IsVerticalLineValid = True
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
+        tableBorder.LeftLine = borderLine
+        tableBorder.IsLeftLineValid = True
+        tableBorder.RightLine = borderLine
+        tableBorder.IsRightLineValid = True
+        tableBorder.TopLine = borderLine
+        tableBorder.IsTopLineValid = True
+        tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
+        self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
+    def set_Rahmen_unten_s(self, sRange, iLinienbreite, rahmenfarbe):
+        tableBorder = self.sheet.getPropertyValue("TableBorder")
+        borderLine  = BorderLine() # Objekt anlegen
+        borderLine.OuterLineWidth = iLinienbreite # Linienbreite bestimmen
+        borderLine.Color = rahmenfarbe
+        #tableBorder.VerticalLine = borderLine
+        #tableBorder.IsVerticalLineValid = True
+        tableBorder.HorizontalLine = borderLine
+        tableBorder.IsHorizontalLineValid = True
+        #tableBorder.LeftLine = borderLine
+        #tableBorder.IsLeftLineValid = True
+        #tableBorder.RightLine = borderLine
+        #tableBorder.IsRightLineValid = True
+        #tableBorder.TopLine = borderLine
+        #tableBorder.IsTopLineValid = True
+        tableBorder.BottomLine = borderLine
+        tableBorder.IsBottomLineValid = True
+        self.sheet.getCellRangeByName(sRange).setPropertyValue("TableBorder", tableBorder)
+        pass
+    def zellen_verbinden_s(self, sRange, bIstVerbunden):
+        self.sheet.getCellRangeByName(sRange).merge(bIstVerbunden)
+        pass
+    def zellen_verbinden_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, bIstVerbunden):
+        self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).merge(bIstVerbunden)
+        pass
+    def zellen_textumbruch_i(self, iZeileStart, iSpalteStart, iZeileEnde, iSpalteEnde, bMitTextumruch):
+        self.sheet.getCellRangeByPosition(iSpalteStart, iZeileStart, iSpalteEnde, iZeileEnde).IsTextWrapped = bMitTextumruch
         pass
     #-----------------------------------------------------------------------------------------------
     # Spalten:
@@ -497,6 +1349,11 @@ class ol_tabelle:
         oSpalte.Width = iBreite
         pass
         #Anwendung: t.set_spaltenbreite_i(5, 500)
+    def set_spaltenbreiten(self, iBreite): # 100 == 1mm
+        oZeilen = self.sheet.getColumns()
+        oZeilen.Width = iBreite
+        pass
+        #Anwendung: t.set_spaltenbreiten(1000)
     def get_spaltenbreite_i(self, iSpalte): # 100 == 1mm
         oSpalten = self.sheet.getColumns()
         oSpalte = oSpalten.getByIndex(iSpalte)
@@ -608,12 +1465,35 @@ class ol_textdatei:
 class slist: # Calc
     def __init__(self):
         self.t = ol_tabelle()
-        self.maxistklen = 999   
+        self.maxistklen = 999  
+        # CNC-Pfad des Postprozessors:
+        try:
+            windowsuser = os.getlogin()
+            self.cnc_pfad = "C:\\Users\\"
+            self.cnc_pfad += windowsuser
+            self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen"
+        except: # die folgende Programmierung muss noch korrigiert werden falls sie gebraucht wird:
+            windowsuser = "nicht_auf_windows"
+            self.cnc_pfad = "C:\\Users\\"
+            self.cnc_pfad += windowsuser
+            self.cnc_pfad += "\\Documents\\CAM\\von postprozessor\\eigen" 
+        # Download-Ordner-Pfad:
+        try:
+            windowsuser = os.getlogin()
+            self.downloads_pfad = "C:\\Users\\"
+            self.downloads_pfad += windowsuser
+            self.downloads_pfad += "\\Downloads"
+        except: # die folgende Programmierung muss noch korrigiert werden falls sie gebraucht wird:
+            windowsuser = "nicht_auf_windows"
+            self.downloads_pfad = "C:\\Users\\"
+            self.downloads_pfad += windowsuser
+            self.downloads_pfad += "\\Downloads"       
         # Farben bestimmen:
         self.farblos = -1
         self.rot = RGBTo32bitInt(204, 0, 0)
         self.gelb = RGBTo32bitInt(255, 255, 0) 
         self.grau = RGBTo32bitInt(204, 204, 204) 
+        self.gruen = RGBTo32bitInt(129, 212, 26) 
         pass
     def tabkopf_anlegen(self):
         self.t.set_zelltext_s("A1", "Bezeichnung")
@@ -783,6 +1663,408 @@ class slist: # Calc
             return True
         return False
         # Anwendung: self.autoformat()
+    def ist_slist(self):
+        a = self.t.get_zelltext_s("A1")
+        b = self.t.get_zelltext_s("B1")
+        c = self.t.get_zelltext_s("C1")
+        d = self.t.get_zelltext_s("D1")
+        e = self.t.get_zelltext_s("E1")
+        f = self.t.get_zelltext_s("F1")
+        if a == "Bezeichnung" and b == "Anzahl" and c == "Länge" and d == "Breite" and e == "Dicke" and f == "Material": # Tabellenkopf prüfen
+            return True
+        else:
+            return False
+    def formartieren_zum_ausdrucken(self):
+        self.t.set_SchriftArt_s("A1:Z999", "Calibri")
+        index_nr = 0
+        index_artikel = 1
+        index_menge = 2
+        index_bez = 3
+        index_la = 4
+        index_br = 5
+        index_di =6
+        index_ka_li = 7
+        index_ka_re = 7
+        index_ka_ob = 9
+        index_ka_un = 9
+        index_kom = 11
+        index_kadi_li = 8
+        index_kadi_re = 8
+        index_kadi_ob = 10
+        index_kadi_un = 10
+        zeilennummer_tabkopf = 1
+        # Zellgrößen anpassen:
+        self.t.set_spaltenbreite_i(index_nr, 800)
+        self.t.set_spaltenbreite_i(index_artikel, 4000)
+        self.t.set_spaltenbreite_i(index_menge, 900)
+        self.t.set_spaltenbreite_i(index_bez, 4000)
+        self.t.set_spaltenbreite_i(index_la, 1100)
+        self.t.set_spaltenbreite_i(index_br, 1100)
+        self.t.set_spaltenbreite_i(index_di, 800)
+        self.t.set_spaltenbreite_i(index_ka_li, 4000)
+        # self.t.set_spaltenbreite_i(index_ka_re, 4000)
+        self.t.set_spaltenbreite_i(index_ka_ob, 4000)
+        # self.t.set_spaltenbreite_i(index_ka_un, 4000)
+        self.t.set_spaltenbreite_i(index_kom, 6500)
+        self.t.set_spaltenbreite_i(index_kadi_li, 800)
+        #self.t.set_spaltenbreite_i(index_kadi_re, 800)
+        self.t.set_spaltenbreite_i(index_kadi_ob, 800)
+        #self.t.set_spaltenbreite_i(index_kadi_un, 800)
+        # Kopfdaten:
+        self.t.set_zelltext_s("C1", "Projekt:")
+        self.t.set_zellausrichtungHori_s("C1", "re")
+        self.t.set_zellausrichtungHori_s("D1", "mi")
+        self.t.set_SchriftFett_s("D1", True)
+        self.t.set_zelltext_s("F1", "Position:")
+        self.t.set_zellausrichtungHori_s("F1", "re")
+        self.t.set_zellausrichtungHori_s("G1", "mi")
+        self.t.set_SchriftFett_s("G1", True)
+        self.t.set_zelltext_s("K1", "Datum Druck:")
+        self.t.set_zellausrichtungHori_s("K1", "re")
+        self.t.set_zellformel_s("L1", "=TODAY()")
+        self.t.set_zellausrichtungHori_s("L1", "li")
+        # Tabellenkopf:
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_nr, "Nr.")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_artikel, "Artikel")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_menge, "Stück")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_bez, "Bezeichnung")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_la, "Länge")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_br, "Breite")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_di, "Dicke")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_ka_li, "Kante links")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_ka_re, "Kante rechts")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_ka_ob, "Kante oben")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_ka_un, "Kante unten")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kom, "Bemerkung")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_li, "KDL")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_re, "KDR")
+        self.t.set_zelltext_i(zeilennummer_tabkopf, index_kadi_ob, "KDO")
+        self.t.set_zelltext_i(zeilennummer_tabkopf+1, index_kadi_un, "KDU")
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_nr, zeilennummer_tabkopf+1, index_nr, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_artikel, zeilennummer_tabkopf+1, index_artikel, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_menge, zeilennummer_tabkopf+1, index_menge, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_bez, zeilennummer_tabkopf+1, index_bez, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_la, zeilennummer_tabkopf+1, index_la, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_br, zeilennummer_tabkopf+1, index_br, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_di, zeilennummer_tabkopf+1, index_di, True)        
+        self.t.zellen_verbinden_i(zeilennummer_tabkopf, index_kom, zeilennummer_tabkopf+1, index_kom, True)   
+        self.t.set_zellausrichtungHori_s("A2:G3", "mi")
+        self.t.set_zellausrichtungHori_s("I2:I3", "mi")
+        self.t.set_zellausrichtungHori_s("K2:K3", "mi")
+        # Tabellenkopf farbig machen:
+        for i in range(0,12):
+            self.t.set_zellfarbe_i(zeilennummer_tabkopf, i, self.grau)
+            self.t.set_zellfarbe_i(zeilennummer_tabkopf+1, i, self.grau)
+            self.t.set_Rahmen_komplett_s("A2:L3", 25)
+            pass
+        # Seitenlayout:
+        tab = ol_tabelle()
+        tab.set_seitenformat("A4", True, 400, 400, 2500 , 600, False, False) 
+        tab.set_wiederholungszeilen_oben_i(0,2) # iStartZeile, iEndZeile
+        pass
+    def etiketten_erzeugen(self):
+        # Prüfen ob Registerkarte *_print geönnet und aktiv ist
+        tabname_ausdruck = self.t.get_tabname()
+        kennung_ausdruck = "_print"
+        if kennung_ausdruck in tabname_ausdruck:
+            # Stücklistendaten einlesen:
+            projekt = self.t.get_zelltext_s("D1")
+            projektpos = self.t.get_zelltext_s("G1")
+            enr = []
+            bez = []
+            anz = []
+            la  = []
+            br  = []
+            di  = []
+            mat = []
+            kali = []
+            #kadili = []
+            kare = []
+            #kadire = []
+            kaob = []
+            #kadiob = []
+            kaun = []
+            #kadiun = []
+            #kom = []
+            counter_leere_bez = 0
+            for i in range(3, 50, 2):#-----------------------------<<<<< 25 später range noch anpassen!!!
+                tmp = self.t.get_zelltext_i(i, 3)
+                if(len(tmp) == 0):
+                    counter_leere_bez = counter_leere_bez +1
+                    if counter_leere_bez > 2:
+                        break #for
+                enr += [self.t.get_zelltext_i(i, 0)]
+                bez += [self.t.get_zelltext_i(i, 3)]
+                anz += [self.t.get_zelltext_i(i, 1)]
+                la  += [self.t.get_zelltext_i(i, 4)]
+                br  += [self.t.get_zelltext_i(i, 5)]
+                di  += [self.t.get_zelltext_i(i, 6)]
+                mat += [self.t.get_zelltext_i(i, 1)]
+                kali += [self.t.get_zelltext_i(i, 7)]
+                #kadili += [self.t.get_zelltext_i(i, 8)]
+                kare += [self.t.get_zelltext_i(i+1, 7)]
+                #kadire += [self.t.get_zelltext_i(i+1, 8)]
+                kaob += [self.t.get_zelltext_i(i, 9)]
+                #kadiob += [self.t.get_zelltext_i(i, 10)]
+                kaun += [self.t.get_zelltext_i(i+1, 9)]
+                #kadiun += [self.t.get_zelltext_i(i+1, 10)]
+                #kom += [self.t.get_zelltext_i(i, 11)]
+                pass #for
+            # neue Registerkarte erzeugen:
+            tabindex = self.t.get_tabindex()
+            grundname_laenge = len(tabname_ausdruck) - len(kennung_ausdruck)
+            grundname = tabname_ausdruck[:grundname_laenge]
+            tabname_sticker = grundname + "_sticker"
+            self.t.tab_anlegen(tabname_sticker, tabindex+1)
+            self.t.set_tabfokus_s(tabname_sticker)
+            # Registerkarte formartieren:
+            self.t.set_spaltenbreiten(500)
+            self.t.set_zeilenhoehen(490)
+
+            zeilenflipper = 0 
+            aktstickerzeile = 0
+            for i in range(0, len(bez)): 
+                
+                akt_pos_x = zeilenflipper * 19
+                akt_pos_y = aktstickerzeile * 18
+                #-------------------------------------------------------------------Projekt:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+2
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+13,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, projekt)
+                #-------------------------------------------------------------------Pos:
+                pos_tmp_x = akt_pos_x+4
+                pos_tmp_y = akt_pos_y+3
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+2,
+                                          True)
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+3, 
+                                          pos_tmp_y, pos_tmp_x+11,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "Pos")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+3, projektpos)
+                #-------------------------------------------------------------------Elementnummer:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+3
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+1, pos_tmp_x+1,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, enr[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Bezeichnung:
+                pos_tmp_x = akt_pos_x+4
+                pos_tmp_y = akt_pos_y+4
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+11,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, bez[i])
+                #-------------------------------------------------------------------Länge:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+5
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+1, 
+                                          pos_tmp_y, pos_tmp_x+3,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "L")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+1, la[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Breite:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+6
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+1, 
+                                          pos_tmp_y, pos_tmp_x+3,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "B")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+1, br[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Dicke:
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+7
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x+1, 
+                                          pos_tmp_y, pos_tmp_x+3,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, "D")
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x+1, di[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Material:
+                pos_tmp_x = akt_pos_x+6
+                pos_tmp_y = akt_pos_y+5
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y, pos_tmp_x+9,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, mat[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Kante links:
+                # (auf dem Etikett die untere Kante):
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+15
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+1, pos_tmp_x+13,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kali[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Kante rechts:
+                # (auf dem Etikett die obere Kante):
+                pos_tmp_x = akt_pos_x+2
+                pos_tmp_y = akt_pos_y+0
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+1, pos_tmp_x+13,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kare[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                #-------------------------------------------------------------------Kante oben:
+                # (auf dem Etikett die linke Kante):
+                pos_tmp_x = akt_pos_x
+                pos_tmp_y = akt_pos_y+2
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+12, pos_tmp_x+1,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kaob[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_schriftausrichtung_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "vert_uo")
+                #-------------------------------------------------------------------Kante unten:
+                # (auf dem Etikett die rechts Kante):
+                pos_tmp_x = akt_pos_x+16
+                pos_tmp_y = akt_pos_y+2
+                self.t.zellen_verbinden_i(pos_tmp_y, pos_tmp_x, 
+                                          pos_tmp_y+12, pos_tmp_x+1,
+                                          True)
+                self.t.set_zelltext_i(pos_tmp_y, pos_tmp_x, kaun[i])
+                self.t.set_zellausrichtungHori_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_zellausrichtungVert_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "mi")
+                self.t.set_schriftausrichtung_i(pos_tmp_y, pos_tmp_x, pos_tmp_y, pos_tmp_x, "vert_uo")
+                #-------------------------------------------------------------------
+                self.t.set_Rahmen_komplett_i(akt_pos_y,akt_pos_x,
+                                             akt_pos_y+16, akt_pos_x+17,25)
+                #-------------------------------------------------------------------
+                zeilenflipper = zeilenflipper+1
+                if zeilenflipper > 2:
+                    aktstickerzeile = aktstickerzeile + 1
+                    zeilenflipper = 0  
+                pass #for
+            pass
+        else:
+            titel = "Etiketten erzeugen"
+            msg = "Zum erzeugen von Etiketten bitte in eine zum ausdrucken formartierte Stückliste wechseln!"
+            msgbox(msg, titel, 1, 'QUERYBOX')
+        pass
+    def slist_ausdruck_zusammenstellen(self):
+        if self.ist_slist():
+            iZeileStart = self.t.get_selection_zeile_start()
+            iZeileEnde  = self.t.get_selection_zeile_ende()
+            projekt = self.t.get_zelltext_s("P2")
+            bez = []
+            anz = []
+            la  = []
+            br  = []
+            di  = []
+            mat = []
+            kali = []
+            kadili = []
+            kare = []
+            kadire = []
+            kaob = []
+            kadiob = []
+            kaun = []
+            kadiun = []
+            kom = []
+
+            for i in range(iZeileStart, iZeileEnde+1):
+                bez += [self.t.get_zelltext_i(i, 0)]
+                anz += [self.t.get_zelltext_i(i, 1)]
+                la  += [self.t.get_zelltext_i(i, 2)]
+                br  += [self.t.get_zelltext_i(i, 3)]
+                di  += [self.t.get_zelltext_i(i, 4)]
+                mat += [self.t.get_zelltext_i(i, 5)]
+                kali += [self.t.get_zelltext_i(i, 6)]
+                kadili += [self.t.get_zelltext_i(i, 7)]
+                kare += [self.t.get_zelltext_i(i, 8)]
+                kadire += [self.t.get_zelltext_i(i, 9)]
+                kaob += [self.t.get_zelltext_i(i, 10)]
+                kadiob += [self.t.get_zelltext_i(i, 11)]
+                kaun += [self.t.get_zelltext_i(i, 12)]
+                kadiun += [self.t.get_zelltext_i(i, 13)]
+                kom += [self.t.get_zelltext_i(i, 14)]
+                pass #for
+            # neue Registerkarte erstellen:
+            projektpos = self.t.get_tabname()
+            tabname = projektpos + "_print"
+            if(self.t.tab_existiert(tabname)):
+                titel = "slist_ausdruck_zusammenstellen"
+                msg = "Es gibt bereits eine Registerkarte mit dem Namen \""
+                msg += tabname
+                msg += "\".\n"
+                msg += "Bitte die vorhandene Registerkarte umbenennen oder löschen."
+                msgbox(msg, titel, 1, 'QUERYBOX')
+                pass
+            else:
+                self.t.tab_anlegen(tabname, self.t.get_tabindex()+1)
+                # Daten in Stückliste schreiben:
+                self.t.set_tabfokus_s(tabname)
+                self.formartieren_zum_ausdrucken()
+                self.t.set_zelltext_s("D1", projekt)
+                self.t.set_zelltext_s("G1", projektpos)
+                startindex = 3
+                ziel_index_artikel = 1
+                ziel_index_menge = 2
+                ziel_index_bez = 3
+                ziel_index_la = 4
+                ziel_index_br = 5
+                ziel_index_di =6
+                ziel_index_ka_li = 7
+                ziel_index_ka_re = 7
+                ziel_index_ka_ob = 9
+                ziel_index_ka_un = 9
+                ziel_index_kom = 11
+                ziel_index_kadi_li = 8
+                ziel_index_kadi_re = 8
+                ziel_index_kadi_ob = 10
+                ziel_index_kadi_un = 10
+                for i in range(0, len(bez)):
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_bez, bez[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_menge, anz[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_la, la[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_br, br[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_di, di[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_artikel, mat[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_ka_li, kali[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_ka_re, kare[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_ka_ob, kaob[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_ka_un, kaun[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_kom, kom[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_kadi_li, kadili[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_kadi_re, kadire[i])
+                    self.t.set_zelltext_i(startindex+i*2, ziel_index_kadi_ob, kadiob[i])
+                    self.t.set_zelltext_i(startindex+i*2+1, ziel_index_kadi_un, kadiun[i])
+                    self.t.zellen_verbinden_i(startindex+i*2, 0, startindex+i*2+1, 0, True) #lfd-nr
+                    self.t.zellen_verbinden_i(startindex+i*2, 1, startindex+i*2+1, 1, True) #Material
+                    self.t.zellen_verbinden_i(startindex+i*2, 2, startindex+i*2+1, 2, True) #Menge
+                    self.t.zellen_verbinden_i(startindex+i*2, 3, startindex+i*2+1, 3, True) #bezeichnung
+                    self.t.zellen_verbinden_i(startindex+i*2, 4, startindex+i*2+1, 4, True) #länge
+                    self.t.zellen_verbinden_i(startindex+i*2, 5, startindex+i*2+1, 5, True) #breite
+                    self.t.zellen_verbinden_i(startindex+i*2, 6, startindex+i*2+1, 6, True) #dicke
+                    self.t.zellen_verbinden_i(startindex+i*2, 11, startindex+i*2+1, 11, True) #Kommentar
+                    if(i == 0):
+                        self.t.set_zelltext_i(startindex, 0, "1")
+                    else:
+                        formel = "=A"
+                        formel += str(startindex+i*2-1)
+                        formel += "+1"
+                        self.t.set_zellformel_i(startindex+i*2, 0, formel)
+                    pass
+                self.t.set_zellausrichtungHori_i(startindex, 0, startindex+len(bez)*2, 2, "mi")
+                self.t.set_zellausrichtungHori_i(startindex, 4, startindex+len(bez)*2, 6, "mi")
+                self.t.set_zellausrichtungHori_i(startindex, 8, startindex+len(bez)*2, 8, "mi")
+                self.t.set_zellausrichtungHori_i(startindex, 10, startindex+len(bez)*2, 10, "mi")
+                self.t.set_Rahmen_komplett_i(startindex, 0, startindex+len(bez)*2-1, 11, 25)
+                self.t.zellen_textumbruch_i(startindex, 1, startindex+len(bez)*2-1, 1, True)
+                self.t.zellen_textumbruch_i(startindex, 11, startindex+len(bez)*2-1, 11, True)
+        pass
     def formeln_edit(self):
         if self.autoformat() != True:
             return False
@@ -816,7 +2098,7 @@ class slist: # Calc
         self.entferneKaDiNull()
         # Formeln einfügen:
         # Es müssen immer die englischen Funktionsnamen für die Calc-Funktionen verwendet werden!
-        for i in range (1, 25):
+        for i in range (1, 10):
             sZellname = "Q" + str(i+1)
             sFormel = "=IF(SUM(S" + str(i+1) + ":AB" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
@@ -830,22 +2112,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi links:
             sZellname = "T" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"G\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"H\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -861,22 +2127,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi rechts:
             sZellname = "U" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"I\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"J\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -892,22 +2142,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi oben:
             sZellname = "V" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"K\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"L\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -923,22 +2157,6 @@ class slist: # Calc
             self.t.set_zellformel_s(sZellname, sFormel)
             # --- KaDi unten:
             sZellname = "W" + str(i+1)
-            # Formel für alte Kantennummer:
-            #sFormel = "=IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" +"\"N\"" # Wenn Kante ein "N" als 3. Zeichen Enthällt (z.B. 10N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"N\"" # Wenn Kante ein "N" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += "+" # Jetzt folg nächste Prüfung:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));3);1))=" + "\"X\"" # Wenn Kante ein "X" als 3. Zeichen Enthällt (z.B. 10X410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0))" # wenn Feld für KaDi leer dann Fehler
-            #sFormel += ";" # Sonst Wenn:
-            #sFormel += "IF((RIGHT(LEFT((INDIRECT(" + "\"M\"" + "&ROW()));4);1))=" + "\"X\"" # Wenn Kante ein "X" als 4. Zeichen Enthällt (z.B. 100N410040_23)
-            #sFormel += ";" # Dann
-            #sFormel += "(IF(ISBLANK((INDIRECT(" + "\"N\"" + "&ROW())));1;0));0))" # wenn Feld für KaDi leer dann Fehler
             # Formel für aktuelle Kantennummer:
             sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
             sFormel += ";" # Dann
@@ -1111,6 +2329,10 @@ class slist: # Calc
             # lfdm gerundet:
             formel = "=ROUNDUP(R" + str(i+2) + "/5;0)*5"
             self.t.set_zellformel_i(i+1, 18, formel)
+            # Kantennummer Ostermann:
+            formel =  "=LEFT(RIGHT(Q" + str(i+2) + ";LEN(Q" + str(i+2) + ")-12);3)&\".\"&RIGHT(Q" + str(i+2) + ";LEN(Q"
+            formel += str(i+2) + ")-15)&\".\"&RIGHT(LEFT(Q" + str(i+2) + ";9);3)&RIGHT(LEFT(Q" + str(i+2) + ";3);2)"
+            self.t.set_zellformel_i(i+1, 19, formel)
             pass
         # Formeln für Kantenfehler einfügen:
         self.t.set_spaltenausrichtung_i(15, "mi")
@@ -1368,6 +2590,7 @@ class slist: # Calc
             sName = sName.replace("Rückwand", "S#_RW")
             sName = sName.replace("Tür", "S#_Tuer")
             sName = sName.replace("Klappe", "S#_Klappe")
+            sName = sName.replace("Blindfront", "S#_Front")
             sName = sName.replace("Schubkasten Front", "S#_SF")
             sName = sName.replace("Travers Vorne", "S#_Trav_vo")
             sName = sName.replace("Travers Hinten", "S#_Trav_hi")
@@ -1377,7 +2600,552 @@ class slist: # Calc
             self.t.set_zelltext_i(i, 0, sName)
             pass
         pass
-        
+    def gehr_masszugabe(self):
+        iZeileStart = self.t.get_selection_zeile_start()
+        iZeileEnde  = self.t.get_selection_zeile_ende()
+        iIndexSpalte_L = 2
+        iIndexSpalte_B = 3
+        iIndexSpalte_KaLi = 6
+        iIndexSpalte_KaRe = 8
+        iIndexSpalte_KaOb = 10
+        iIndexSpalte_KaUn = 12
+        for i in range(iZeileStart, iZeileEnde+1):
+            sLaenge = self.t.get_zelltext_i(i, iIndexSpalte_L)
+            sBreite = self.t.get_zelltext_i(i, iIndexSpalte_B)
+            sKaLi = self.t.get_zelltext_i(i, iIndexSpalte_KaLi)
+            sKaRe = self.t.get_zelltext_i(i, iIndexSpalte_KaRe)
+            sKaOb = self.t.get_zelltext_i(i, iIndexSpalte_KaOb)
+            sKaUn = self.t.get_zelltext_i(i, iIndexSpalte_KaUn)
+            iZugabe_L = 0
+            iZugabe_B = 0
+            if "Gehr" in sKaLi:
+                iZugabe_B += 20
+            if "Gehr" in sKaRe:
+                iZugabe_B += 20
+            if "Gehr" in sKaOb:
+                iZugabe_L += 20
+            if "Gehr" in sKaUn:
+                iZugabe_L += 20
+            if iZugabe_L > 0:
+                sNeue_L = "=" + sLaenge + "+" + str(iZugabe_L)
+                sNeue_L = sNeue_L.replace(",", ".")
+                self.t.set_zellformel_i(i, iIndexSpalte_L, sNeue_L)
+                self.t.set_zellfarbe_i(i, iIndexSpalte_L, self.gelb)
+            if iZugabe_B > 0:                
+                sNeue_B = "=" + sBreite + "+" + str(iZugabe_B)
+                sNeue_B = sNeue_B.replace(",", ".")
+                self.t.set_zellformel_i(i, iIndexSpalte_B, sNeue_B)
+                self.t.set_zellfarbe_i(i, iIndexSpalte_B, self.gelb)
+            pass #for
+        pass
+    def tap_anlegen_uebersicht(self):
+        tabname = "Übersicht"
+        if not self.t.tab_existiert(tabname):            
+            self.t.tab_anlegen(tabname, 0)
+        else:
+            self.t.set_tabfokus_s(tabname)
+        if self.t.tab_existiert(tabname):
+            self.t.set_tabfokus_s(tabname)
+            self.t.set_zelltext_s("A1", "Projekt:")
+            self.t.set_zelltext_s("B1", "Abc01")
+            self.t.set_zelltext_s("C1", "CNC-Pfad:")
+            self.t.set_zelltext_s("D1", self.cnc_pfad)
+            self.t.set_zelltext_s("A3", "Pos")
+            self.t.set_zelltext_s("B3", "Bezeichnung")
+            self.t.set_spaltenbreite_i(1, 6000) # Bezeichnung
+            self.t.set_zellausrichtungHori_s("A3:A1000", "mi")
+        pass
+    def tab_anlegen_stklistpos(self):
+        akt_tabname = self.t.get_tabname()
+        if akt_tabname == "Übersicht":
+            projektnummer = self.t.get_zelltext_s("B1")
+            tabname = self.t.get_zelltext_akt_auswahl() # Positionsnummer
+            if self.t.tab_existiert(tabname):
+                self.t.set_tabfokus_s(tabname)
+            else:
+                self.t.tab_anlegen(tabname, 9999)
+                if self.t.tab_existiert(tabname):
+                    self.t.set_tabfokus_s(tabname)
+                    self.formeln_edit()
+                    self.t.set_zelltext_s("P2", projektnummer)
+        else:
+            titel = "Bediener-Fehler"
+            msg   = "Bitte in die Registerkarte \"Grundlagen\" wechseln und die Zelle mit der gewünschten Positionsnummer anklicken um diese Funktion zu nutzen"
+            msgbox(msg, titel, 1, 'QUERYBOX')
+        pass
+    def tab_anlegen_kantenanlage(self):
+        tabname = "Kante"
+        if not self.t.tab_existiert(tabname):            
+            self.t.tab_anlegen(tabname, 1)
+        else:
+            self.t.set_tabfokus_s(tabname)
+        if self.t.tab_existiert(tabname):
+            self.t.set_tabfokus_s(tabname)
+            self.t.set_zelltext_s("A1", "Ostermann-Nummer")
+            self.t.set_zelltext_s("B1", "041.0040.02320")
+            self.t.set_zelltext_s("A3", "Plattenart (Fügemaß)")
+            self.t.set_zelltext_s("D3", "mm")
+            self.t.set_zelltext_s("A4", "normal (KaDi)")
+            self.t.set_zelltext_s("B4", "x")
+            self.t.set_zelltext_s("A5", "Multiplex (0,5mm)")
+            self.t.set_zelltext_s("A6", "Metall (0mm)")
+            self.t.set_zelltext_s("A8", "Radius")
+            self.t.set_zelltext_s("D8", "mm")
+            self.t.set_zelltext_s("A9", "automatisch")
+            self.t.set_zelltext_s("B9", "x")
+            self.t.set_zelltext_s("A10", "0mm")
+            self.t.set_zelltext_s("A11", "1mm")
+            self.t.set_zelltext_s("A12", "2mm")
+            self.t.set_zelltext_s("A14", "Nuttyp")
+            self.t.set_zelltext_s("D14", " = Nuttyp")
+            self.t.set_zelltext_s("A15", "(_) keine Nut")
+            self.t.set_zelltext_s("B15", "x")
+            self.t.set_zelltext_s("A16", "(A) Nutprogramm A")
+            self.t.set_zelltext_s("A17", "(B) Nutprogramm B")
+            self.t.set_zelltext_s("A18", "(C) Nutprogramm C")
+            self.t.set_zelltext_s("A19", "(g) Gehrung")
+            self.t.set_zelltext_s("C19", "bei dieser Auswahl automatisch Radius 0mm")
+            self.t.set_zelltext_s("A21", "Daten für die Stückliste")
+            self.t.set_zelltext_s("B23", "Artikelnummer")
+            self.t.set_zelltext_s("C23", "KaDi")
+            self.t.set_zelltext_s("B26", "Dicke")
+            self.t.set_zelltext_s("B27", "Fügemaß")
+            self.t.set_zelltext_s("B28", "Nuttyp")
+            self.t.set_zelltext_s("B29", "Breite")
+            self.t.set_zelltext_s("B30", "Radius")
+            self.t.set_zelltext_s("B31", "Kantenfarbe")
+            self.t.set_zelltext_s("A33", "Sonder-Kanteninformationen")
+            self.t.set_zelltext_s("A34", "Schleifen/Füg ohne Rad")
+            self.t.set_zelltext_s("B34", "00005_00000_schleifen")
+            self.t.set_zelltext_s("A35", "Schleifen/Fügen und R1")
+            self.t.set_zelltext_s("B35", "00005_00010_schleifen")
+            self.t.set_zelltext_s("A36", "Schleifen/Fügen und R2")
+            self.t.set_zelltext_s("B36", "00005_00020_schleifen")
+            self.t.set_zelltext_s("C33", "KaDi")
+            self.t.set_zellzahl_s("C34",-0.5)
+            self.t.set_zellzahl_s("C35",-0.5)
+            self.t.set_zellzahl_s("C36",-0.5)
+            self.t.set_spaltenbreite_i(0, 4250)
+            self.t.set_spaltenbreite_i(1, 4250)
+            self.t.set_SchriftFett_s("A1", True)
+            self.t.set_SchriftFett_s("A3", True)
+            self.t.set_SchriftFett_s("A8", True)
+            self.t.set_SchriftFett_s("A14", True)
+            self.t.set_SchriftFett_s("A21", True)
+            self.t.set_SchriftFett_s("A33", True)
+            self.t.set_Rahmen_komplett_s("B1", 25)
+            self.t.set_Rahmen_komplett_s("A4:B6", 25)
+            self.t.set_Rahmen_komplett_s("A9:B12", 25)
+            self.t.set_Rahmen_komplett_s("A15:B19", 25)
+            self.t.set_Rahmen_komplett_s("B23:C24", 25)
+            self.t.set_Rahmen_komplett_s("B26:D31", 25)
+            self.t.set_Rahmen_komplett_s("B34:B36", 25)
+            self.t.set_Rahmen_komplett_s("C33:C36", 25)
+            self.t.set_zellfarbe_s("A1", self.grau)
+            self.t.set_zellfarbe_s("A3:B6", self.grau)
+            self.t.set_zellfarbe_s("A8:B12", self.grau)
+            self.t.set_zellfarbe_s("A14:B19", self.grau)
+            self.t.set_zellfarbe_s("A21:E37", self.grau)
+            self.t.set_zellfarbe_s("B1", self.gruen)
+            self.t.set_zellfarbe_s("B4:B6", self.gruen)
+            self.t.set_zellfarbe_s("B9:B12", self.gruen)
+            self.t.set_zellfarbe_s("B15:B19", self.gruen)
+            self.t.set_zellfarbe_s("B23:C24", self.gelb)
+            self.t.set_zellfarbe_s("B34:B36", self.gelb)
+            self.t.set_zellfarbe_s("C33:C36", self.gelb)
+            self.t.set_zellausrichtungHori_s("B1", "mi")
+            self.t.set_zellausrichtungHori_s("C3", "mi")
+            self.t.set_zellausrichtungHori_s("A4:B6", "mi")
+            self.t.set_zellausrichtungHori_s("C8", "mi")
+            self.t.set_zellausrichtungHori_s("A9:B12", "mi")
+            self.t.set_zellausrichtungHori_s("C14", "mi")
+            self.t.set_zellausrichtungHori_s("A15:B19", "mi")
+            self.t.set_zellausrichtungHori_s("B23:C24", "mi")
+            self.t.set_zellausrichtungHori_s("B26:D31", "mi")
+            self.t.set_zellausrichtungHori_s("C33:C36", "mi")
+            self.t.set_zellausrichtungHori_s("B34:B36", "mi")
+            self.t.set_SchriftFarbe_s("C1", self.rot)
+            self.t.set_SchriftFarbe_s("E29", self.rot)
+            formel  = "=IF(EXACT(B1;LEFT(RIGHT(B24;LEN(B24)-12);3)&\".\"&"
+            formel += "RIGHT(B24;LEN(B24)-15)&\".\"&RIGHT(LEFT(B24;9);3)&"
+            formel += "RIGHT(LEFT(B24;3);2));\"\";\"Fehler bei der Eingabe der "
+            formel += "Ostermann-Artikelnummer\")"
+            self.t.set_zellformel_s("C1", formel)
+            formel  ="=IF(ISBLANK(B4);"
+            formel += "IF(ISBLANK(B5);"
+            formel += "IF(ISBLANK(B6);"
+            formel += "\"bitte wählen\";0);"
+            formel += "0.5);"
+            formel += "(RIGHT(B1;2)/10))"
+            self.t.set_zellformel_s("C3", formel)
+            formel  = "=IF(ISBLANK(B19);IF(ISBLANK(B9);IF(ISBLANK(B10);IF(ISBLANK(B11);"
+            formel += "IF(ISBLANK(B12);\"bitte wählen\";2);1);0);(RIGHT(B1;2)/10));0)"
+            self.t.set_zellformel_s("C8", formel)
+            self.t.set_SchriftFarbe_s("D9", self.rot)
+            formel = "=IF(ISBLANK(B19);\"\";\"Weil Nuttyp Gehrung eingestellt ist!\")"
+            self.t.set_zellformel_s("D9", formel)
+            formel  = "=IF(ISBLANK(B15);IF(ISBLANK(B16);IF(ISBLANK(B17);"
+            formel += "IF(ISBLANK(B18);IF(ISBLANK(B19);\"bitte wählen\";"
+            formel += "\"g\");\"C\");\"B\");\"A\");\"_\")"
+            self.t.set_zellformel_s("C14", formel)
+            formel = "=RIGHT(B1;2)/10"
+            self.t.set_zellformel_s("C26", formel)
+            formel = "=C3"
+            self.t.set_zellformel_s("C27", formel)
+            formel = "=C14"
+            self.t.set_zellformel_s("C28", formel)
+            formel = "=LEFT(RIGHT(B1;5);3)/10*10"
+            self.t.set_zellformel_s("C29", formel)
+            formel = "=C8"
+            self.t.set_zellformel_s("C30", formel)
+            formel = "=LEFT(B1;3)&RIGHT(LEFT(B1;8);4)"
+            self.t.set_zellformel_s("C31", formel)
+            formel = "=IF(LEN(C26*10)=2;0&C26*10;(IF(LEN(C26*10)=1;\"00\"&C26*10;C26*10)))"
+            self.t.set_zellformel_s("D26", formel)
+            formel = "=IF(LEN(C27*10)=1;0&C27*10;C27*10)"
+            self.t.set_zellformel_s("D27", formel)
+            formel = "=C28"
+            self.t.set_zellformel_s("D28", formel)
+            formel = "=IF(LEN(C29)=2;0&C29;C29)"
+            self.t.set_zellformel_s("D29", formel)
+            formel = "=IF(LEN(C30*10)=1;0&C30*10;C30*10)"
+            self.t.set_zellformel_s("D30", formel)
+            formel = "=C31"
+            self.t.set_zellformel_s("D31", formel)
+            formel = "=D26&D27&D28&D29&D30&\"_\"&D31"
+            self.t.set_zellformel_s("B24", formel)
+            formel = "=C26-C27"
+            self.t.set_zellformel_s("C24", formel)
+            formel = "=IF(C29<16;\"Achtung! Kantenbreite < 16mm an unserer Kantenmaschine nicht möglich!\";\"\")"
+            self.t.set_zellformel_s("E29", formel)
+        pass
+    def check_cncdata(self):
+        if self.autoformat() == True:
+            projekt = self.t.get_zelltext_s("P2")
+            pos_nr = self.t.get_tabname()
+            grundpfad = self.cnc_pfad
+            grundpfad += "\\"
+            grundpfad += projekt
+            if os.path.isdir(grundpfad):
+                grundpfad += "\\"
+                grundpfad += self.posnr_formartieren(pos_nr)
+                if os.path.isdir(grundpfad):
+                    anz_leerzeilen = 0
+                    for i in range (1, self.maxistklen):
+                        bezeichnung = self.t.get_zelltext_i(i, 0)
+                        if len(bezeichnung) == 0:
+                            anz_leerzeilen = anz_leerzeilen + 1
+                            if anz_leerzeilen > 20:
+                                break #for
+                        else: # Bezeichnung ist nicht leer
+                            baugruppe = self.baugruppe(bezeichnung)
+                            wstname = "0"
+                            akt_pfad = grundpfad
+                            if len(baugruppe) == 0: # es gibt keine Baugruppe/Schranknummer
+                                wstname = bezeichnung
+                                akt_pfad = grundpfad
+                            else: # es gibt eine Baugruppe/Schranknummer
+                                wstname = bezeichnung[len(baugruppe)+1:]
+                                akt_pfad = grundpfad
+                                akt_pfad += "\\"
+                                akt_pfad += baugruppe
+                            akt_datei  = akt_pfad
+                            akt_datei += "\\"
+                            akt_datei += wstname
+                            akt_datei += ".ppf"
+                            if os.path.isfile(akt_datei):
+                                self.t.set_zellfarbe_i(i,0, self.gruen)
+                                tabindex_la = 2
+                                tabindex_br = 3
+                                tabindex_di = 4
+                                tabindex_la_s = "C"
+                                tabindex_br_s = "D"
+                                tabindex_di_s = "E"
+                                slist_la = 0
+                                slist_br = 0
+                                slist_di = 0
+                                cnc_la = 0
+                                cnc_br = 0
+                                cnc_di = 0
+                                gesund = True
+                                try:
+                                    slist_la = Decimal(self.t.get_zelltext_i(i, tabindex_la).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    slist_br = Decimal(self.t.get_zelltext_i(i, tabindex_br).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    slist_di = Decimal(self.t.get_zelltext_i(i, tabindex_di).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    cnc_la = Decimal(self.ppf_wst_laenge(akt_datei).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    cnc_br = Decimal(self.ppf_wst_breite(akt_datei).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                    cnc_di = Decimal(self.ppf_wst_dicke(akt_datei).replace(",",".")).quantize(Decimal("1.0"), rounding=ROUND_HALF_UP)
+                                except:
+                                    gesund = False
+                                if gesund == True:
+                                    rahmenbreite = 70
+                                    if(slist_la == cnc_la):
+                                        self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                        if(slist_br == cnc_br):
+                                            self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                    if(slist_br == cnc_la):
+                                        self.t.set_Rahmen_unten_s(tabindex_br_s + str(i+1), rahmenbreite, self.gruen)
+                                        if(slist_la == cnc_br):
+                                            self.t.set_Rahmen_unten_s(tabindex_la_s + str(i+1), rahmenbreite, self.gruen)
+                                    if(slist_di == cnc_di):
+                                        self.t.set_Rahmen_unten_s(tabindex_di_s + str(i+1), rahmenbreite, self.gruen)                            
+                else: # Ordner für Projektpos nicht gefunden
+                    titel = "Klasse: slist, Funktion: check_wstmass()"
+                    msg   = "Ordner wurde nicht gefunden!"
+                    msg  += "\n"
+                    msg  += grundpfad
+                    msgbox(msg, titel, 1, 'QUERYBOX')
+            else: # Projektordner nicht gefunden
+                titel = "Klasse: slist, Funktion: check_wstmass()"
+                msg   = "Projektordner wurde nicht gefunden!"
+                msg  += "\n"
+                msg  += grundpfad
+                msgbox(msg, titel, 1, 'QUERYBOX')
+        else: # ist keine Stückliste
+            titel = "Klasse: slist, Funktion: check_wstmass()"
+            msg   = "Die Tabelle ist keine Stückliste. Die Funktion wird nicht ausgeführt."
+            msgbox(msg, titel, 1, 'QUERYBOX')
+        pass
+    def posnr_formartieren(self, posnr):
+        formartierte_posnr = "0"
+        if "," in posnr:
+            index = posnr.find(",")
+            posnr_ohne_komma = posnr[0:index]
+            nachkommastellen = posnr[index+1:]
+            if len(posnr_ohne_komma) == 4:
+                formartierte_posnr = posnr
+            elif len(posnr_ohne_komma) == 3:
+                formartierte_posnr = "0"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += ","
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 2:
+                formartierte_posnr = "00"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += ","
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 1:
+                formartierte_posnr = "000"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += ","
+                formartierte_posnr += nachkommastellen
+        elif "." in posnr:
+            index = posnr.find(".")
+            posnr_ohne_komma = posnr[0:index]
+            nachkommastellen = posnr[index+1:]
+            if len(posnr_ohne_komma) == 4:
+                formartierte_posnr = posnr
+            elif len(posnr_ohne_komma) == 3:
+                formartierte_posnr = "0"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += "."
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 2:
+                formartierte_posnr = "00"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += "."
+                formartierte_posnr += nachkommastellen
+            elif len(posnr_ohne_komma) == 1:
+                formartierte_posnr = "000"
+                formartierte_posnr += posnr_ohne_komma
+                formartierte_posnr += "."
+                formartierte_posnr += nachkommastellen
+        else:
+            if len(posnr) == 4:
+                formartierte_posnr = posnr
+            elif len(posnr) == 3:
+                formartierte_posnr = "0"
+                formartierte_posnr += posnr
+            elif len(posnr) == 2:
+                formartierte_posnr = "00"
+                formartierte_posnr += posnr
+            elif len(posnr) == 1:
+                formartierte_posnr = "000"
+                formartierte_posnr += posnr
+        return formartierte_posnr
+    def baugruppe(self, bezeichnung):
+        gruppenbezeichnung = ""
+        if "_" in bezeichnung:
+            index = bezeichnung.find("_")
+            text_links  = bezeichnung[0:index]
+            # text_rechts = bezeichnung[index+1:]
+            if len(text_links)>1:
+                erstes_zeichen = text_links[0:1]
+                zweites_zeichen = text_links[1:2]
+                if erstes_zeichen == "S":
+                    if istZiffer(zweites_zeichen):
+                        gruppenbezeichnung = text_links
+                        # bauteilname = text_rechts
+                elif erstes_zeichen == "#":
+                    gruppenbezeichnung = text_links
+                elif erstes_zeichen == "@":
+                    gruppenbezeichnung = text_links
+        return gruppenbezeichnung
+    def ppf_wst_laenge(self, datipfad):
+        gesuchter_parameter = "0"
+        if os.path.isfile(datipfad):
+            datei = open(datipfad, "r")
+            pkopf = False
+            for zeile in datei:                
+                if "<<Werkstueck>>" in zeile:
+                    pkopf = True
+                if "<</Werkstueck>>" in zeile:
+                    pkopf = False
+                    return gesuchter_parameter
+                if pkopf == True:
+                    parambez_start = "<Wst_Laenge>"
+                    parambez_ende  = "</Wst_Laenge>"
+                    if parambez_start in zeile:
+                        start_index = zeile.find(parambez_start)
+                        start_laenge = len(parambez_start)
+                        ende_index = zeile.find(parambez_ende)
+                        gesuchter_parameter = zeile[start_index+start_laenge:ende_index]
+        return gesuchter_parameter
+    def ppf_wst_breite(self, datipfad):
+        gesuchter_parameter = "0"
+        if os.path.isfile(datipfad):
+            datei = open(datipfad, "r")
+            pkopf = False
+            for zeile in datei:                
+                if "<<Werkstueck>>" in zeile:
+                    pkopf = True
+                if "<</Werkstueck>>" in zeile:
+                    pkopf = False
+                    return gesuchter_parameter
+                if pkopf == True:
+                    parambez_start = "<Wst_Breite>"
+                    parambez_ende  = "</Wst_Breite>"
+                    if parambez_start in zeile:
+                        start_index = zeile.find(parambez_start)
+                        start_laenge = len(parambez_start)
+                        ende_index = zeile.find(parambez_ende)
+                        gesuchter_parameter = zeile[start_index+start_laenge:ende_index] 
+        return gesuchter_parameter
+    def ppf_wst_dicke(self, datipfad):
+        gesuchter_parameter = "0"
+        if os.path.isfile(datipfad):
+            datei = open(datipfad, "r")
+            pkopf = False
+            for zeile in datei:                
+                if "<<Werkstueck>>" in zeile:
+                    pkopf = True
+                if "<</Werkstueck>>" in zeile:
+                    pkopf = False
+                    return gesuchter_parameter
+                if pkopf == True:
+                    parambez_start = "<Wst_Dicke>"
+                    parambez_ende  = "</Wst_Dicke>"
+                    if parambez_start in zeile:
+                        start_index = zeile.find(parambez_start)
+                        start_laenge = len(parambez_start)
+                        ende_index = zeile.find(parambez_ende)
+                        gesuchter_parameter = zeile[start_index+start_laenge:ende_index] 
+        return gesuchter_parameter
+    def pios_export(self):
+        # Prüfen, ob Stückliste bereits im richtigen Format vorliegt
+        a = self.t.get_zelltext_s("C1")#Projekt
+        b = self.t.get_zelltext_s("F1")#Position
+        c = self.t.get_zelltext_s("K1")#Datum Druck
+        if a == "Projekt:" and b == "Position:" and c == "Datum Druck:": # Tabelle liegt im Format zum Ausdrucken bereit
+            #Tabellenkopf:
+            msg =  "\"Aufkb\";\"Plakb\";\"Elnr\";\"Aufpos\";\"Teilbez\";\"Stuck\";\"ZusLange\";\"ZusBreite\";"
+            msg += "\"Drehbar\";\"Kantevkb\";\"Kantehkb\";\"Kantelkb\";\"Kanterkb\";\"Zusinfo\";\"Kantevdicke\";"
+            msg += "\"Kantehdicke\";\"Kanteldicke\";\"Kanterdicke\";\"TInfo1\";\"Tinfo2\";\"KantevFuge\";"
+            msg += "\"KantehFuge\";\"KantelFuge\";\"KanterFuge\";\"KantevSaum\";\"KantehSaum\";\"KantelSaum\";"
+            msg += "\"KanterSaum\";\"Auftrag\";\"KanteAusbVL\";\"KanteAusbVR\";\"KanteAusbHL\";\"KanteAusbHR\";"
+            msg += "\"TInfo3\";\"TInfo4\";\"TInfo5\";\"TInfo6\";\"TInfo7\";\"TInfo8\""
+            msg += "\n"
+            #Tabellenfumpf:
+            startindex = 3
+            stoppindex = 1000
+            projektnummer = self.t.get_zelltext_s("D1")#Projektnummer
+            projekpos = self.t.get_zelltext_s("G1")#Projekposition
+            for i in range(startindex, stoppindex, 2):
+                lfdnr = self.t.get_zelltext_i(i, 0)
+                if(len(lfdnr) == 0):
+                    break #for-Schleife
+                bemerkung = self.t.get_zelltext_i(i, 11)
+                auslassen = False
+                if(bemerkung[0:2] == "HZ"):
+                    auslassen = True
+                if(auslassen == False):
+                    artikel = self.t.get_zelltext_i(i, 1)#Plattenmaterial
+                    menge = self.t.get_zelltext_i(i, 2)#Stück
+                    bez = self.t.get_zelltext_i(i, 3)#Bezeichnung des Bauteils
+                    la = self.t.get_zelltext_i(i, 4)#Länge
+                    br = self.t.get_zelltext_i(i, 5)#Breite
+                    di = self.t.get_zelltext_i(i, 6)#Dicke
+                    kali = self.t.get_zelltext_i(i, 7)#Kanteninfo links
+                    kare = self.t.get_zelltext_i(i+1, 7)#Kanteninfo rechts
+                    kaob = self.t.get_zelltext_i(i, 9)#Kanteninfo oben
+                    kaun = self.t.get_zelltext_i(i+1, 9)#Kanteninfo unten
+                    kadili = self.t.get_zelltext_i(i, 8)#Kantendicke links
+                    kadire = self.t.get_zelltext_i(i+1, 8)#Kantendicke rechts
+                    kadiob = self.t.get_zelltext_i(i, 10)#Kantendicke oben
+                    kadiun = self.t.get_zelltext_i(i+1, 10)#Kantendicke unten
+
+                    zeile =  "\"" + projektnummer + "\";" #Aufkb
+                    zeile += "\"" + artikel + "\";" #Plakb
+                    zeile += "\"" + lfdnr + "\";" #Elnr
+                    zeile += "\"" + projekpos + "\";" #Aufpos
+                    zeile += "\"" + bez + "\";" #Teilbez
+                    zeile += "\"" + menge + "\";" #Stuck
+                    zeile += "\"" + la + "\";" #ZusLange
+                    zeile += "\"" + br + "\";" #ZusBreite
+                    zeile += "\"" + "0" + "\";" #Drehbar
+                    zeile += "\"" + kali + "\";" #Kantevkb
+                    zeile += "\"" + kare + "\";" #Kantehkb
+                    zeile += "\"" + kaob + "\";" #Kantelkb
+                    zeile += "\"" + kaun + "\";" #Kanterkb
+                    zeile += "\"" + bemerkung + "\";" #Zusinfo
+                    zeile += "\"" + kadili + "\";" #Kantevdicke
+                    zeile += "\"" + kadire + "\";" #Kantehdicke
+                    zeile += "\"" + kadiob + "\";" #Kanteldicke
+                    zeile += "\"" + kadiun + "\";" #Kanterdicke
+                    zeile += "\"\";" #TInfo1
+                    zeile += "\"\";" #TInfo2
+                    zeile += "\"" + "0" + "\";" #KantevFuge
+                    zeile += "\"" + "0" + "\";" #KantehFuge
+                    zeile += "\"" + "0" + "\";" #KantelFuge
+                    zeile += "\"" + "0" + "\";" #KanterFuge
+                    zeile += "\"" + "0" + "\";" #KantevSaum
+                    zeile += "\"" + "0" + "\";" #KantehSaum
+                    zeile += "\"" + "0" + "\";" #KantelSaum
+                    zeile += "\"" + "0" + "\";" #KanterSaum
+                    zeile += "\"" + projektnummer + "\";" #Auftrag
+                    zeile += "\"" + "6" + "\";" #KanteAusbVL
+                    zeile += "\"" + "6" + "\";" #KanteAusbVR
+                    zeile += "\"" + "6" + "\";" #KanteAusbHL
+                    zeile += "\"" + "6" + "\";" #KanteAusbHR
+                    zeile += "\"" + di + "\";" #TInfo3
+                    zeile += "\"" + "" + "\";" #TInfo4
+                    zeile += "\"" + lfdnr + "\";" #TInfo5
+                    zeile += "\"" + "" + "\";" #TInfo6
+                    zeile += "\"" + "__" + "\";" #TInfo7
+                    zeile += "\"" + "" + "\";" #TInfo8
+                    zeile += "\n"
+                    msg += zeile
+            #Datei speichern:
+            dateiname  = projektnummer
+            dateiname += "pos"
+            posnr = self.t.get_zelltext_s("G1")#Positionsnummer
+            dateiname += self.posnr_formartieren(posnr)
+            dateiname += ".csv"
+            dateipfad  = self.downloads_pfad
+            dateipfad += "\\"
+            dateipfad += dateiname
+            if schreibe_in_datei_entferne_bestehende(dateipfad, msg) == True:
+                msg = "CSV-Datei wurde erfolgreich gespeichert im Download-Ordner."
+                msgbox(msg, 'msgbox', 1, 'QUERYBOX')
+            else:
+                titel = "Klasse: slist, Funktion: pios_export(self)"
+                msg   = "CSV-Datei konnte nicht geschrieben werden"
+                msgbox(msg, titel, 1, 'QUERYBOX')
+        else: # Tabelle ist falsch formartiert
+            titel = "Klasse: slist, Funktion: pios_export(self)"
+            msg   = "Die Tabelle ist keine druckbare Stückliste. Bitte rufen Sie vorab die Funktion SList_ausdruck_zusammenstellen auf."
+            msgbox(msg, titel, 1, 'QUERYBOX')
+        pass
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
     def __init__(self):
@@ -1460,12 +3228,12 @@ class baugrpetk_calc: # Calc
         self.t.set_zelltext_s("C1", "Pos")
         self.t.set_zelltext_s("D1", "Baugruppe")
         self.t.set_zelltext_s("E1", "Menge")
+        self.t.set_zelltext_s("F1", "Orte")
         self.t.set_spaltenausrichtung_i(0, "li")
         self.t.set_spaltenausrichtung_i(1, "mi")
         self.t.set_spaltenausrichtung_i(2, "mi")
         self.t.set_spaltenausrichtung_i(3, "mi")
         self.t.set_spaltenausrichtung_i(4, "mi")
-        self.t.set_spaltenausrichtung_i(5, "mi")
         # Tabelle füllen:
         for i in range (0, len(self.listBaugrp)):
             iStartZeile = 1
@@ -1509,8 +3277,8 @@ class baugrpetk_calc: # Calc
             tmp += "\n"
             # Ort:
             tmp += "Ort: " 
-            tmp += "\n"
-            tmp += "\n"
+            #tmp += "\n"
+            #tmp += "\n"
 
             gesund = True
             try:
@@ -1519,7 +3287,11 @@ class baugrpetk_calc: # Calc
                 gesund = False
             if gesund == True:
                 for ii in range (0, int(iMenge)):
+                    sOrt  = self.t.get_zelltext_i(i+1, iSpalteStart+5+ii)
                     msg += tmp
+                    msg += sOrt
+                    msg += "\n"
+                    msg += "\n"
         
         path = get_userpath()
         path += "\\Desktop\\label"
@@ -3861,6 +5633,20 @@ class WoPlan: # Calc
                 pass
             pass
         pass
+    def ist_Lehrgang(self):
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                tab.set_zelltext_i(z, s, "Lehrgang")
+                farbe = RGBTo32bitInt(153, 204, 255) # blau
+                tab.set_zellfarbe_i(z, s, farbe)
+                pass
+            pass
+        pass
     def get_tagesplan(self):
         tab = ol_tabelle()
         kw = tab.get_tabname()
@@ -4010,6 +5796,43 @@ class WoPlan: # Calc
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
+class kalkulation: #Calc
+    def __init__(self):
+        self.context = XSCRIPTCONTEXT # globale Variable im sOffice-kontext
+        self.doc = self.context.getDocument() #aktuelles Document per Methodenaufruf ! mit Klammern !
+        self.tab = ol_tabelle()        
+        pass
+    def get_zelltext(self):
+        iZeile = 0
+        iSpalte = 0
+        tab = ol_tabelle()
+        iZeileStart = tab.get_selection_zeile_start()
+        iZeileEnde  = tab.get_selection_zeile_ende()
+        iSpalteStart = tab.get_selection_spalte_start()
+        iSpalteEnde = tab.get_selection_spalte_ende()
+        for z in range(iZeileStart, iZeileEnde+1):# wird gebraucht zur Typenumwandlung
+            for s in range(iSpalteStart, iSpalteEnde+1):
+                iZeile = z
+                iSpalte = s
+                break # nur 1 durchlauf erwünscht
+            break # nur 1 durchlauf erwünscht
+        return self.tab.get_zelltext_i(iZeile, iSpalte)
+    def set_fokus_tab(self, tabname):
+        if self.tab.tab_existiert(tabname):
+            self.tab.set_tabfokus_s(tabname)
+        pass
+    def erstelle_tab(self):
+        sPosNr = self.get_zelltext()
+        tab = ol_tabelle()
+        gesund = tab.tab_kopieren2("leer", sPosNr, 9999)
+        if self.tab.tab_existiert(sPosNr):
+            tab.set_tabfokus_s(sPosNr)
+            if gesund == 0:
+                tab.set_zelltext_s("B3", sPosNr)
+        pass
+#----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------
 class TaPlan: # Writer
     def __init__(self):
         self.doc = XSCRIPTCONTEXT.getDocument()
@@ -4115,212 +5938,175 @@ def test_123():
     pass
 
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung im Menü:
-def SList_autoformat():
+# Starter für LibreOffice:
+# "*event" wird benötigt als Funktionsparameter damit die makros auch über Buttons im LibreOffice gestartet werden können
+def tabelle_set_tabfokus_uebersicht(*event):
+    tab = ol_tabelle()
+    tabname = "Übersicht"
+    if tab.tab_existiert(tabname):
+        tab.set_tabfokus_s(tabname)
+    pass
+#---------
+def SList_autoformat(*event):
     sli = slist()
     sli.autoformat()
     pass
-def SList_Formeln_edit():
+def SList_Formeln_edit(*event):
     sli = slist()
     sli.formeln_edit()
     pass
-def SList_Formeln_Kante():
+def SList_formartieren_zum_ausdrucken(*event):
+    sli = slist()
+    sli.formartieren_zum_ausdrucken()
+    pass
+def SList_ausdruck_zusammenstellen(*event):
+    sli = slist()
+    sli.slist_ausdruck_zusammenstellen()
+    pass
+def SList_Formeln_Kante(*event):
     sli = slist()
     sli.formeln_kante()
     pass
-def SList_Kanteninfo_beraeumen():
+def SList_Kanteninfo_beraeumen(*event):
     sli = slist()
     sli.kanteninfo_beraeumen()
     pass
-def SList_Teil_drehen():
+def SList_Teil_drehen(*event):
     sli = slist()
     sli.teil_drehen()
     pass
-def SList_sortieren():
+def SList_sortieren(*event):
     sli = slist()
     sli.sortieren()
     pass
-def SList_reduzieren():
+def SList_reduzieren(*event):
     sli = slist()
     sli.reduzieren()
     pass
-def SList_sortieren_reduzieren():
+def SList_sortieren_reduzieren(*event):
     sli = slist()
     sli.std_namen()
     sli.reduzieren()
     sli.sortieren()
     pass
+def SList_gehr_masszugabe(*event):
+    sli = slist()
+    sli.gehr_masszugabe()
+    pass
+def SList_tap_anlegen_uebersicht(*event):
+    sli = slist()
+    sli.tap_anlegen_uebersicht()
+    pass
+def SList_tab_anlegen_stklistpos(*event):
+    sli = slist()
+    sli.tab_anlegen_stklistpos()
+    pass
+def SList_tab_anlegen_kantenanlage(*event):
+    sli = slist()
+    sli.tab_anlegen_kantenanlage()
+    pass
+def SList_check_cncdata(*event):
+    sli = slist()
+    sli.check_cncdata()
+    pass
+def SList_pios_export(*event):
+    sli = slist()
+    sli.pios_export()
+    pass
+def SList_etikette_erzeugen(*event):
+    sli = slist()
+    sli.etiketten_erzeugen()
+    pass
 #---------
-def RB_Blancoliste():
+def RB_Blancoliste(*event):
     l = raumbuch()
     l.RB_Blankoliste()
     pass
-def RB_LList_Formblatt():
+def RB_LList_Formblatt(*event):
     l = raumbuch()
     l.LList_Formblatt()
     pass
-def RB_LList_start():
+def RB_LList_start(*event):
     l = raumbuch()
     l.LList_start()
     pass
 #---------
-def baugrpetk_calc_ermitteln():
+def baugrpetk_calc_ermitteln(*event):
     sli = baugrpetk_calc()
     sli.ermitteln()
     sli.auflisten()
     pass
-def baugrpetk_calc_speichern():
+def baugrpetk_calc_speichern(*event):
     sli = baugrpetk_calc()
     sli.speichern()
     pass
 #---------
-def baugrpetk_writer_formartieren():
+def baugrpetk_writer_formartieren(*event):
     obj = baugrpetk_writer()
     obj.formartieren()
     pass
 #---------
-def WoPlan_tab_Grundlagen():
+def WoPlan_tab_Grundlagen(*event):
     wpl = WoPlan()
     wpl.tab_Grundlagen()
     pass
-def WoPlan_tab_KW():
+def WoPlan_tab_KW(*event):
     wpl = WoPlan()
     wpl.wochenplan_erstellen()
     pass
-def WoPlan_ist_Urlaub():
+def WoPlan_ist_Urlaub(*event):
     wpl = WoPlan()
     wpl.ist_Urlaub()
     pass
-def WoPlan_ist_Zeitausgleich():
+def WoPlan_ist_Zeitausgleich(*event):
     wpl = WoPlan()
     wpl.ist_Zeitausgleich()
     pass
-def WoPlan_ist_Lieferung():
+def WoPlan_ist_Lieferung(*event):
     wpl = WoPlan()
     wpl.ist_Lieferung()
     pass
-def WoPlan_ist_Kurzarbeit():
+def WoPlan_ist_Kurzarbeit(*event):
     wpl = WoPlan()
     wpl.ist_Kurzarbeit()
     pass
-def WoPlan_ist_Montage():
+def WoPlan_ist_Montage(*event):
     wpl = WoPlan()
     wpl.ist_Montage()
     pass
-def WoPlan_ist_krank():
+def WoPlan_ist_krank(*event):
     wpl = WoPlan()
     wpl.ist_krank()
     pass
-def WoPlan_ist_Berufsschule():
+def WoPlan_ist_Berufsschule(*event):
     wpl = WoPlan()
     wpl.ist_Berufsschule()
     pass
-def WoPlan_Tagesplan():
+def WoPlan_ist_Lehrgang(*event):
+    wpl = WoPlan()
+    wpl.ist_Lehrgang()
+    pass
+def WoPlan_Tagesplan(*event):
     wpl = WoPlan()
     wpl.get_tagesplan()
     pass
 #---------
-def TaPlan_formartieren(): 
+def Kalkulation_set_tab_fokus(*event):
+    kal = kalkulation()
+    kal.set_fokus_tab(kal.get_zelltext())    
+    pass
+def Kalkulation_pos_erstellen(*event):
+    kal = kalkulation()
+    kal.erstelle_tab()    
+    pass
+#---------
+def TaPlan_formartieren(*event): 
     tpl = TaPlan()
     tpl.formartieren()
     pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-# Starter für die Bedienung in der Symbolleiste:
-def SList_autoformat_BTN(self):
-    sli = slist()
-    sli.autoformat()
-    pass
-def SList_Formeln_edit_BTN(self):
-    sli = slist()
-    sli.formeln_edit()
-    pass
-def SList_Formeln_Kante_BTN(self):
-    sli = slist()
-    sli.formeln_kante()
-    pass
-def SList_Kanteninfo_beraeumen_BTN(self):
-    sli = slist()
-    sli.kanteninfo_beraeumen()
-    pass
-def SList_Teil_drehen_BTN(self):
-    sli = slist()
-    sli.teil_drehen()
-    pass
-def SList_sortieren_BTN(self):
-    sli = slist()
-    sli.sortieren()
-    pass
-def SList_reduzieren_BTN(self):
-    sli = slist()
-    sli.reduzieren()
-    pass
-def SList_sortieren_reduzieren_BTN(self):
-    sli = slist()
-    sli.std_namen()
-    sli.reduzieren()
-    sli.sortieren()
-    pass
-#---------
-def RB_Blancoliste_BTN(self):
-    l = raumbuch()
-    l.RB_Blankoliste()
-    pass
-def RB_LList_Formblatt_BTN(self):
-    l = raumbuch()
-    l.LList_Formblatt()
-    pass
-def RB_LList_start_BTN(self):
-    l = raumbuch()
-    l.LList_start()
-    pass
-#---------
-def WoPlan_tab_Grundlagen_BTN(self):
-    wpl = WoPlan()
-    wpl.tab_Grundlagen()
-    pass
-def WoPlan_tab_KW_BTN(self):
-    wpl = WoPlan()
-    wpl.wochenplan_erstellen()
-    pass
-def WoPlan_ist_Urlaub_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Urlaub()
-    pass
-def WoPlan_ist_Zeitausgleich_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Zeitausgleich()
-    pass
-def WoPlan_ist_Lieferung_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Lieferung()
-    pass
-def WoPlan_ist_Kurzarbeit_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Kurzarbeit()
-    pass
-def WoPlan_ist_Montage_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Montage()
-    pass
-def WoPlan_ist_krank_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_krank()
-    pass
-def WoPlan_ist_Berufsschule_BTN(self):
-    wpl = WoPlan()
-    wpl.ist_Berufsschule()
-    pass
-def WoPlan_Tagesplan_BTN(self):
-    wpl = WoPlan()
-    wpl.get_tagesplan()
-    pass
-#---------
-def TaPlan_formartieren_BTN(self): 
-    tpl = TaPlan()
-    tpl.formartieren()
-    pass
-#----------------------------------------------------------------------------------
+
 
 # Notizen:
 
