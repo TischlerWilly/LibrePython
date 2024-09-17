@@ -1320,6 +1320,11 @@ class ol_tabelle:
         oSpalte.Width = iBreite
         pass
         #Anwendung: t.set_spaltenbreite_i(5, 500)
+    def set_spaltenbreiten(self, iBreite): # 100 == 1mm
+        oZeilen = self.sheet.getColumns()
+        oZeilen.Width = iBreite
+        pass
+        #Anwendung: t.set_spaltenbreiten(1000)
     def get_spaltenbreite_i(self, iSpalte): # 100 == 1mm
         oSpalten = self.sheet.getColumns()
         oSpalte = oSpalten.getByIndex(iSpalte)
@@ -1727,6 +1732,62 @@ class slist: # Calc
         tab = ol_tabelle()
         tab.set_seitenformat("A4", True, 400, 400, 2500 , 600, False, False) 
         tab.set_wiederholungszeilen_oben_i(0,2) # iStartZeile, iEndZeile
+        pass
+    def etiketten_erzeugen(self):
+        # Prüfen ob Registerkarte *_print geönnet und aktiv ist
+        tabname_ausdruck = self.t.get_tabname()
+        kennung_ausdruck = "_print"
+        if kennung_ausdruck in tabname_ausdruck:
+            # Stücklistendaten einlesen:
+            projekt = self.t.get_zelltext_s("D1")
+            bez = []
+            anz = []
+            la  = []
+            br  = []
+            di  = []
+            mat = []
+            kali = []
+            kadili = []
+            kare = []
+            kadire = []
+            kaob = []
+            kadiob = []
+            kaun = []
+            kadiun = []
+            kom = []
+            # neue Registerkarte erzeugen:
+            tabindex = self.t.get_tabindex()
+            grundname_laenge = len(tabname_ausdruck) - len(kennung_ausdruck)
+            grundname = tabname_ausdruck[:grundname_laenge]
+            tabname_sticker = grundname + "_sticker"
+            self.t.tab_anlegen(tabname_sticker, tabindex+1)
+            self.t.set_tabfokus_s(tabname_sticker)
+            # Registerkarte formartieren:
+            self.t.set_spaltenbreiten(500)
+            self.t.set_zeilenhoehen(500)
+            
+            akt_pos_x = 0
+            akt_pos_y = 0            
+            #-------------------------------------------------------------------Projekt:
+            pos_proj_x = akt_pos_x+4
+            pos_proj_y = akt_pos_y+2
+            self.t.zellen_verbinden_i(pos_proj_y, pos_proj_x, 
+                                      pos_proj_y, pos_proj_x+11,
+                                      True)
+            self.t.set_zelltext_i(pos_proj_y, pos_proj_x, projekt)
+            #-------------------------------------------------------------------
+            self.t.set_Rahmen_komplett_i(akt_pos_y,akt_pos_x,16,17,25)
+            # Kante rechts (auf dem Etikett die obere Kante):
+            pos_kare_x = akt_pos_x+2
+            pos_kare_y = akt_pos_y+0
+            self.t.zellen_verbinden_i(pos_kare_y, pos_kare_x, 
+                                      pos_kare_y+1, pos_kare_x+13,
+                                      True)
+            pass
+        else:
+            titel = "Etiketten erzeugen"
+            msg = "Zum erzeugen von Etiketten bitte in eine zum ausdrucken formartierte Stückliste wechseln!"
+            msgbox(msg, titel, 1, 'QUERYBOX')
         pass
     def slist_ausdruck_zusammenstellen(self):
         if self.ist_slist():
@@ -5787,6 +5848,10 @@ def SList_check_cncdata(*event):
 def SList_pios_export(*event):
     sli = slist()
     sli.pios_export()
+    pass
+def SList_etikette_erzeugen(*event):
+    sli = slist()
+    sli.etiketten_erzeugen()
     pass
 #---------
 def RB_Blancoliste(*event):
