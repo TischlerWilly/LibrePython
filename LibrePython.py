@@ -2377,6 +2377,85 @@ class slist: # Calc
             pass
         pass
         # Anwendung: self.formeln_kante()
+    def formeln_platte(self):
+        if self.autoformat() != True:
+            return False
+        # eventuell noch umbenennen:
+        sTabName = self.t.get_tabname()
+        if(sTabName == "Stueckliste"):
+            self.t.tab_setName("Plattenberechnung")
+         # eventuellen vorherigen Inhalt löschen:
+        self.t.delelte_spalten_re_i(15, 100)
+        maxi = 0        
+        # KaDi ausblenden:
+        self.t.set_spalte_sichtbar_i(6,False)#KaLi
+        self.t.set_spalte_sichtbar_i(7,False)#KaDiLi
+        self.t.set_spalte_sichtbar_i(8,False)#KaRe
+        self.t.set_spalte_sichtbar_i(9,False)#KaDiRe
+        self.t.set_spalte_sichtbar_i(10,False)#KaOb
+        self.t.set_spalte_sichtbar_i(11,False)#KaDiOb
+        self.t.set_spalte_sichtbar_i(12,False)#KaUn
+        self.t.set_spalte_sichtbar_i(13,False)#KaDiUn
+        # Tabellenkopf ergänzen:
+        self.t.set_zelltext_s("P1", "Dicke")
+        self.t.set_zelltext_s("Q1", "Material")
+        self.t.set_zelltext_s("R1", "qm")
+        self.t.set_zelltext_s("S1", "Teile")
+        self.t.set_zelltext_s("T1", "Teile/qm")
+        self.t.set_zelltext_s("U1", "L-Platte")
+        self.t.set_zelltext_s("V1", "B-Blatte")
+        self.t.set_zelltext_s("W1", "VZ")
+        self.t.set_zelltext_s("X1", "Anz Platten")
+        # Plattensorten ermitteln:
+        aPlatten = [] # leere Liste
+        trennz = ";"
+        iSpalteBez = 0
+        iSpalteMat = 5
+        iSpalteDi = 4
+        for i in range (1, self.maxistklen):
+            myCellBez = self.t.get_zelle_i(i, iSpalteBez)
+            myCellMat = self.t.get_zelle_i(i, iSpalteMat)
+            myCellDi = self.t.get_zelle_i(i, iSpalteDi)
+            if (len(myCellBez.String) > 0) or (len(myCellMat.String) > 0) or (i < 10):
+                sMat = myCellMat.String
+                sDi = myCellDi.String
+                if (len(sMat) > 0 and len(sDi) > 0):
+                    bBekannt = False
+                    kombiname = sDi + trennz + sMat
+                    for ii in range (0, len(aPlatten)):
+                        if aPlatten[ii] == kombiname:
+                            bBekannt = True
+                            break # für For-Schleife ii
+                    if bBekannt == False:
+                        if len(kombiname) > 0:
+                            aPlatten.append(kombiname)
+                    maxi += 1
+            else:
+                break # für For-Schleife i
+            pass
+        for i in range (0, len(aPlatten)):
+            aktPlatte = aPlatten[i]
+            index_trennz = aktPlatte.find(trennz)
+            # Dicke:
+            self.t.set_zellzahl_i(i+1, 15, aktPlatte[:index_trennz])
+            # Plattennummer:
+            self.t.set_zelltext_i(i+1, 16, aktPlatte[index_trennz+1:])
+            # qm:
+
+            # Anz Teile:
+            formel =  "=("
+            formel += "SUMPRODUCT("
+            formel += "IF(P" + str(i+2) + "=E$2:E$999;1;0)"
+            formel += "*IF(EXACT(Q" + str(i+2) + ";F$2:F$999);1;0)"
+            formel += "*B$2:B$999"
+            formel += ")"
+            self.t.set_zellformel_i(i+1, 18, formel)
+
+
+
+
+        pass
+        # Anwendung: self.formeln_platte()
     def kanteninfo_beraeumen(self):
         badStrings = ["Ger", "Gehr", "Zugabe", "Schräg", "Schmiege", "DA"]
         for i in range(1, self.maxistklen): # Schleife beginnt unter den Tabellenkopf
@@ -5966,6 +6045,10 @@ def SList_ausdruck_zusammenstellen(*event):
 def SList_Formeln_Kante(*event):
     sli = slist()
     sli.formeln_kante()
+    pass
+def SList_Formeln_Platte(*event):
+    sli = slist()
+    sli.formeln_platte()
     pass
 def SList_Kanteninfo_beraeumen(*event):
     sli = slist()
