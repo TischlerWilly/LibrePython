@@ -2406,6 +2406,15 @@ class slist: # Calc
         self.t.set_zelltext_s("V1", "B-Blatte")
         self.t.set_zelltext_s("W1", "VZ")
         self.t.set_zelltext_s("X1", "Anz Platten")
+        self.t.set_spaltenbreite_i(15, 1500) #Dicke
+        self.t.set_spaltenbreite_i(16, 3000) #Material
+        self.t.set_spaltenbreite_i(17, 1500) #qm
+        self.t.set_spaltenbreite_i(18, 1500) #Teile
+        self.t.set_spaltenbreite_i(19, 2000) #Teile/qm
+        self.t.set_spaltenbreite_i(20, 2000) #L-Platte
+        self.t.set_spaltenbreite_i(21, 2000) #B-Platte
+        self.t.set_spaltenbreite_i(22, 1000) #VZ
+        self.t.set_spaltenbreite_i(23, 2000) #Anz Platten
         # Plattensorten ermitteln:
         aPlatten = [] # leere Liste
         trennz = ";"
@@ -2437,23 +2446,34 @@ class slist: # Calc
             aktPlatte = aPlatten[i]
             index_trennz = aktPlatte.find(trennz)
             # Dicke:
-            self.t.set_zellzahl_i(i+1, 15, aktPlatte[:index_trennz])
+            self.t.set_zellzahl_i(i+1, 15, aktPlatte[:index_trennz].replace(",","."))
             # Plattennummer:
             self.t.set_zelltext_i(i+1, 16, aktPlatte[index_trennz+1:])
             # qm:
-
-            # Anz Teile:
-            formel =  "=("
+            formel =  "="
             formel += "SUMPRODUCT("
             formel += "IF(P" + str(i+2) + "=E$2:E$999;1;0)"
             formel += "*IF(EXACT(Q" + str(i+2) + ";F$2:F$999);1;0)"
-            formel += "*B$2:B$999"
+            formel += "*(B$2:B$999)"
+            formel += "*(C$2:C$999/1000)"
+            formel += "*(D$2:D$999/1000)"
+            formel += ")"
+            self.t.set_zellformel_i(i+1, 17, formel)
+            # Anz Teile:
+            formel =  "="
+            formel += "SUMPRODUCT("
+            formel += "IF(P" + str(i+2) + "=E$2:E$999;1;0)"
+            formel += "*IF(EXACT(Q" + str(i+2) + ";F$2:F$999);1;0)"
+            formel += "*(B$2:B$999)"
             formel += ")"
             self.t.set_zellformel_i(i+1, 18, formel)
-
-
-
-
+            # Teile/qm:
+            formel =  "=S" + str(i+2) + "/R" + str(i+2)
+            self.t.set_zellformel_i(i+1, 19, formel)
+            # Anz Platten:
+            formel =  "=(R" + str(i+2) + "*W" + str(i+2) + ")/"
+            formel += "(U" + str(i+2) + "/1000*V" + str(i+2) + "/1000)"
+            self.t.set_zellformel_i(i+1, 23, formel)
         pass
         # Anwendung: self.formeln_platte()
     def kanteninfo_beraeumen(self):
