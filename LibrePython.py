@@ -2337,14 +2337,14 @@ class slist: # Calc
         # Formeln für Kantenfehler einfügen:
         self.t.set_spaltenausrichtung_i(15, "mi")
         for i in range (1, maxi+1):
-            formel =  "=IF(C" + str(i+1) + "<240;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<240;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<240;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<240;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<90;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<90;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<90;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<90;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel =  "=IF(C" + str(i+1) + "<200;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<200;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<200;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<200;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<70;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<70;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<70;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<70;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
             self.t.set_zellformel_i(i, 15, formel)
             sErgebnis = self.t.get_zelltext_i(i, 15)
             if(sErgebnis != "0") and (len(sErgebnis) >0 ):
