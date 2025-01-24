@@ -2765,7 +2765,8 @@ class slist: # Calc
                 self.t.tab_anlegen(tabname, 9999)
                 if self.t.tab_existiert(tabname):
                     self.t.set_tabfokus_s(tabname)
-                    self.formeln_edit()
+                    #self.formeln_edit()
+                    self.autoformat()
                     self.t.set_zelltext_s("P2", projektnummer)
         else:
             titel = "Bediener-Fehler"
