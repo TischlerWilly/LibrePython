@@ -1082,6 +1082,14 @@ class ol_tabelle:
             myformat = numberformats.addNew(sFormatcode, Locale)
         self.sheet.getCellRangeByName(sRange).NumberFormat = myformat
         pass
+    def set_zellformat_i(self, zeile, spalte, sFormatcode):
+        numberformats = self.doc.NumberFormats
+        Locale = uno.createUnoStruct("com.sun.star.lang.Locale")
+        myformat = numberformats.queryKey(sFormatcode, Locale, True )
+        if myformat == -1:
+            myformat = numberformats.addNew(sFormatcode, Locale)
+        self.sheet.getCellByPosition(spalte, zeile).NumberFormat = myformat
+        pass
     def get_zelltext_s(self, zellname):
         return self.sheet.getCellRangeByName(zellname).String
         # Anwendung: text = t.get_zelltext_s("B2")
@@ -2326,14 +2334,12 @@ class slist: # Calc
             formel += "SUMPRODUCT((M$2:M$1000=Q" + str(i+2) + ")*IF((D$2:D$1000+50)<320;320;D$2:D$1000+50)*(B$2:B$1000))"
             formel += ")/1000"
             self.t.set_zellformel_i(i+1, 17, formel)
+            self.t.set_zellformat_i(i+1, 17, "#.##0,00")
             # lfdm gerundet:
             formel = "=ROUNDUP(R" + str(i+2) + "/5;0)*5"
             self.t.set_zellformel_i(i+1, 18, formel)
-            # Kantennummer Ostermann:
-            formel =  "=LEFT(RIGHT(Q" + str(i+2) + ";LEN(Q" + str(i+2) + ")-12);3)&\".\"&RIGHT(Q" + str(i+2) + ";LEN(Q"
-            formel += str(i+2) + ")-15)&\".\"&RIGHT(LEFT(Q" + str(i+2) + ";9);3)&RIGHT(LEFT(Q" + str(i+2) + ";3);2)"
-            self.t.set_zellformel_i(i+1, 19, formel)
             pass
+        self.t.set_Rahmen_komplett_i(0, 16, len(aKanten), 18, 25)
         # Formeln für Kantenfehler einfügen:
         self.t.set_spaltenausrichtung_i(15, "mi")
         for i in range (1, maxi+1):
@@ -2459,6 +2465,7 @@ class slist: # Calc
             formel += "*(D$2:D$999/1000)"
             formel += ")"
             self.t.set_zellformel_i(i+1, 17, formel)
+            self.t.set_zellformat_i(i+1, 17, "#.##0,00")
             # Anz Teile:
             formel =  "="
             formel += "SUMPRODUCT("
@@ -2470,11 +2477,14 @@ class slist: # Calc
             # Teile/qm:
             formel =  "=S" + str(i+2) + "/R" + str(i+2)
             self.t.set_zellformel_i(i+1, 19, formel)
+            self.t.set_zellformat_i(i+1, 19, "#.##0,00")
             # Anz Platten:
             formel =  "=(R" + str(i+2) + "*W" + str(i+2) + ")/"
             formel += "(U" + str(i+2) + "/1000*V" + str(i+2) + "/1000)"
             self.t.set_zellformel_i(i+1, 23, formel)
+            self.t.set_zellformat_i(i+1, 23, "#.##0,00")
         pass
+        self.t.set_Rahmen_komplett_i(0, 15, len(aPlatten), 23, 25)
         # Anwendung: self.formeln_platte()
     def kanteninfo_beraeumen(self):
         badStrings = ["Ger", "Gehr", "Zugabe", "Schräg", "Schmiege", "DA"]
