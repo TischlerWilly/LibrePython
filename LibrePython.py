@@ -1082,6 +1082,14 @@ class ol_tabelle:
             myformat = numberformats.addNew(sFormatcode, Locale)
         self.sheet.getCellRangeByName(sRange).NumberFormat = myformat
         pass
+    def set_zellformat_i(self, zeile, spalte, sFormatcode):
+        numberformats = self.doc.NumberFormats
+        Locale = uno.createUnoStruct("com.sun.star.lang.Locale")
+        myformat = numberformats.queryKey(sFormatcode, Locale, True )
+        if myformat == -1:
+            myformat = numberformats.addNew(sFormatcode, Locale)
+        self.sheet.getCellByPosition(spalte, zeile).NumberFormat = myformat
+        pass
     def get_zelltext_s(self, zellname):
         return self.sheet.getCellRangeByName(zellname).String
         # Anwendung: text = t.get_zelltext_s("B2")
@@ -2326,25 +2334,23 @@ class slist: # Calc
             formel += "SUMPRODUCT((M$2:M$1000=Q" + str(i+2) + ")*IF((D$2:D$1000+50)<320;320;D$2:D$1000+50)*(B$2:B$1000))"
             formel += ")/1000"
             self.t.set_zellformel_i(i+1, 17, formel)
+            self.t.set_zellformat_i(i+1, 17, "#.##0,00")
             # lfdm gerundet:
             formel = "=ROUNDUP(R" + str(i+2) + "/5;0)*5"
             self.t.set_zellformel_i(i+1, 18, formel)
-            # Kantennummer Ostermann:
-            formel =  "=LEFT(RIGHT(Q" + str(i+2) + ";LEN(Q" + str(i+2) + ")-12);3)&\".\"&RIGHT(Q" + str(i+2) + ";LEN(Q"
-            formel += str(i+2) + ")-15)&\".\"&RIGHT(LEFT(Q" + str(i+2) + ";9);3)&RIGHT(LEFT(Q" + str(i+2) + ";3);2)"
-            self.t.set_zellformel_i(i+1, 19, formel)
             pass
+        self.t.set_Rahmen_komplett_i(0, 16, len(aKanten), 18, 25)
         # Formeln für Kantenfehler einfügen:
         self.t.set_spaltenausrichtung_i(15, "mi")
         for i in range (1, maxi+1):
-            formel =  "=IF(C" + str(i+1) + "<240;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<240;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<240;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<240;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<90;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(C" + str(i+1) + "<90;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<90;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
-            formel += "+IF(D" + str(i+1) + "<90;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel =  "=IF(C" + str(i+1) + "<200;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<200;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<200;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<200;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<70;IF(NOT(K" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(C" + str(i+1) + "<70;IF(NOT(M" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<70;IF(NOT(G" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
+            formel += "+IF(D" + str(i+1) + "<70;IF(NOT(I" + str(i+1) + "=" + "\"\"" + ");1;0);0)"
             self.t.set_zellformel_i(i, 15, formel)
             sErgebnis = self.t.get_zelltext_i(i, 15)
             if(sErgebnis != "0") and (len(sErgebnis) >0 ):
@@ -2377,6 +2383,109 @@ class slist: # Calc
             pass
         pass
         # Anwendung: self.formeln_kante()
+    def formeln_platte(self):
+        if self.autoformat() != True:
+            return False
+        # eventuell noch umbenennen:
+        sTabName = self.t.get_tabname()
+        if(sTabName == "Stueckliste"):
+            self.t.tab_setName("Plattenberechnung")
+         # eventuellen vorherigen Inhalt löschen:
+        self.t.delelte_spalten_re_i(15, 100)
+        maxi = 0        
+        # KaDi ausblenden:
+        self.t.set_spalte_sichtbar_i(6,False)#KaLi
+        self.t.set_spalte_sichtbar_i(7,False)#KaDiLi
+        self.t.set_spalte_sichtbar_i(8,False)#KaRe
+        self.t.set_spalte_sichtbar_i(9,False)#KaDiRe
+        self.t.set_spalte_sichtbar_i(10,False)#KaOb
+        self.t.set_spalte_sichtbar_i(11,False)#KaDiOb
+        self.t.set_spalte_sichtbar_i(12,False)#KaUn
+        self.t.set_spalte_sichtbar_i(13,False)#KaDiUn
+        # Tabellenkopf ergänzen:
+        self.t.set_zelltext_s("P1", "Dicke")
+        self.t.set_zelltext_s("Q1", "Material")
+        self.t.set_zelltext_s("R1", "qm")
+        self.t.set_zelltext_s("S1", "Teile")
+        self.t.set_zelltext_s("T1", "Teile/qm")
+        self.t.set_zelltext_s("U1", "L-Platte")
+        self.t.set_zelltext_s("V1", "B-Blatte")
+        self.t.set_zelltext_s("W1", "VZ")
+        self.t.set_zelltext_s("X1", "Anz Platten")
+        self.t.set_spaltenbreite_i(15, 1500) #Dicke
+        self.t.set_spaltenbreite_i(16, 3000) #Material
+        self.t.set_spaltenbreite_i(17, 1500) #qm
+        self.t.set_spaltenbreite_i(18, 1500) #Teile
+        self.t.set_spaltenbreite_i(19, 2000) #Teile/qm
+        self.t.set_spaltenbreite_i(20, 2000) #L-Platte
+        self.t.set_spaltenbreite_i(21, 2000) #B-Platte
+        self.t.set_spaltenbreite_i(22, 1000) #VZ
+        self.t.set_spaltenbreite_i(23, 2000) #Anz Platten
+        # Plattensorten ermitteln:
+        aPlatten = [] # leere Liste
+        trennz = ";"
+        iSpalteBez = 0
+        iSpalteMat = 5
+        iSpalteDi = 4
+        for i in range (1, self.maxistklen):
+            myCellBez = self.t.get_zelle_i(i, iSpalteBez)
+            myCellMat = self.t.get_zelle_i(i, iSpalteMat)
+            myCellDi = self.t.get_zelle_i(i, iSpalteDi)
+            if (len(myCellBez.String) > 0) or (len(myCellMat.String) > 0) or (i < 10):
+                sMat = myCellMat.String
+                sDi = myCellDi.String
+                if (len(sMat) > 0 and len(sDi) > 0):
+                    bBekannt = False
+                    kombiname = sDi + trennz + sMat
+                    for ii in range (0, len(aPlatten)):
+                        if aPlatten[ii] == kombiname:
+                            bBekannt = True
+                            break # für For-Schleife ii
+                    if bBekannt == False:
+                        if len(kombiname) > 0:
+                            aPlatten.append(kombiname)
+                    maxi += 1
+            else:
+                break # für For-Schleife i
+            pass
+        for i in range (0, len(aPlatten)):
+            aktPlatte = aPlatten[i]
+            index_trennz = aktPlatte.find(trennz)
+            # Dicke:
+            self.t.set_zellzahl_i(i+1, 15, aktPlatte[:index_trennz].replace(",","."))
+            # Plattennummer:
+            self.t.set_zelltext_i(i+1, 16, aktPlatte[index_trennz+1:])
+            # qm:
+            formel =  "="
+            formel += "SUMPRODUCT("
+            formel += "IF(P" + str(i+2) + "=E$2:E$999;1;0)"
+            formel += "*IF(EXACT(Q" + str(i+2) + ";F$2:F$999);1;0)"
+            formel += "*(B$2:B$999)"
+            formel += "*(C$2:C$999/1000)"
+            formel += "*(D$2:D$999/1000)"
+            formel += ")"
+            self.t.set_zellformel_i(i+1, 17, formel)
+            self.t.set_zellformat_i(i+1, 17, "#.##0,00")
+            # Anz Teile:
+            formel =  "="
+            formel += "SUMPRODUCT("
+            formel += "IF(P" + str(i+2) + "=E$2:E$999;1;0)"
+            formel += "*IF(EXACT(Q" + str(i+2) + ";F$2:F$999);1;0)"
+            formel += "*(B$2:B$999)"
+            formel += ")"
+            self.t.set_zellformel_i(i+1, 18, formel)
+            # Teile/qm:
+            formel =  "=S" + str(i+2) + "/R" + str(i+2)
+            self.t.set_zellformel_i(i+1, 19, formel)
+            self.t.set_zellformat_i(i+1, 19, "#.##0,00")
+            # Anz Platten:
+            formel =  "=(R" + str(i+2) + "*W" + str(i+2) + ")/"
+            formel += "(U" + str(i+2) + "/1000*V" + str(i+2) + "/1000)"
+            self.t.set_zellformel_i(i+1, 23, formel)
+            self.t.set_zellformat_i(i+1, 23, "#.##0,00")
+        pass
+        self.t.set_Rahmen_komplett_i(0, 15, len(aPlatten), 23, 25)
+        # Anwendung: self.formeln_platte()
     def kanteninfo_beraeumen(self):
         badStrings = ["Ger", "Gehr", "Zugabe", "Schräg", "Schmiege", "DA"]
         for i in range(1, self.maxistklen): # Schleife beginnt unter den Tabellenkopf
@@ -2666,7 +2775,8 @@ class slist: # Calc
                 self.t.tab_anlegen(tabname, 9999)
                 if self.t.tab_existiert(tabname):
                     self.t.set_tabfokus_s(tabname)
-                    self.formeln_edit()
+                    #self.formeln_edit()
+                    self.autoformat()
                     self.t.set_zelltext_s("P2", projektnummer)
         else:
             titel = "Bediener-Fehler"
@@ -5966,6 +6076,10 @@ def SList_ausdruck_zusammenstellen(*event):
 def SList_Formeln_Kante(*event):
     sli = slist()
     sli.formeln_kante()
+    pass
+def SList_Formeln_Platte(*event):
+    sli = slist()
+    sli.formeln_platte()
     pass
 def SList_Kanteninfo_beraeumen(*event):
     sli = slist()
