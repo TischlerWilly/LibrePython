@@ -2078,22 +2078,19 @@ class slist: # Calc
             return False
         # eventuellen vorherigen Inhalt löschen:
         self.t.delelte_spalten_re_i(15, 100)
+        # Beispiel Kanteninfo: 
+        # W1100ST9_23x1  --> erwartet KaDi == 0
+        # W1100ST9_23x1N --> erwartet KaDi != 0 (Kantenmaschine fräst nicht ab)
         # Tabellenkopf ergänzen:
         self.t.set_zelltext_s("Q1", "Anz Fehler")
-        self.t.set_zelltext_s("S1", "PlattenDi")
-        self.t.set_zelltext_s("T1", "KD li")
-        self.t.set_zelltext_s("U1", "KD re")
-        self.t.set_zelltext_s("V1", "KD ob")
-        self.t.set_zelltext_s("W1", "KD un")
-        self.t.set_zelltext_s("X1", "Anz 0")
-        self.t.set_zelltext_s("Y1", "L<70")
-        self.t.set_zelltext_s("Z1", "B<70")
-        self.t.set_zelltext_s("AA1", "BC zu lang")
-        # --
-        self.t.set_zelltext_s("AC1", "KD li")
-        self.t.set_zelltext_s("AD1", "KD re")
-        self.t.set_zelltext_s("AE1", "KD ob")
-        self.t.set_zelltext_s("AF1", "KD un")
+        self.t.set_zelltext_s("S1", "B Ka li")
+        self.t.set_zelltext_s("T1", "B Ka li")
+        self.t.set_zelltext_s("U1", "B Ka ob")
+        self.t.set_zelltext_s("V1", "B Ka un")
+        self.t.set_zelltext_s("W1", "KaDi li")
+        self.t.set_zelltext_s("X1", "KaDi re")
+        self.t.set_zelltext_s("Y1", "KaDi ob")
+        self.t.set_zelltext_s("Z1", "KaDi un")
         # --
         self.t.set_zelltext_s("P1", "Projekt")
         self.t.set_zelltext_s("P2", "ABC01")
@@ -2106,7 +2103,7 @@ class slist: # Calc
         self.entferneKaDiNull()
         # Formeln einfügen:
         # Es müssen immer die englischen Funktionsnamen für die Calc-Funktionen verwendet werden!
-        for i in range (1, 10):
+        for i in range (1, 50):
             sZellname = "Q" + str(i+1)
             sFormel = "=IF(SUM(S" + str(i+1) + ":AB" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
@@ -2114,126 +2111,38 @@ class slist: # Calc
             sZellname = "R" + str(i+1)
             sFormel = "=SUM(S" + str(i+1) + ":AB" + str(i+1) + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- PlattenDi:
+            # --- B Ka li (Breite Kante links):
             sZellname = "S" + str(i+1)
-            sFormel = "=IF(ISBLANK((INDIRECT(" + "\"F\"" + "&ROW())));0;(IF(NUMBERVALUE((CONCATENATE(LEFT((INDIRECT(" + "\"F\"" + "&ROW()));2);" + "\",\"" + ";RIGHT(LEFT((INDIRECT(" + "\"F\"" + "&ROW()));3);1)));" + "\",\"" + ")=(INDIRECT(" + "\"E\"" + "&ROW()));;1)))"
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"G\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"G\"&ROW());LEN(INDIRECT(\"G\"&ROW()))-FIND(\"_\";INDIRECT(\"G\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"G\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"G\"&ROW());LEN(INDIRECT(\"G\"&ROW()))-FIND(\"_\";INDIRECT(\"G\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi links:
+            # --- B Ka re (Breite Kante rechts):
             sZellname = "T" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"H\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"G\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"G\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"I\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"I\"&ROW());LEN(INDIRECT(\"I\"&ROW()))-FIND(\"_\";INDIRECT(\"I\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"I\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"I\"&ROW());LEN(INDIRECT(\"I\"&ROW()))-FIND(\"_\";INDIRECT(\"I\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi rechts:
+            # --- B Ka ob (Breite Kante oben):
             sZellname = "U" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"J\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"I\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"I\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"K\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"K\"&ROW());LEN(INDIRECT(\"K\"&ROW()))-FIND(\"_\";INDIRECT(\"K\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"K\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"K\"&ROW());LEN(INDIRECT(\"K\"&ROW()))-FIND(\"_\";INDIRECT(\"K\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi oben:
+            # --- B Ka un (Breite Kante unten):
             sZellname = "V" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"L\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"K\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"K\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"M\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"M\"&ROW());LEN(INDIRECT(\"M\"&ROW()))-FIND(\"_\";INDIRECT(\"M\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"M\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"M\"&ROW());LEN(INDIRECT(\"M\"&ROW()))-FIND(\"_\";INDIRECT(\"M\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi unten:
+            # --- KaDi li:
             sZellname = "W" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"N\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"M\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"M\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(RIGHT(INDIRECT(\"G\"&ROW());1)=\"N\";0;IF(INDIRECT(\"H\"&ROW())>0;1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- Anz 0:
+            # --- KaDi re:
             sZellname = "X" + str(i+1)
-            sFormel = "=IF(ISBLANK(INDIRECT(" + "\"B\"" + "&ROW()));0;(IF(INDIRECT(" + "\"B\"" + "&ROW())=0;1;0)))" # Wenn Anz leer ist oder 0 dann Fehler
+            sFormel = "=IF(RIGHT(INDIRECT(\"I\"&ROW());1)=\"N\";0;IF(INDIRECT(\"J\"&ROW())>0;1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- L < 70:
+            # --- KaDi ob:
             sZellname = "Y" + str(i+1)
-            sFormel = "=IF(INDIRECT(" + "\"C\"" + "&ROW())<70;IF(ISBLANK(INDIRECT(" + "\"C\"" + "&ROW()));0;1);0)" # Wenn L < 70 dann Fehler
+            sFormel = "=IF(RIGHT(INDIRECT(\"K\"&ROW());1)=\"N\";0;IF(INDIRECT(\"L\"&ROW())>0;1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- B < 70:
+            # --- KaDi un:
             sZellname = "Z" + str(i+1)
-            sFormel = "=IF(INDIRECT(" + "\"D\"" + "&ROW())<70;IF(ISBLANK(INDIRECT(" + "\"D\"" + "&ROW()));0;1);0)" # Wenn L < 70 dann Fehler
-            self.t.set_zellformel_s(sZellname, sFormel)
-            # --- BC zu lang:
-            sZellname = "AA" + str(i+1)
-            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>25;1;0)" # Wenn BC > 28 dann Fehler
-            self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi links korrekter Wert:
-            sZellname = "AC" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"G\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"G\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
-            # --- KaDi rechts korrekter Wert:
-            sZellname = "AD" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"I\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"I\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
-            # --- KaDi oben korrekter Wert:
-            sZellname = "AE" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"K\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"K\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
-            # --- KaDi unten korrekter Wert:
-            sZellname = "AF" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"M\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"M\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
+            sFormel = "=IF(RIGHT(INDIRECT(\"M\"&ROW());1)=\"N\";0;IF(INDIRECT(\"N\"&ROW())>0;1;0))"       
+            self.t.set_zellformel_s(sZellname, sFormel)            
         pass
         # Anwendung: self.formeln_edit()
     def formeln_kante(self):
@@ -2775,7 +2684,7 @@ class slist: # Calc
                 self.t.tab_anlegen(tabname, 9999)
                 if self.t.tab_existiert(tabname):
                     self.t.set_tabfokus_s(tabname)
-                    #self.formeln_edit()
+                    self.formeln_edit()
                     self.autoformat()
                     self.t.set_zelltext_s("P2", projektnummer)
         else:
