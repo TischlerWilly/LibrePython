@@ -1114,6 +1114,36 @@ class ol_tabelle:
                 break # nur 1 durchlauf erwünscht
             break # nur 1 durchlauf erwünscht
         return self.get_zelltext_i(iZeile, iSpalte)
+    def get_zelltext_datum_ISO_i(self, zeile, spalte):
+        # Gibt das Datum im SQL-Format YYYY-MM-DD zurück
+        # Für SQL-Datenbanken muss ein Datum als 'YYYY-MM-DD' übergeben werden
+        # 1. Zelle anhand von Zeile und Spalte holen:
+        cell = self.sheet.getCellByPosition(spalte, zeile)
+        
+        # WICHTIG: Prüfen, ob die Zelle komplett leer ist
+        # Typ 0 (or com.sun.star.table.CellContentType.EMPTY) bedeutet LEER
+        if cell.getType().value == 0:
+            return "NULL"
+            
+        try:
+            from datetime import datetime, timedelta
+            # LibreOffice Datums-Nullpunkt (30.12.1899)
+            base_date = datetime(1899, 12, 30)
+            
+            # Holt den echten numerischen Wert der Zelle
+            tage = cell.getValue()
+            
+            # Falls der Wert 0 ist, obwohl der Typ nicht EMPTY war (Sicherheitsnetz)
+            if tage == 0:
+                return "NULL"
+                
+            target_date = base_date + timedelta(days=int(tage))
+            return target_date.strftime('%Y-%m-%d')
+            
+        except Exception:
+            # Falls Text oder ein Fehler in der Zelle steht, als leer übergeben
+            return "NULL"
+        # Anwendung: text = t.get_zelltext_datum_ISO_i(1,1)
     def set_zellformel_s(self, zellname, formel):
         self.sheet.getCellRangeByName(zellname).Formula = formel
         pass
@@ -1396,6 +1426,7 @@ class ol_tabelle:
         oZeile.Height = iHoehe
         pass
         #Anwendung: t.set_zeilenhoehe_i(5, 1000)
+    #-----------------------------------------------------------------------------------------------
     #-----------------------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------
@@ -3165,6 +3196,150 @@ class slist: # Calc
             msg   = "Die Tabelle ist keine druckbare Stückliste. Bitte rufen Sie vorab die Funktion SList_ausdruck_zusammenstellen auf."
             msgbox(msg, titel, 1, 'QUERYBOX')
         pass
+#----------------------------------------------------------------------------------
+class bestauftrag: # Calc
+    def __init__(self):
+        self.t = ol_tabelle()
+        pass
+    def BA_exportiere_auswahl(self):
+        # Exportiert die Daten aus der aktuellen Calc-Tabelle 
+        # in die Base-Datenbank auf dem Desktop.
+        start_zeile = self.t.get_selection_zeile_start()
+        ende_zeile = self.t.get_selection_zeile_ende()
+        # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
+        if start_zeile == 0 and ende_zeile == 0:
+            start_zeile = 2
+        # Pfad zur Desktop-Datenbank aufbauen
+        # verzeichnis = os.path.expanduser("~/Desktop")
+        verzeichnis = os.path.expanduser("W:\Datenbanken")
+        db_pfad = os.path.join(verzeichnis, "Material_db.odb")
+        # In URL-Format für die UNO-Schnittstelle konvertieren
+        if os.name == 'nt':  # Windows
+            db_url = "file:///" + db_pfad.replace("\\", "/")
+        else:  # Linux / macOS
+            db_url = "file://" + db_pfad
+        # Verbindung zur Base-Datenbank herstellen
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+        try:
+            data_source = db_context.getByName(db_url)
+            # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+            verbindung = data_source.getConnection("", "") 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+            msgbox(
+                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{db_pfad}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+        # Name Ihrer Tabelle in LibreOffice Base (BITTE ANPASSEN)
+        base_tabellen_name = "Bestellauftraege" 
+        # Daten sammeln:
+        projekt = self.t.get_zelltext_s("A1")
+        bestellauftrag = self.t.get_zelltext_s("N1")
+
+        # Zähler für die Rückmeldung initialisieren
+        erfolg_zaehler = 0
+        fehler_zaehler = 0
+
+        for row in range(start_zeile, ende_zeile + 1):
+            artBez_s = self.t.get_zelltext_i(row, 0)
+            artNr_s = self.t.get_zelltext_i(row, 1)
+            lieferant_s = self.t.get_zelltext_i(row, 2)
+            preis_i = self.t.get_zellzahl_i(row, 3)
+            ve_s = self.t.get_zelltext_i(row, 4)
+            einheit_s = self.t.get_zelltext_i(row, 5)
+            menge_i = self.t.get_zellzahl_i(row, 6)
+            laenge_i = self.t.get_zellzahl_i(row, 7)
+            breite_i = self.t.get_zellzahl_i(row, 8)
+            auf_lager_i = self.t.get_zellzahl_i(row, 9)
+            zu_bestellen_i = self.t.get_zellzahl_i(row, 10)
+            bestellt_am = self.t.get_zelltext_datum_ISO_i(row, 11)
+            geplanter_lt = self.t.get_zelltext_datum_ISO_i(row, 12)
+            kommentar = self.t.get_zelltext_i(row, 13)
+
+            vollst_geliefert = "FALSE"
+            if(zu_bestellen_i <= 0):
+                vollst_geliefert = "TRUE"
+
+            # Datumsfelder für SQL vorbereiten (Falls NULL zurückgegeben wird, ohne Hochkommata)
+            sql_bestellt_am = "NULL" if bestellt_am == "NULL" else f"'{bestellt_am}'"
+            sql_geplanter_lt = "NULL" if geplanter_lt == "NULL" else f"'{geplanter_lt}'"
+
+
+            # SQL-Query aufbauen
+            # Wichtig: Text-Werte müssen in einfachen Anführungszeichen '{variable}'
+            sql = f"""
+            INSERT INTO "{base_tabellen_name}" 
+            ("Projekt", 
+            "BA", 
+            "Artikelbezeichnung", 
+            "Artikelnummer",
+            "Lieferant",
+            "Preis",
+            "VE",
+            "Einheit",
+            "ME",
+            "Laenge",
+            "Breite",
+            "auf_Lager",
+            "zu_bestellen",
+            "bestellt_am",
+            "geplanter_LT",
+            "Kommentar",
+            "vollst_geliefert") 
+            VALUES 
+            (
+                '{projekt}', 
+                '{bestellauftrag}', 
+                '{artBez_s}', 
+                '{artNr_s}', 
+                '{lieferant_s}', 
+                {preis_i}, 
+                '{ve_s}', 
+                '{einheit_s}', 
+                {menge_i}, 
+                {laenge_i}, 
+                {breite_i},
+                {auf_lager_i},
+                {zu_bestellen_i},
+                {sql_bestellt_am},
+                {sql_geplanter_lt},
+                '{kommentar}',
+                {vollst_geliefert}
+            )
+            """        
+            try:
+                # Führt den Befehl aus und fügt eine neue Zeile an die Tabelle an
+                statement.executeUpdate(sql)
+                erfolg_zaehler += 1
+            except Exception as e:
+                # Falls eine Zeile fehlschlägt (z.B. Duplikat bei Primärschlüssel), mit der nächsten fortfahren
+                fehler_zaehler += 1
+                continue
+        # 7. Verbindung sauber schließen
+        statement.close()
+        verbindung.close()
+
+        # Rückmeldung an den Benutzer ausgeben
+        if fehler_zaehler == 0:
+            msgbox(
+                message=f"Export erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen an die Tabelle '{base_tabellen_name}' übergeben.", 
+                title="Erfolg", 
+                buttons=1, 
+                type_msg="infobox"
+            )
+        else:
+            msgbox(
+                message=f"Export beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen doppelter Primärschlüssel).", 
+                title="Export Warnung", 
+                buttons=1, 
+                type_msg="warningbox"
+            )
+#----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
     def __init__(self):
@@ -6039,6 +6214,11 @@ def SList_pios_export(*event):
 def SList_etikette_erzeugen(*event):
     sli = slist()
     sli.etiketten_erzeugen()
+    pass
+#---------
+def QSL_BA_exportiere_auswahl(*event):
+    best = bestauftrag()
+    best.BA_exportiere_auswahl()
     pass
 #---------
 def RB_Blancoliste(*event):
