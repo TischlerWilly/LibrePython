@@ -1114,6 +1114,36 @@ class ol_tabelle:
                 break # nur 1 durchlauf erwünscht
             break # nur 1 durchlauf erwünscht
         return self.get_zelltext_i(iZeile, iSpalte)
+    def get_zelltext_datum_ISO_i(self, zeile, spalte):
+        # Gibt das Datum im SQL-Format YYYY-MM-DD zurück
+        # Für SQL-Datenbanken muss ein Datum als 'YYYY-MM-DD' übergeben werden
+        # 1. Zelle anhand von Zeile und Spalte holen:
+        cell = self.sheet.getCellByPosition(spalte, zeile)
+        
+        # WICHTIG: Prüfen, ob die Zelle komplett leer ist
+        # Typ 0 (or com.sun.star.table.CellContentType.EMPTY) bedeutet LEER
+        if cell.getType().value == 0:
+            return "NULL"
+            
+        try:
+            from datetime import datetime, timedelta
+            # LibreOffice Datums-Nullpunkt (30.12.1899)
+            base_date = datetime(1899, 12, 30)
+            
+            # Holt den echten numerischen Wert der Zelle
+            tage = cell.getValue()
+            
+            # Falls der Wert 0 ist, obwohl der Typ nicht EMPTY war (Sicherheitsnetz)
+            if tage == 0:
+                return "NULL"
+                
+            target_date = base_date + timedelta(days=int(tage))
+            return target_date.strftime('%Y-%m-%d')
+            
+        except Exception:
+            # Falls Text oder ein Fehler in der Zelle steht, als leer übergeben
+            return "NULL"
+        # Anwendung: text = t.get_zelltext_datum_ISO_i(1,1)
     def set_zellformel_s(self, zellname, formel):
         self.sheet.getCellRangeByName(zellname).Formula = formel
         pass
@@ -1396,6 +1426,7 @@ class ol_tabelle:
         oZeile.Height = iHoehe
         pass
         #Anwendung: t.set_zeilenhoehe_i(5, 1000)
+    #-----------------------------------------------------------------------------------------------
     #-----------------------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------
@@ -2078,22 +2109,19 @@ class slist: # Calc
             return False
         # eventuellen vorherigen Inhalt löschen:
         self.t.delelte_spalten_re_i(15, 100)
+        # Beispiel Kanteninfo: 
+        # W1100ST9_23x1  --> erwartet KaDi == 0
+        # W1100ST9_23x1N --> erwartet KaDi != 0 (Kantenmaschine fräst nicht ab)
         # Tabellenkopf ergänzen:
         self.t.set_zelltext_s("Q1", "Anz Fehler")
-        self.t.set_zelltext_s("S1", "PlattenDi")
-        self.t.set_zelltext_s("T1", "KD li")
-        self.t.set_zelltext_s("U1", "KD re")
-        self.t.set_zelltext_s("V1", "KD ob")
-        self.t.set_zelltext_s("W1", "KD un")
-        self.t.set_zelltext_s("X1", "Anz 0")
-        self.t.set_zelltext_s("Y1", "L<70")
-        self.t.set_zelltext_s("Z1", "B<70")
-        self.t.set_zelltext_s("AA1", "BC zu lang")
-        # --
-        self.t.set_zelltext_s("AC1", "KD li")
-        self.t.set_zelltext_s("AD1", "KD re")
-        self.t.set_zelltext_s("AE1", "KD ob")
-        self.t.set_zelltext_s("AF1", "KD un")
+        self.t.set_zelltext_s("S1", "B Ka li")
+        self.t.set_zelltext_s("T1", "B Ka li")
+        self.t.set_zelltext_s("U1", "B Ka ob")
+        self.t.set_zelltext_s("V1", "B Ka un")
+        self.t.set_zelltext_s("W1", "KaDi li")
+        self.t.set_zelltext_s("X1", "KaDi re")
+        self.t.set_zelltext_s("Y1", "KaDi ob")
+        self.t.set_zelltext_s("Z1", "KaDi un")
         # --
         self.t.set_zelltext_s("P1", "Projekt")
         self.t.set_zelltext_s("P2", "ABC01")
@@ -2106,7 +2134,7 @@ class slist: # Calc
         self.entferneKaDiNull()
         # Formeln einfügen:
         # Es müssen immer die englischen Funktionsnamen für die Calc-Funktionen verwendet werden!
-        for i in range (1, 10):
+        for i in range (1, 50):
             sZellname = "Q" + str(i+1)
             sFormel = "=IF(SUM(S" + str(i+1) + ":AB" + str(i+1) + ")=0;0;" + "\"Fehler\"" + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
@@ -2114,126 +2142,38 @@ class slist: # Calc
             sZellname = "R" + str(i+1)
             sFormel = "=SUM(S" + str(i+1) + ":AB" + str(i+1) + ")"
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- PlattenDi:
+            # --- B Ka li (Breite Kante links):
             sZellname = "S" + str(i+1)
-            sFormel = "=IF(ISBLANK((INDIRECT(" + "\"F\"" + "&ROW())));0;(IF(NUMBERVALUE((CONCATENATE(LEFT((INDIRECT(" + "\"F\"" + "&ROW()));2);" + "\",\"" + ";RIGHT(LEFT((INDIRECT(" + "\"F\"" + "&ROW()));3);1)));" + "\",\"" + ")=(INDIRECT(" + "\"E\"" + "&ROW()));;1)))"
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"G\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"G\"&ROW());LEN(INDIRECT(\"G\"&ROW()))-FIND(\"_\";INDIRECT(\"G\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"G\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"G\"&ROW());LEN(INDIRECT(\"G\"&ROW()))-FIND(\"_\";INDIRECT(\"G\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi links:
+            # --- B Ka re (Breite Kante rechts):
             sZellname = "T" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"H\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"G\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"G\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"I\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"I\"&ROW());LEN(INDIRECT(\"I\"&ROW()))-FIND(\"_\";INDIRECT(\"I\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"I\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"I\"&ROW());LEN(INDIRECT(\"I\"&ROW()))-FIND(\"_\";INDIRECT(\"I\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi rechts:
+            # --- B Ka ob (Breite Kante oben):
             sZellname = "U" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"J\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"I\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"I\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"K\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"K\"&ROW());LEN(INDIRECT(\"K\"&ROW()))-FIND(\"_\";INDIRECT(\"K\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"K\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"K\"&ROW());LEN(INDIRECT(\"K\"&ROW()))-FIND(\"_\";INDIRECT(\"K\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi oben:
+            # --- B Ka un (Breite Kante unten):
             sZellname = "V" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"L\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"K\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"K\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(IF(ISBLANK(INDIRECT(\"M\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"M\"&ROW());LEN(INDIRECT(\"M\"&ROW()))-FIND(\"_\";INDIRECT(\"M\"&ROW())));2)))=0;0;IF(IF(ISBLANK(INDIRECT(\"M\"&ROW()));0;NUMBERVALUE(LEFT(RIGHT(INDIRECT(\"M\"&ROW());LEN(INDIRECT(\"M\"&ROW()))-FIND(\"_\";INDIRECT(\"M\"&ROW())));2)))-3<INDIRECT(\"E\"&ROW());1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi unten:
+            # --- KaDi li:
             sZellname = "W" + str(i+1)
-            # Formel für aktuelle Kantennummer:
-            sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "0" # Nichts tun
-            sFormel += ";" # Sonst
-            sFormel += "(IF(INDIRECT(" + "\"N\"" + "&ROW())" # Wenn der Wert
-            sFormel += "=((NUMBERVALUE(LEFT(INDIRECT(" + "\"M\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"M\"" + "&ROW());5);2)))/10)" # minus Fügemaß
-            sFormel += ";" # Dann
-            sFormel += "0" # Kein Fehler
-            sFormel += ";" # Sonst
-            sFormel += "1)))" # Fehler
+            sFormel = "=IF(RIGHT(INDIRECT(\"G\"&ROW());1)=\"N\";0;IF(INDIRECT(\"H\"&ROW())>0;1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- Anz 0:
+            # --- KaDi re:
             sZellname = "X" + str(i+1)
-            sFormel = "=IF(ISBLANK(INDIRECT(" + "\"B\"" + "&ROW()));0;(IF(INDIRECT(" + "\"B\"" + "&ROW())=0;1;0)))" # Wenn Anz leer ist oder 0 dann Fehler
+            sFormel = "=IF(RIGHT(INDIRECT(\"I\"&ROW());1)=\"N\";0;IF(INDIRECT(\"J\"&ROW())>0;1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- L < 70:
+            # --- KaDi ob:
             sZellname = "Y" + str(i+1)
-            sFormel = "=IF(INDIRECT(" + "\"C\"" + "&ROW())<70;IF(ISBLANK(INDIRECT(" + "\"C\"" + "&ROW()));0;1);0)" # Wenn L < 70 dann Fehler
+            sFormel = "=IF(RIGHT(INDIRECT(\"K\"&ROW());1)=\"N\";0;IF(INDIRECT(\"L\"&ROW())>0;1;0))"       
             self.t.set_zellformel_s(sZellname, sFormel)
-            # --- B < 70:
+            # --- KaDi un:
             sZellname = "Z" + str(i+1)
-            sFormel = "=IF(INDIRECT(" + "\"D\"" + "&ROW())<70;IF(ISBLANK(INDIRECT(" + "\"D\"" + "&ROW()));0;1);0)" # Wenn L < 70 dann Fehler
-            self.t.set_zellformel_s(sZellname, sFormel)
-            # --- BC zu lang:
-            sZellname = "AA" + str(i+1)
-            sFormel = "=IF((LEN(P$2)+LEN(INDIRECT(" + "\"A\"" + "&ROW()))+6)>25;1;0)" # Wenn BC > 28 dann Fehler
-            self.t.set_zellformel_s(sZellname, sFormel)
-            # --- KaDi links korrekter Wert:
-            sZellname = "AC" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"G\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"G\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"G\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
-            # --- KaDi rechts korrekter Wert:
-            sZellname = "AD" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"I\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"I\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"I\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
-            # --- KaDi oben korrekter Wert:
-            sZellname = "AE" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"K\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"K\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"K\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
-            # --- KaDi unten korrekter Wert:
-            sZellname = "AF" + str(i+1)
-            sFormel = "=IF(LEN(INDIRECT(" + "\"M\"" + "&ROW()))<5" #Wenn Kanteninfo aus weniger als 5 Zeichen besteht
-            sFormel += ";" # Dann
-            sFormel += "\"---\"" # Kein Ergebnis
-            sFormel += ";" # Sonst
-            sFormel += "((NUMBERVALUE(LEFT(INDIRECT(" + "\"M\"" + "&ROW());3))" # Kantendicke ist
-            sFormel += "-NUMBERVALUE(RIGHT(LEFT(INDIRECT(" + "\"M\"" + "&ROW());5);2)))/10))" # minus Fügemaß
-            self.t.set_zellformel_s(sZellname, sFormel)
-            self.t.set_zellausrichtungHori_s(sZellname, "mi")
+            sFormel = "=IF(RIGHT(INDIRECT(\"M\"&ROW());1)=\"N\";0;IF(INDIRECT(\"N\"&ROW())>0;1;0))"       
+            self.t.set_zellformel_s(sZellname, sFormel)            
         pass
         # Anwendung: self.formeln_edit()
     def formeln_kante(self):
@@ -2775,7 +2715,7 @@ class slist: # Calc
                 self.t.tab_anlegen(tabname, 9999)
                 if self.t.tab_existiert(tabname):
                     self.t.set_tabfokus_s(tabname)
-                    #self.formeln_edit()
+                    self.formeln_edit()
                     self.autoformat()
                     self.t.set_zelltext_s("P2", projektnummer)
         else:
@@ -3256,6 +3196,150 @@ class slist: # Calc
             msg   = "Die Tabelle ist keine druckbare Stückliste. Bitte rufen Sie vorab die Funktion SList_ausdruck_zusammenstellen auf."
             msgbox(msg, titel, 1, 'QUERYBOX')
         pass
+#----------------------------------------------------------------------------------
+class bestauftrag: # Calc
+    def __init__(self):
+        self.t = ol_tabelle()
+        pass
+    def BA_exportiere_auswahl(self):
+        # Exportiert die Daten aus der aktuellen Calc-Tabelle 
+        # in die Base-Datenbank auf dem Desktop.
+        start_zeile = self.t.get_selection_zeile_start()
+        ende_zeile = self.t.get_selection_zeile_ende()
+        # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
+        if start_zeile == 0 and ende_zeile == 0:
+            start_zeile = 2
+        # Pfad zur Desktop-Datenbank aufbauen
+        # verzeichnis = os.path.expanduser("~/Desktop")
+        verzeichnis = os.path.expanduser("W:\Datenbanken")
+        db_pfad = os.path.join(verzeichnis, "Material_db.odb")
+        # In URL-Format für die UNO-Schnittstelle konvertieren
+        if os.name == 'nt':  # Windows
+            db_url = "file:///" + db_pfad.replace("\\", "/")
+        else:  # Linux / macOS
+            db_url = "file://" + db_pfad
+        # Verbindung zur Base-Datenbank herstellen
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+        try:
+            data_source = db_context.getByName(db_url)
+            # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+            verbindung = data_source.getConnection("", "") 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+            msgbox(
+                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{db_pfad}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+        # Name Ihrer Tabelle in LibreOffice Base (BITTE ANPASSEN)
+        base_tabellen_name = "Bestellauftraege" 
+        # Daten sammeln:
+        projekt = self.t.get_zelltext_s("A1")
+        bestellauftrag = self.t.get_zelltext_s("N1")
+
+        # Zähler für die Rückmeldung initialisieren
+        erfolg_zaehler = 0
+        fehler_zaehler = 0
+
+        for row in range(start_zeile, ende_zeile + 1):
+            artBez_s = self.t.get_zelltext_i(row, 0)
+            artNr_s = self.t.get_zelltext_i(row, 1)
+            lieferant_s = self.t.get_zelltext_i(row, 2)
+            preis_i = self.t.get_zellzahl_i(row, 3)
+            ve_s = self.t.get_zelltext_i(row, 4)
+            einheit_s = self.t.get_zelltext_i(row, 5)
+            menge_i = self.t.get_zellzahl_i(row, 6)
+            laenge_i = self.t.get_zellzahl_i(row, 7)
+            breite_i = self.t.get_zellzahl_i(row, 8)
+            auf_lager_i = self.t.get_zellzahl_i(row, 9)
+            zu_bestellen_i = self.t.get_zellzahl_i(row, 10)
+            bestellt_am = self.t.get_zelltext_datum_ISO_i(row, 11)
+            geplanter_lt = self.t.get_zelltext_datum_ISO_i(row, 12)
+            kommentar = self.t.get_zelltext_i(row, 13)
+
+            vollst_geliefert = "FALSE"
+            if(zu_bestellen_i <= 0):
+                vollst_geliefert = "TRUE"
+
+            # Datumsfelder für SQL vorbereiten (Falls NULL zurückgegeben wird, ohne Hochkommata)
+            sql_bestellt_am = "NULL" if bestellt_am == "NULL" else f"'{bestellt_am}'"
+            sql_geplanter_lt = "NULL" if geplanter_lt == "NULL" else f"'{geplanter_lt}'"
+
+
+            # SQL-Query aufbauen
+            # Wichtig: Text-Werte müssen in einfachen Anführungszeichen '{variable}'
+            sql = f"""
+            INSERT INTO "{base_tabellen_name}" 
+            ("Projekt", 
+            "BA", 
+            "Artikelbezeichnung", 
+            "Artikelnummer",
+            "Lieferant",
+            "Preis",
+            "VE",
+            "Einheit",
+            "ME",
+            "Laenge",
+            "Breite",
+            "auf_Lager",
+            "zu_bestellen",
+            "bestellt_am",
+            "geplanter_LT",
+            "Kommentar",
+            "vollst_geliefert") 
+            VALUES 
+            (
+                '{projekt}', 
+                '{bestellauftrag}', 
+                '{artBez_s}', 
+                '{artNr_s}', 
+                '{lieferant_s}', 
+                {preis_i}, 
+                '{ve_s}', 
+                '{einheit_s}', 
+                {menge_i}, 
+                {laenge_i}, 
+                {breite_i},
+                {auf_lager_i},
+                {zu_bestellen_i},
+                {sql_bestellt_am},
+                {sql_geplanter_lt},
+                '{kommentar}',
+                {vollst_geliefert}
+            )
+            """        
+            try:
+                # Führt den Befehl aus und fügt eine neue Zeile an die Tabelle an
+                statement.executeUpdate(sql)
+                erfolg_zaehler += 1
+            except Exception as e:
+                # Falls eine Zeile fehlschlägt (z.B. Duplikat bei Primärschlüssel), mit der nächsten fortfahren
+                fehler_zaehler += 1
+                continue
+        # 7. Verbindung sauber schließen
+        statement.close()
+        verbindung.close()
+
+        # Rückmeldung an den Benutzer ausgeben
+        if fehler_zaehler == 0:
+            msgbox(
+                message=f"Export erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen an die Tabelle '{base_tabellen_name}' übergeben.", 
+                title="Erfolg", 
+                buttons=1, 
+                type_msg="infobox"
+            )
+        else:
+            msgbox(
+                message=f"Export beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen doppelter Primärschlüssel).", 
+                title="Export Warnung", 
+                buttons=1, 
+                type_msg="warningbox"
+            )
+#----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
     def __init__(self):
@@ -6130,6 +6214,11 @@ def SList_pios_export(*event):
 def SList_etikette_erzeugen(*event):
     sli = slist()
     sli.etiketten_erzeugen()
+    pass
+#---------
+def QSL_BA_exportiere_auswahl(*event):
+    best = bestauftrag()
+    best.BA_exportiere_auswahl()
     pass
 #---------
 def RB_Blancoliste(*event):
