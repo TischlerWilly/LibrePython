@@ -2720,7 +2720,7 @@ class slist: # Calc
                     self.t.set_zelltext_s("P2", projektnummer)
         else:
             titel = "Bediener-Fehler"
-            msg   = "Bitte in die Registerkarte \"Grundlagen\" wechseln und die Zelle mit der gewünschten Positionsnummer anklicken um diese Funktion zu nutzen"
+            msg   = "Bitte in die Registerkarte \"Übersicht\" wechseln und die Zelle mit der gewünschten Positionsnummer anklicken um diese Funktion zu nutzen"
             msgbox(msg, titel, 1, 'QUERYBOX')
         pass
     def tab_anlegen_kantenanlage(self):
@@ -3199,17 +3199,9 @@ class slist: # Calc
 #----------------------------------------------------------------------------------
 class bestauftrag: # Calc
     def __init__(self):
-        self.t = ol_tabelle()
-        pass
-    def BA_exportiere_auswahl(self):
-        # Exportiert die Daten aus der aktuellen Calc-Tabelle 
-        # in die Base-Datenbank auf dem Desktop.
-        start_zeile = self.t.get_selection_zeile_start()
-        ende_zeile = self.t.get_selection_zeile_ende()
-        # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
-        if start_zeile == 0 and ende_zeile == 0:
-            start_zeile = 2
-        # Pfad zur Desktop-Datenbank aufbauen
+        self.t = ol_tabelle()  
+        self.grau = RGBTo32bitInt(204, 204, 204)  
+
         # verzeichnis = os.path.expanduser("~/Desktop")
         verzeichnis = os.path.expanduser("W:\Datenbanken")
         db_pfad = os.path.join(verzeichnis, "Material_db.odb")
@@ -3218,18 +3210,105 @@ class bestauftrag: # Calc
             db_url = "file:///" + db_pfad.replace("\\", "/")
         else:  # Linux / macOS
             db_url = "file://" + db_pfad
+        self.db_s = db_url
+
+        pass
+    def ist_bestellauftrag(self):
+        a = self.t.get_zelltext_s("A2")
+        b = self.t.get_zelltext_s("B2")
+        c = self.t.get_zelltext_s("C2")
+        d = self.t.get_zelltext_s("D2")
+        e = self.t.get_zelltext_s("E2")
+        f = self.t.get_zelltext_s("F2")
+        g = self.t.get_zelltext_s("G2")
+        if a == "Bezeichnung" and b == "Artikel-Nr." and c == "Lieferant" and d == "Preis" and e == "VE" and f == "Einheit" and g == "ME": # Tabellenkopf prüfen
+            return True
+        else:
+            return False
+    def tab_anlegen_BA(self):
+        tabname = "Bestellauftrag"
+        if self.t.tab_existiert(tabname):
+            self.t.set_tabfokus_s(tabname)
+        else:
+            self.t.tab_anlegen(tabname, 9999)
+            if self.t.tab_existiert(tabname):
+                self.t.set_tabfokus_s(tabname)
+                self.tabellen_formartieren_BA()
+        pass
+    def tabellen_formartieren_BA(self):
+        # Kopfzeile:
+        self.t.set_zelltext_s("A1", "Projekt xy")        
+        formel = "=today()"
+        self.t.set_zellformel_s("C1", formel)
+        self.t.set_zellformat_s("C1", "TT.MM.JJJJ")
+        self.t.set_zelltext_s("N1", "BA000")
+        # Tabelle
+        self.t.set_zelltext_s("A2", "Bezeichnung")
+        self.t.set_zelltext_s("B2", "Artikel-Nr.")
+        self.t.set_zelltext_s("C2", "Lieferant")
+        self.t.set_zelltext_s("D2", "Preis")
+        self.t.set_zelltext_s("E2", "VE")
+        self.t.set_zelltext_s("F2", "Einheit")
+        self.t.set_zelltext_s("G2", "ME")
+        self.t.set_zelltext_s("H2", "Länge")
+        self.t.set_zelltext_s("I2", "Breite")
+        self.t.set_zelltext_s("J2", "auf\nLager")
+        self.t.set_zelltext_s("K2", "zu\nbestellen")
+        self.t.set_zelltext_s("L2", "bestellt\nam")
+        self.t.set_zelltext_s("M2", "geplanter\nLT")
+        self.t.set_zelltext_s("N2", "Kommentar")
+        self.t.set_zellfarbe_s("A2:N2", self.grau)
+        self.t.set_SchriftFett_s("A2:N2", True)
+        self.t.set_Rahmen_komplett_s("A2:N50", 20)
+        self.t.set_spaltenbreite_i(0, 9370)
+        self.t.set_spaltenbreite_i(1, 3750)
+        self.t.set_spaltenbreite_i(2, 2240)
+        self.t.set_spaltenbreite_i(3, 1510)
+        self.t.set_spaltenbreite_i(4, 1510)
+        self.t.set_spaltenbreite_i(5, 1510)
+        self.t.set_spaltenbreite_i(6, 1510)
+        self.t.set_spaltenbreite_i(7, 1510)
+        self.t.set_spaltenbreite_i(8, 1510)
+        self.t.set_spaltenbreite_i(9, 1510)
+        self.t.set_spaltenbreite_i(10, 1710)
+        self.t.set_spaltenbreite_i(11, 2090)
+        self.t.set_spaltenbreite_i(12, 2090)
+        self.t.set_spaltenbreite_i(13, 6850)
+        self.t.set_zeilenhoehen(770)
+        self.t.set_zellausrichtungHori_s("A2:N50", "mi")
+        # Druckeinstellung:
+        self.t.set_seitenformat("A4", True, 600, 600, 600 , 600, False, False) 
+        self.t.set_wiederholungszeilen_oben_i(0, 1)
+
+        pass
+    def BA_exportiere_auswahl(self):
+        if not self.ist_bestellauftrag():
+            msgbox(
+                message=f"Dieses Tabellenblatt wurde nicht als Bestellauftrag erkannt.", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+        # Exportiert die Daten aus der aktuellen Calc-Tabelle 
+        # in die Base-Datenbank auf dem Desktop.
+        start_zeile = self.t.get_selection_zeile_start()
+        ende_zeile = self.t.get_selection_zeile_ende()
+        # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
+        if start_zeile == 0 and ende_zeile == 0:
+            start_zeile = 2
         # Verbindung zur Base-Datenbank herstellen
         ctx = XSCRIPTCONTEXT.getComponentContext()
         db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
         try:
-            data_source = db_context.getByName(db_url)
+            data_source = db_context.getByName(self.db_s)
             # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
             verbindung = data_source.getConnection("", "") 
             statement = verbindung.createStatement()
         except Exception as e:
             # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
             msgbox(
-                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{db_pfad}", 
+                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
                 title="Fehler", 
                 buttons=1, 
                 type_msg="errorbox"
@@ -6216,9 +6295,14 @@ def SList_etikette_erzeugen(*event):
     sli.etiketten_erzeugen()
     pass
 #---------
-def QSL_BA_exportiere_auswahl(*event):
+def SQL_BA_exportiere_auswahl(*event):
     best = bestauftrag()
     best.BA_exportiere_auswahl()
+    pass
+#---------
+def BA_tab_anlegen(*event):
+    best = bestauftrag()
+    best.tab_anlegen_BA()
     pass
 #---------
 def RB_Blancoliste(*event):
