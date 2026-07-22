@@ -3228,6 +3228,7 @@ class bestauftrag: # Calc
         self.db_s = db_url
 
         pass
+
     def ist_bestellauftrag(self):
         a = self.t.get_zelltext_s("A2")
         b = self.t.get_zelltext_s("B2")
@@ -3296,178 +3297,149 @@ class bestauftrag: # Calc
         self.t.set_wiederholungszeilen_oben_i(0, 1)
 
         pass
-    def BA_exportiere_auswahl(self):
-        if not self.ist_bestellauftrag():
-            msgbox(
-                message=f"Dieses Tabellenblatt wurde nicht als Bestellauftrag erkannt.", 
-                title="Fehler", 
-                buttons=1, 
-                type_msg="errorbox"
-            )
-            return
-        # Exportiert die Daten aus der aktuellen Calc-Tabelle 
-        # in die Base-Datenbank auf dem Desktop.
-        start_zeile = self.t.get_selection_zeile_start()
-        ende_zeile = self.t.get_selection_zeile_ende()
-        # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
-        if start_zeile == 0 and ende_zeile == 0:
-            start_zeile = 2
-        # Verbindung zur Base-Datenbank herstellen
-        ctx = XSCRIPTCONTEXT.getComponentContext()
-        db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
-        try:
-            data_source = db_context.getByName(self.db_s)
-            # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
-            verbindung = data_source.getConnection("", "") 
-            statement = verbindung.createStatement()
-        except Exception as e:
-            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
-            msgbox(
-                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
-                title="Fehler", 
-                buttons=1, 
-                type_msg="errorbox"
-            )
-            return
-        # Name Ihrer Tabelle in LibreOffice Base
-        base_tabellen_name = "Bestellauftraege" 
-        
-        # Heutiges Datum im passenden SQL-Format 'YYYY-MM-DD' ermitteln
-        heute_str = datetime.date.today().isoformat()
-
-        # Daten sammeln und SQL-sicher machen
-        projekt = self.t.get_zelltext_s("A1").replace("'", "''")
-        bestellauftrag = self.t.get_zelltext_s("N1").replace("'", "''")
-
-        # Zähler für die Rückmeldung initialisieren
-        erfolg_zaehler = 0
-        fehler_zaehler = 0
-
-        for row in range(start_zeile, ende_zeile + 1):
-            artBez_s = self.t.get_zelltext_i(row, 0).replace("'", "''")
-            artNr_s = self.t.get_zelltext_i(row, 1).replace("'", "''")
-            lieferant_s = self.t.get_zelltext_i(row, 2).replace("'", "''")
-            preis_i = self.t.get_zellzahl_i(row, 3)
-            ve_s = self.t.get_zelltext_i(row, 4).replace("'", "''")
-            einheit_s = self.t.get_zelltext_i(row, 5).replace("'", "''")
-            menge_i = self.t.get_zellzahl_i(row, 6)
-            laenge_i = self.t.get_zellzahl_i(row, 7)
-            breite_i = self.t.get_zellzahl_i(row, 8)
-            auf_lager_i = self.t.get_zellzahl_i(row, 9)
-            zu_bestellen_i = self.t.get_zellzahl_i(row, 10)
-            bestellt_am = self.t.get_zelltext_datum_ISO_i(row, 11)
-            geplanter_lt = self.t.get_zelltext_datum_ISO_i(row, 12)
-            kommentar = self.t.get_zelltext_i(row, 13).replace("'", "''")
-
-            vollst_geliefert = "FALSE"
-            if(zu_bestellen_i <= 0):
-                vollst_geliefert = "TRUE"
-
-            # Datumsfelder für SQL vorbereiten (Falls NULL zurückgegeben wird, ohne Hochkommata)
-            sql_bestellt_am = "NULL" if bestellt_am == "NULL" else f"'{bestellt_am}'"
-            sql_geplanter_lt = "NULL" if geplanter_lt == "NULL" else f"'{geplanter_lt}'"
-
-            # SQL-Query aufbauen mit integrierter Spalte "Aenderungsdatum"
-            sql = f"""
-            INSERT INTO "{base_tabellen_name}" 
-            ("Projekt", 
-            "BA", 
-            "Artikelbezeichnung", 
-            "Artikelnummer",
-            "Lieferant",
-            "Preis",
-            "VE",
-            "Einheit",
-            "ME",
-            "Laenge",
-            "Breite",
-            "auf_Lager",
-            "zu_bestellen",
-            "bestellt_am",
-            "geplanter_LT",
-            "Kommentar",
-            "vollst_geliefert",
-            "Aenderungsdatum") 
-            VALUES 
-            (
-                '{projekt}', 
-                '{bestellauftrag}', 
-                '{artBez_s}', 
-                '{artNr_s}', 
-                '{lieferant_s}', 
-                {preis_i}, 
-                '{ve_s}', 
-                '{einheit_s}', 
-                {menge_i}, 
-                {laenge_i}, 
-                {breite_i},
-                {auf_lager_i},
-                {zu_bestellen_i},
-                {sql_bestellt_am},
-                {sql_geplanter_lt},
-                '{kommentar}',
-                {vollst_geliefert},
-                '{heute_str}'
-            )
-            """        
+    def exportiere_auswahl_BA(self):
+            if not self.ist_bestellauftrag():
+                msgbox(
+                    message=f"Dieses Tabellenblatt wurde nicht als Bestellauftrag erkannt.", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return
+            # Exportiert die Daten aus der aktuellen Calc-Tabelle 
+            # in die Base-Datenbank auf dem Desktop.
+            start_zeile = self.t.get_selection_zeile_start()
+            ende_zeile = self.t.get_selection_zeile_ende()
+            # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
+            if start_zeile == 0 and ende_zeile == 0:
+                start_zeile = 2
+            # Verbindung zur Base-Datenbank herstellen
+            ctx = XSCRIPTCONTEXT.getComponentContext()
+            db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
             try:
-                # Führt den Befehl aus und fügt eine neue Zeile an die Tabelle an
-                statement.executeUpdate(sql)
-                erfolg_zaehler += 1
+                data_source = db_context.getByName(self.db_s)
+                # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+                verbindung = data_source.getConnection("", "") 
+                statement = verbindung.createStatement()
             except Exception as e:
-                # Falls eine Zeile fehlschlägt (z.B. Duplikat bei Primärschlüssel), mit der nächsten fortfahren
-                fehler_zaehler += 1
-                continue
-        # 7. Verbindung sauber schließen
-        statement.close()
-        verbindung.close()
+                # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                msgbox(
+                    message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return
+            # Name Ihrer Tabelle in LibreOffice Base
+            base_tabellen_name = "Bestellauftraege" 
+            
+            # Heutiges Datum im passenden SQL-Format 'YYYY-MM-DD' ermitteln
+            heute_str = datetime.date.today().isoformat()
+    
+            # Daten sammeln und SQL-sicher machen
+            projekt = self.t.get_zelltext_s("A1").replace("'", "''")
+            bestellauftrag = self.t.get_zelltext_s("N1").replace("'", "''")
+    
+            # Zähler für die Rückmeldung initialisieren
+            erfolg_zaehler = 0
+            fehler_zaehler = 0
+    
+            for row in range(start_zeile, ende_zeile + 1):
+                artBez_s = self.t.get_zelltext_i(row, 0).replace("'", "''")
+                artNr_s = self.t.get_zelltext_i(row, 1).replace("'", "''")
+                lieferant_s = self.t.get_zelltext_i(row, 2).replace("'", "''")
+                preis_i = self.t.get_zellzahl_i(row, 3)
+                ve_s = self.t.get_zelltext_i(row, 4).replace("'", "''")
+                einheit_s = self.t.get_zelltext_i(row, 5).replace("'", "''")
+                menge_i = self.t.get_zellzahl_i(row, 6)
+                laenge_i = self.t.get_zellzahl_i(row, 7)
+                breite_i = self.t.get_zellzahl_i(row, 8)
+                auf_lager_i = self.t.get_zellzahl_i(row, 9)
+                zu_bestellen_i = self.t.get_zellzahl_i(row, 10)
+                bestellt_am = self.t.get_zelltext_datum_ISO_i(row, 11)
+                geplanter_lt = self.t.get_zelltext_datum_ISO_i(row, 12)
+                kommentar = self.t.get_zelltext_i(row, 13).replace("'", "''")
+    
+                vollst_geliefert = "FALSE"
+                if(zu_bestellen_i <= 0):
+                    vollst_geliefert = "TRUE"
+    
+                # Datumsfelder für SQL vorbereiten (Falls NULL zurückgegeben wird, ohne Hochkommata)
+                sql_bestellt_am = "NULL" if bestellt_am == "NULL" else f"'{bestellt_am}'"
+                sql_geplanter_lt = "NULL" if geplanter_lt == "NULL" else f"'{geplanter_lt}'"
+    
+                # SQL-Query aufbauen mit integrierter Spalte "Aenderungsdatum"
+                sql = f"""
+                INSERT INTO "{base_tabellen_name}" 
+                ("Projekt", 
+                "BA", 
+                "Artikelbezeichnung", 
+                "Artikelnummer",
+                "Lieferant",
+                "Preis",
+                "VE",
+                "Einheit",
+                "ME",
+                "Laenge",
+                "Breite",
+                "auf_Lager",
+                "zu_bestellen",
+                "bestellt_am",
+                "geplanter_LT",
+                "Kommentar",
+                "vollst_geliefert",
+                "Aenderungsdatum") 
+                VALUES 
+                (
+                    '{projekt}', 
+                    '{bestellauftrag}', 
+                    '{artBez_s}', 
+                    '{artNr_s}', 
+                    '{lieferant_s}', 
+                    {preis_i}, 
+                    '{ve_s}', 
+                    '{einheit_s}', 
+                    {menge_i}, 
+                    {laenge_i}, 
+                    {breite_i},
+                    {auf_lager_i},
+                    {zu_bestellen_i},
+                    {sql_bestellt_am},
+                    {sql_geplanter_lt},
+                    '{kommentar}',
+                    {vollst_geliefert},
+                    '{heute_str}'
+                )
+                """        
+                try:
+                    # Führt den Befehl aus und fügt eine neue Zeile an die Tabelle an
+                    statement.executeUpdate(sql)
+                    erfolg_zaehler += 1
+                except Exception as e:
+                    # Falls eine Zeile fehlschlägt (z.B. Duplikat bei Primärschlüssel), mit der nächsten fortfahren
+                    fehler_zaehler += 1
+                    continue
+            # 7. Verbindung sauber schließen
+            statement.close()
+            verbindung.close()
+    
+            # Rückmeldung an den Benutzer ausgeben
+            if fehler_zaehler == 0:
+                msgbox(
+                    message=f"Export erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen an die Tabelle '{base_tabellen_name}' übergeben.", 
+                    title="Erfolg", 
+                    buttons=1, 
+                    type_msg="infobox"
+                )
+            else:
+                msgbox(
+                    message=f"Export beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen doppelter Primärschlüssel).", 
+                    title="Export Warnung", 
+                    buttons=1, 
+                    type_msg="warningbox"
+                )
 
-        # Rückmeldung an den Benutzer ausgeben
-        if fehler_zaehler == 0:
-            msgbox(
-                message=f"Export erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen an die Tabelle '{base_tabellen_name}' übergeben.", 
-                title="Erfolg", 
-                buttons=1, 
-                type_msg="infobox"
-            )
-        else:
-            msgbox(
-                message=f"Export beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen doppelter Primärschlüssel).", 
-                title="Export Warnung", 
-                buttons=1, 
-                type_msg="warningbox"
-            )
-    def BA_importiere_offene(self):
-        if self.t.tab_ist_leer() == False:
-            # Wenn frisch, schreibe direkt hier rein
-            msgbox(
-                message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
-                title="Warnung", 
-                buttons=1, 
-                type_msg="warningbox"
-            )
-            return
-        
-        # Verbindung zur Base-Datenbank herstellen
-        ctx = XSCRIPTCONTEXT.getComponentContext()
-        db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
-        try:
-            data_source = db_context.getByName(self.db_s)
-            # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
-            verbindung = data_source.getConnection("", "") 
-            statement = verbindung.createStatement()
-        except Exception as e:
-            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
-            msgbox(
-                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
-                title="Fehler", 
-                buttons=1, 
-                type_msg="errorbox"
-            )
-            return
-         # Name Ihrer Tabelle in LibreOffice Base
-        base_tabellen_name = "Bestellauftraege" 
-
+    def tabellen_formartieren_DBimport(self):
         # Tabellenkopf
         self.t.set_zelltext_s("A1", "ID")
         self.t.set_zelltext_s("B1", "Projekt")
@@ -3504,6 +3476,47 @@ class bestauftrag: # Calc
         self.t.set_SchriftFett_s("A1:O1", True)
         self.t.set_zellausrichtungHori_s("J1:L9999", "mi")
         self.t.set_zellausrichtungHori_s("N1:O9999", "mi")
+
+        pass
+    def Ansicht_reduzieren_DBimport(self):
+            self.t.set_spalte_sichtbar_i(0,False) #ID
+            self.t.set_spalte_sichtbar_i(2,False) #BA
+            self.t.set_spalte_sichtbar_i(10,False) #bestellt_am
+            self.t.set_spalte_sichtbar_i(11,False) #geplanter_LT
+            self.t.set_spalte_sichtbar_i(12,False) #Kommentar
+            pass
+    def importiere_offene(self):
+        if self.t.tab_ist_leer() == False:
+            # Wenn frisch, schreibe direkt hier rein
+            msgbox(
+                message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                title="Warnung", 
+                buttons=1, 
+                type_msg="warningbox"
+            )
+            return
+        
+        # Verbindung zur Base-Datenbank herstellen
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+        try:
+            data_source = db_context.getByName(self.db_s)
+            # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+            verbindung = data_source.getConnection("", "") 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+            msgbox(
+                message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+         # Name Ihrer Tabelle in LibreOffice Base
+        base_tabellen_name = "Bestellauftraege" 
+
+        self.tabellen_formartieren_DBimport()
 
         # Daten der Tabelle:
         try:
@@ -3590,7 +3603,7 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
-    def BA_importiere_offene_nur_Platten(self):
+    def importiere_offene_nur_Platten(self):
         if self.t.tab_ist_leer() == False:
             # Wenn frisch, schreibe direkt hier rein
             msgbox(
@@ -3621,42 +3634,7 @@ class bestauftrag: # Calc
          # Name Ihrer Tabelle in LibreOffice Base
         base_tabellen_name = "Bestellauftraege" 
 
-        # Tabellenkopf
-        self.t.set_zelltext_s("A1", "ID")
-        self.t.set_zelltext_s("B1", "Projekt")
-        self.t.set_zelltext_s("C1", "BA")
-        self.t.set_zelltext_s("D1", "Artikelbezeichnung")
-        self.t.set_zelltext_s("E1", "Artikelnummer")
-        self.t.set_zelltext_s("F1", "Lieferant")
-        self.t.set_zelltext_s("G1", "Einheit")
-        self.t.set_zelltext_s("H1", "Laenge")
-        self.t.set_zelltext_s("I1", "Breite")
-        self.t.set_zelltext_s("J1", "zu_bestellen")
-        self.t.set_zelltext_s("K1", "bestellt_am")
-        self.t.set_zelltext_s("L1", "geplanter_LT")
-        self.t.set_zelltext_s("M1", "Kommentar")
-        self.t.set_zelltext_s("N1", "ME_geliefert")
-        self.t.set_zelltext_s("O1", "vollst_geliefert")
-
-        self.t.set_spaltenbreite_i(0, 1220) #ID
-        self.t.set_spaltenbreite_i(1, 5000) #Projekt
-        self.t.set_spaltenbreite_i(2, 2260) #BA
-        self.t.set_spaltenbreite_i(3, 8000) #Artikelbezeichnung
-        self.t.set_spaltenbreite_i(4, 3600) #Artikelnummer
-        self.t.set_spaltenbreite_i(5, 3600) #Lieferant
-        self.t.set_spaltenbreite_i(6, 1500) #Einheit
-        self.t.set_spaltenbreite_i(7, 1500) #Laenge
-        self.t.set_spaltenbreite_i(8, 1500) #Breite
-        self.t.set_spaltenbreite_i(9, 2260) #zu_bestellen
-        self.t.set_spaltenbreite_i(10, 3000) #bestellt_am
-        self.t.set_spaltenbreite_i(11, 3000) #geplanter_LT
-        self.t.set_spaltenbreite_i(12, 4000) #Kommentar
-        self.t.set_spaltenbreite_i(13, 3000) #ME_geliefert
-        self.t.set_spaltenbreite_i(14, 3000) #vollst_geliefert
-
-        self.t.set_SchriftFett_s("A1:O1", True)
-        self.t.set_zellausrichtungHori_s("J1:L9999", "mi")
-        self.t.set_zellausrichtungHori_s("N1:O9999", "mi")
+        self.tabellen_formartieren_DBimport()
 
         # Daten der Tabelle:
         try:
@@ -3746,7 +3724,7 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
-    def BA_importiere_offene_ohne_Platten(self):
+    def importiere_offene_ohne_Platten(self):
         if self.t.tab_ist_leer() == False:
             # Wenn frisch, schreibe direkt hier rein
             msgbox(
@@ -3777,42 +3755,7 @@ class bestauftrag: # Calc
          # Name Ihrer Tabelle in LibreOffice Base
         base_tabellen_name = "Bestellauftraege" 
 
-        # Tabellenkopf
-        self.t.set_zelltext_s("A1", "ID")
-        self.t.set_zelltext_s("B1", "Projekt")
-        self.t.set_zelltext_s("C1", "BA")
-        self.t.set_zelltext_s("D1", "Artikelbezeichnung")
-        self.t.set_zelltext_s("E1", "Artikelnummer")
-        self.t.set_zelltext_s("F1", "Lieferant")
-        self.t.set_zelltext_s("G1", "Einheit")
-        self.t.set_zelltext_s("H1", "Laenge")
-        self.t.set_zelltext_s("I1", "Breite")
-        self.t.set_zelltext_s("J1", "zu_bestellen")
-        self.t.set_zelltext_s("K1", "bestellt_am")
-        self.t.set_zelltext_s("L1", "geplanter_LT")
-        self.t.set_zelltext_s("M1", "Kommentar")
-        self.t.set_zelltext_s("N1", "ME_geliefert")
-        self.t.set_zelltext_s("O1", "vollst_geliefert")
-
-        self.t.set_spaltenbreite_i(0, 1220) #ID
-        self.t.set_spaltenbreite_i(1, 5000) #Projekt
-        self.t.set_spaltenbreite_i(2, 2260) #BA
-        self.t.set_spaltenbreite_i(3, 8000) #Artikelbezeichnung
-        self.t.set_spaltenbreite_i(4, 3600) #Artikelnummer
-        self.t.set_spaltenbreite_i(5, 3600) #Lieferant
-        self.t.set_spaltenbreite_i(6, 1500) #Einheit
-        self.t.set_spaltenbreite_i(7, 1500) #Laenge
-        self.t.set_spaltenbreite_i(8, 1500) #Breite
-        self.t.set_spaltenbreite_i(9, 2260) #zu_bestellen
-        self.t.set_spaltenbreite_i(10, 3000) #bestellt_am
-        self.t.set_spaltenbreite_i(11, 3000) #geplanter_LT
-        self.t.set_spaltenbreite_i(12, 4000) #Kommentar
-        self.t.set_spaltenbreite_i(13, 3000) #ME_geliefert
-        self.t.set_spaltenbreite_i(14, 3000) #vollst_geliefert
-
-        self.t.set_SchriftFett_s("A1:O1", True)
-        self.t.set_zellausrichtungHori_s("J1:L9999", "mi")
-        self.t.set_zellausrichtungHori_s("N1:O9999", "mi")
+        self.tabellen_formartieren_DBimport()
 
         # Daten der Tabelle:
         try:
@@ -3903,7 +3846,124 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
-    def BA_exportiere_Aenderungen(self):
+    def importiere_alle(self):
+            if self.t.tab_ist_leer() == False:
+                # Wenn frisch, schreibe direkt hier rein
+                msgbox(
+                    message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                    title="Warnung", 
+                    buttons=1, 
+                    type_msg="warningbox"
+                )
+                return
+            
+            # Verbindung zur Base-Datenbank herstellen
+            ctx = XSCRIPTCONTEXT.getComponentContext()
+            db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+            try:
+                data_source = db_context.getByName(self.db_s)
+                # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+                verbindung = data_source.getConnection("", "") 
+                statement = verbindung.createStatement()
+            except Exception as e:
+                # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                msgbox(
+                    message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return
+             # Name Ihrer Tabelle in LibreOffice Base
+            base_tabellen_name = "Bestellauftraege" 
+    
+            self.tabellen_formartieren_DBimport()
+    
+            # Daten der Tabelle:
+            try:
+            # SQL-Abfrage ausführen (vollst_geliefert = 0 entspricht FALSE)
+                sql = (
+                    f'SELECT "ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer", "Lieferant", '
+                    f'"Einheit", "Laenge", "Breite", "zu_bestellen", "bestellt_am", "geplanter_LT", '
+                    f'"Kommentar", "ME_geliefert", "vollst_geliefert" FROM "{base_tabellen_name}" '
+                    f'ORDER BY "Projekt" ASC, "BA" ASC'
+                )
+            
+                result_set = statement.executeQuery(sql)
+            
+                # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
+                zeile = 2
+            
+                # Daten der Tabelle auslesen und in Calc eintragen
+                while result_set.next():
+                    # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
+                    id_val          = result_set.getInt(1)
+                    projekt         = result_set.getString(2)
+                    ba              = result_set.getString(3)
+                    artikelbez      = result_set.getString(4)
+                    artikelnr       = result_set.getString(5)
+                    lieferant       = result_set.getString(6)
+                    einheit         = result_set.getString(7)
+                    laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
+                    breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
+                    zu_bestellen    = result_set.getInt(10)     # oder getDouble, falls Mengen dezimal sein können
+                    bestellt_am     = result_set.getString(11)  # Als Text oder Datumsstring
+                    geplanter_lt    = result_set.getString(12)  # Als Text oder Datumsstring
+                    kommentar       = result_set.getString(13)
+                    me_geliefert    = result_set.getInt(14)
+                    vollst_geliefert= result_set.getInt(15)
+                
+                    # Werte in die Calc-Zellen schreiben
+                    self.t.set_zelltext_s(f"A{zeile}", str(id_val))
+                    self.t.set_zelltext_s(f"B{zeile}", projekt)
+                    self.t.set_zelltext_s(f"C{zeile}", ba)
+                    self.t.set_zelltext_s(f"D{zeile}", artikelbez)
+                    self.t.set_zelltext_s(f"E{zeile}", artikelnr)
+                    self.t.set_zelltext_s(f"F{zeile}", lieferant)
+                    self.t.set_zelltext_s(f"G{zeile}", einheit)
+                    self.t.set_zellzahl_s(f"H{zeile}", laenge)
+                    self.t.set_zellzahl_s(f"I{zeile}", breite)
+                    self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
+                    self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
+                    self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
+                    self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+    
+                    # Datum für 'bestellt_am' (Spalte K) verarbeiten
+                    if bestellt_am:
+                        # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
+                        jahr, monat, tag = bestellt_am.split("-")
+                        self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
+                    else:
+                        self.t.set_zelltext_s(f"K{zeile}", "")
+    
+                    # Datum für 'geplanter_LT' (Spalte L) verarbeiten
+                    if geplanter_lt:
+                        jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
+                        self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
+                    else:
+                        self.t.set_zelltext_s(f"L{zeile}", "")
+                
+                    # Nächste Zeile in Calc ansteuern
+                    zeile += 1
+                
+                result_set.close()
+    
+                self.t.set_spalte_sichtbar_i(0,False) #ID
+    
+            except Exception as sql_e:
+                msgbox(
+                    message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
+                    title="SQL Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+    
+            finally:
+                # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
+                statement.close()
+                verbindung.close()
+            pass
+    def exportiere_Aenderungen_DBimport(self):
         # 1. Prüfe ob Tabellenkopf plausibel ist (Sicherheitscheck gegen falsche Registerkarte)
         erwartete_header = ["ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer"]
         for i, header in enumerate(erwartete_header):
@@ -4019,13 +4079,6 @@ class bestauftrag: # Calc
             # Verbindung immer sauber schließen
             statement.close()
             verbindung.close()
-        pass
-    def BA_Ansicht_reduzieren(self):
-        self.t.set_spalte_sichtbar_i(0,False) #ID
-        self.t.set_spalte_sichtbar_i(2,False) #BA
-        self.t.set_spalte_sichtbar_i(10,False) #bestellt_am
-        self.t.set_spalte_sichtbar_i(11,False) #geplanter_LT
-        self.t.set_spalte_sichtbar_i(12,False) #Kommentar
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -6906,38 +6959,42 @@ def SList_etikette_erzeugen(*event):
 #---------
 def SQL_BA_exportiere_auswahl(*event):
     best = bestauftrag()
-    best.BA_exportiere_auswahl()
+    best.exportiere_auswahl_BA()
     pass
 def SQL_BA_exportiere_Aenderungen(*event):
     best = bestauftrag()
-    best.BA_exportiere_Aenderungen()
+    best.exportiere_Aenderungen_DBimport()
+    pass
+def SQL_BA_importiere_alle(*event):
+    best = bestauftrag()
+    best.importiere_alle()
     pass
 def SQL_BA_importiere_offene(*event):
     best = bestauftrag()
-    best.BA_importiere_offene()
+    best.importiere_offene()
     pass
 def SQL_BA_importiere_offene_mobile_Ansicht(*event):
     best = bestauftrag()
-    best.BA_importiere_offene()
-    best.BA_Ansicht_reduzieren()
+    best.importiere_offene()
+    best.Ansicht_reduzieren_DBimport()
     pass
 def SQL_BA_importiere_offene_nur_Platten(*event):
     best = bestauftrag()
-    best.BA_importiere_offene_nur_Platten()
+    best.importiere_offene_nur_Platten()
     pass
 def SQL_BA_importiere_offene_nur_Platten_mobile_Ansicht(*event):
     best = bestauftrag()
-    best.BA_importiere_offene_nur_Platten()
-    best.BA_Ansicht_reduzieren()
+    best.importiere_offene_nur_Platten()
+    best.Ansicht_reduzieren_DBimport()
     pass
 def SQL_BA_importiere_offene_ohne_Platten(*event):
     best = bestauftrag()
-    best.BA_importiere_offene_ohne_Platten()
+    best.importiere_offene_ohne_Platten()
     pass
 def SQL_BA_importiere_offene_ohne_Platten_mobile_Ansicht(*event):
     best = bestauftrag()
-    best.BA_importiere_offene_ohne_Platten()
-    best.BA_Ansicht_reduzieren()
+    best.importiere_offene_ohne_Platten()
+    best.Ansicht_reduzieren_DBimport()
     pass
 #---------
 def BA_tab_anlegen(*event):
