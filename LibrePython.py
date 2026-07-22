@@ -3290,7 +3290,7 @@ class bestauftrag: # Calc
         self.t.set_spaltenbreite_i(12, 2090)
         self.t.set_spaltenbreite_i(13, 6850)
         self.t.set_zeilenhoehen(770)
-        self.t.set_zellausrichtungHori_s("A2:N50", "mi")
+        self.t.set_zellausrichtungHori_s("B2:N50", "mi")
         # Druckeinstellung:
         self.t.set_seitenformat("A4", True, 600, 600, 600 , 600, False, False) 
         self.t.set_wiederholungszeilen_oben_i(0, 1)
@@ -3575,6 +3575,8 @@ class bestauftrag: # Calc
             
             result_set.close()
 
+            self.t.set_spalte_sichtbar_i(0,False) #ID
+
         except Exception as sql_e:
             msgbox(
                 message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
@@ -3728,6 +3730,7 @@ class bestauftrag: # Calc
             
             result_set.close()
 
+            self.t.set_spalte_sichtbar_i(0,False) #ID
             self.t.set_spalte_sichtbar_i(6,False) #Einheit
 
         except Exception as sql_e:
@@ -3883,6 +3886,7 @@ class bestauftrag: # Calc
             
             result_set.close()
 
+            self.t.set_spalte_sichtbar_i(0,False) #ID
             self.t.set_spalte_sichtbar_i(7,False) #Länge
             self.t.set_spalte_sichtbar_i(8,False) #Breite
 
@@ -4015,6 +4019,13 @@ class bestauftrag: # Calc
             # Verbindung immer sauber schließen
             statement.close()
             verbindung.close()
+        pass
+    def BA_Ansicht_reduzieren(self):
+        self.t.set_spalte_sichtbar_i(0,False) #ID
+        self.t.set_spalte_sichtbar_i(2,False) #BA
+        self.t.set_spalte_sichtbar_i(10,False) #bestellt_am
+        self.t.set_spalte_sichtbar_i(11,False) #geplanter_LT
+        self.t.set_spalte_sichtbar_i(12,False) #Kommentar
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -6905,13 +6916,28 @@ def SQL_BA_importiere_offene(*event):
     best = bestauftrag()
     best.BA_importiere_offene()
     pass
+def SQL_BA_importiere_offene_mobile_Ansicht(*event):
+    best = bestauftrag()
+    best.BA_importiere_offene()
+    best.BA_Ansicht_reduzieren()
+    pass
 def SQL_BA_importiere_offene_nur_Platten(*event):
     best = bestauftrag()
     best.BA_importiere_offene_nur_Platten()
     pass
+def SQL_BA_importiere_offene_nur_Platten_mobile_Ansicht(*event):
+    best = bestauftrag()
+    best.BA_importiere_offene_nur_Platten()
+    best.BA_Ansicht_reduzieren()
+    pass
 def SQL_BA_importiere_offene_ohne_Platten(*event):
     best = bestauftrag()
     best.BA_importiere_offene_ohne_Platten()
+    pass
+def SQL_BA_importiere_offene_ohne_Platten_mobile_Ansicht(*event):
+    best = bestauftrag()
+    best.BA_importiere_offene_ohne_Platten()
+    best.BA_Ansicht_reduzieren()
     pass
 #---------
 def BA_tab_anlegen(*event):
