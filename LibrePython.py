@@ -3218,7 +3218,7 @@ class bestauftrag: # Calc
         self.grau = RGBTo32bitInt(204, 204, 204)  
 
         # verzeichnis = os.path.expanduser("~/Desktop")
-        verzeichnis = os.path.expanduser("W:\Datenbanken")
+        verzeichnis = os.path.expanduser("P:\Datenbanken")
         db_pfad = os.path.join(verzeichnis, "Material_db.odb")
         # In URL-Format für die UNO-Schnittstelle konvertieren
         if os.name == 'nt':  # Windows
