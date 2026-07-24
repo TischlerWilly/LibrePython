@@ -3216,6 +3216,7 @@ class bestauftrag: # Calc
     def __init__(self):
         self.t = ol_tabelle()  
         self.grau = RGBTo32bitInt(204, 204, 204)  
+        self.hellgrau = RGBTo32bitInt(221, 221, 221)  
 
         # verzeichnis = os.path.expanduser("~/Desktop")
         verzeichnis = os.path.expanduser("P:\Datenbanken")
@@ -3308,11 +3309,20 @@ class bestauftrag: # Calc
                 return
             # Exportiert die Daten aus der aktuellen Calc-Tabelle 
             # in die Base-Datenbank auf dem Desktop.
-            start_zeile = self.t.get_selection_zeile_start()
-            ende_zeile = self.t.get_selection_zeile_ende()
+            start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+            ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
             # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
-            if start_zeile == 0 and ende_zeile == 0:
-                start_zeile = 2
+            if start_zeile == 0:
+                if ende_zeile == 0:
+                    msgbox(
+                            message=f"Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
+                            title="Auswahlfehler", 
+                            buttons=1, 
+                            type_msg="errorbox"
+                        )
+                else:
+                    start_zeile = 2
+                
             # Verbindung zur Base-Datenbank herstellen
             ctx = XSCRIPTCONTEXT.getComponentContext()
             db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
@@ -3472,6 +3482,14 @@ class bestauftrag: # Calc
         self.t.set_spaltenbreite_i(12, 4000) #Kommentar
         self.t.set_spaltenbreite_i(13, 3000) #ME_geliefert
         self.t.set_spaltenbreite_i(14, 3000) #vollst_geliefert
+
+        self.t.set_zeilenhoehen(700)
+        self.t.set_Rahmen_komplett_s("A1:O999", 20)
+
+        self.t.set_zellfarbe_s("A1:O1", self.grau) #Tabellenkopf
+        for zeile in range(1,999,2):
+            self.t.set_zellfarbe_s(f"A{zeile}:O{zeile}", self.hellgrau)
+            pass
 
         self.t.set_SchriftFett_s("A1:O1", True)
         self.t.set_zellausrichtungHori_s("J1:L9999", "mi")
@@ -4079,6 +4097,153 @@ class bestauftrag: # Calc
             # Verbindung immer sauber schließen
             statement.close()
             verbindung.close()
+        pass
+    def exportiere_Aenderungen_Auswahl_DBimport(self):
+            # 1. Prüfe ob Tabellenkopf plausibel ist (Sicherheitscheck gegen falsche Registerkarte)
+            erwartete_header = ["ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer"]
+            for i, header in enumerate(erwartete_header):
+                # Spalten A=0, B=1, C=2, D=3, E=4
+                zell_koordinate = f"{chr(65 + i)}1" 
+                if self.t.get_zelltext_s(zell_koordinate) != header:
+                    msgbox(
+                        message=f"Abbruch: Der Tabellenkopf in Zelle {zell_koordinate} entspricht nicht '{header}'.\n"
+                                f"Bitte stellen Sie sicher, dass Sie sich im richtigen Tabellenblatt befinden.", 
+                        title="Plausibilitätsfehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+                    return
+    
+            # 2. Verbindung zur Base-Datenbank herstellen
+            ctx = XSCRIPTCONTEXT.getComponentContext()
+            db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+            try:
+                data_source = db_context.getByName(self.db_s)
+                verbindung = data_source.getConnection("", "") 
+                statement = verbindung.createStatement()
+            except Exception as e:
+                msgbox(
+                    message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return
+    
+            base_tabellen_name = "Bestellauftraege"
+            zeile = 2  # Daten starten in Zeile 2
+            erfolgreiche_updates = 0
+    
+            # Heutiges Datum im passenden SQL-Format 'YYYY-MM-DD' ermitteln
+            heute_str = datetime.date.today().isoformat()
+    
+            # 3. Daten zeilenweise zurückübertragen, bis eine leere ID gefunden wird
+
+            start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+            ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+            if start_zeile == 0:
+                if ende_zeile == 0:
+                    msgbox(
+                            message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
+                            title="Auswahlfehler", 
+                            buttons=1, 
+                            type_msg="errorbox"
+                        )
+                else:
+                    start_zeile = 2
+
+            try:
+                for zeile in range(start_zeile, ende_zeile + 1):
+                    # ID aus Spalte A auslesen
+                    id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
+                    
+                    # Wenn die ID leer ist, wird diese Zeile übersprungen
+                    if not id_val_str:
+                        continue
+                    
+                    try:
+                        id_val = int(id_val_str)
+                    except ValueError:
+                        msgbox(
+                            message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
+                            title="Datenfehler", 
+                            buttons=1, 
+                            type_msg="errorbox"
+                        )
+                        break
+
+                    # Werte aus den bearbeitbaren Calc-Spalten auslesen
+                    kommentar        = self.t.get_zelltext_s(f"M{zeile}")
+                    me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
+                    
+                    # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
+                    vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
+                    
+                    # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
+                    eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
+                    
+                    # Tolerante Prüfung auf WAHR / TRUE
+                    # Erkennt "x", "ja", "j", "1" und das Wort "true"
+                    if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
+                        vollst_geliefert_int = 1
+                    else:
+                        # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
+                        vollst_geliefert_int = 0
+
+                    # SQL-Update-Befehl vorbereiten
+                    kommentar_safe = kommentar.replace("'", "''")
+                    
+                    # Das Feld "Aenderungsdatum" wurde in das SQL-Statement integriert
+                    sql = (
+                        f"UPDATE \"{base_tabellen_name}\" SET "
+                        f"\"Kommentar\" = '{kommentar_safe}', "
+                        f"\"ME_geliefert\" = {int(me_geliefert)}, "
+                        f"\"vollst_geliefert\" = {vollst_geliefert_int}, "
+                        f"\"Aenderungsdatum\" = '{heute_str}' "
+                        f"WHERE \"ID\" = {id_val}"
+                    )
+                    
+                    # Update ausführen
+                    statement.executeUpdate(sql)
+                    erfolgreiche_updates += 1
+    
+                # Erfolgsmeldung ausgeben
+                msgbox(
+                    message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
+                    title="Export abgeschlossen", 
+                    buttons=1, 
+                    type_msg="infobox"
+                )
+    
+            except Exception as sql_e:
+                msgbox(
+                    message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
+                    title="SQL Export Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+    
+            finally:
+                # Verbindung immer sauber schließen
+                statement.close()
+                verbindung.close()
+            pass
+    def Auswahl_ist_geliefert_DBimport(self):
+        start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        if start_zeile == 0:
+            if ende_zeile == 0:
+                msgbox(
+                        message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
+                        title="Auswahlfehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+            else:
+                start_zeile = 2
+
+        for zeile in range(start_zeile, ende_zeile + 1):
+            self.t.set_zelltext_s(f"O{zeile}", "1")
         pass
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -6957,14 +7122,12 @@ def SList_etikette_erzeugen(*event):
     sli.etiketten_erzeugen()
     pass
 #---------
+# neue Daten vom BA an die Datenbank senden:
 def SQL_BA_exportiere_auswahl(*event):
     best = bestauftrag()
     best.exportiere_auswahl_BA()
     pass
-def SQL_BA_exportiere_Aenderungen(*event):
-    best = bestauftrag()
-    best.exportiere_Aenderungen_DBimport()
-    pass
+# Daten von der Datenbank holen:
 def SQL_BA_importiere_alle(*event):
     best = bestauftrag()
     best.importiere_alle()
@@ -6995,6 +7158,16 @@ def SQL_BA_importiere_offene_ohne_Platten_mobile_Ansicht(*event):
     best = bestauftrag()
     best.importiere_offene_ohne_Platten()
     best.Ansicht_reduzieren_DBimport()
+    pass
+# vorhandene Daten in der Datenbank änder:
+def SQL_BA_Lieferstatus_der_Auswahl_an_DB_senden(*event):
+    best = bestauftrag()
+    best.exportiere_Aenderungen_Auswahl_DBimport()
+    pass
+def SQL_BA_Auswahl_ist_komplett_gelierfert(*event):
+    best = bestauftrag()
+    best.Auswahl_ist_geliefert_DBimport()
+    best.exportiere_Aenderungen_Auswahl_DBimport()
     pass
 #---------
 def BA_tab_anlegen(*event):
