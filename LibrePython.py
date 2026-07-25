@@ -3309,20 +3309,21 @@ class bestauftrag: # Calc
                 return
             # Exportiert die Daten aus der aktuellen Calc-Tabelle 
             # in die Base-Datenbank auf dem Desktop.
-            start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
-            ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
-            # Falls nur die Kopfzeile (Zeile 0) markiert ist, ab Zeile 2 starten
-            if start_zeile == 0:
-                if ende_zeile == 0:
+            start_zeile = self.t.get_selection_zeile_start() # hier nicht +1 weil die Zugriffe über die numerische Zelladresse erfolgen (0 == Zeile 0)
+            ende_zeile = self.t.get_selection_zeile_ende() # hier nicht +1 weil die Zugriffe über die numerische Zelladresse erfolgen (0 == Zeile 0)
+            # Falls nur die Kopfzeile (Zeile 0 und 1) markiert ist, ab Zeile 2 starten
+            if start_zeile < 2:
+                if ende_zeile < 2:
                     msgbox(
                             message=f"Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
                             title="Auswahlfehler", 
                             buttons=1, 
                             type_msg="errorbox"
                         )
+                    return
                 else:
                     start_zeile = 2
-                
+
             # Verbindung zur Base-Datenbank herstellen
             ctx = XSCRIPTCONTEXT.getComponentContext()
             db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
@@ -3466,6 +3467,7 @@ class bestauftrag: # Calc
         self.t.set_zelltext_s("M1", "Kommentar")
         self.t.set_zelltext_s("N1", "ME_geliefert")
         self.t.set_zelltext_s("O1", "vollst_geliefert")
+        self.t.set_zelltext_s("P1", "Änderungsdatum")
 
         self.t.set_spaltenbreite_i(0, 1220) #ID
         self.t.set_spaltenbreite_i(1, 5000) #Projekt
@@ -3482,18 +3484,19 @@ class bestauftrag: # Calc
         self.t.set_spaltenbreite_i(12, 4000) #Kommentar
         self.t.set_spaltenbreite_i(13, 3000) #ME_geliefert
         self.t.set_spaltenbreite_i(14, 3000) #vollst_geliefert
+        self.t.set_spaltenbreite_i(15, 3000) #bestellt_am
 
         self.t.set_zeilenhoehen(700)
-        self.t.set_Rahmen_komplett_s("A1:O999", 20)
+        self.t.set_Rahmen_komplett_s("A1:P999", 20)
 
-        self.t.set_zellfarbe_s("A1:O1", self.grau) #Tabellenkopf
+        self.t.set_zellfarbe_s("A1:P1", self.grau) #Tabellenkopf
         for zeile in range(1,999,2):
-            self.t.set_zellfarbe_s(f"A{zeile}:O{zeile}", self.hellgrau)
+            self.t.set_zellfarbe_s(f"A{zeile}:P{zeile}", self.hellgrau)
             pass
 
-        self.t.set_SchriftFett_s("A1:O1", True)
+        self.t.set_SchriftFett_s("A1:P1", True)
         self.t.set_zellausrichtungHori_s("J1:L9999", "mi")
-        self.t.set_zellausrichtungHori_s("N1:O9999", "mi")
+        self.t.set_zellausrichtungHori_s("N1:P9999", "mi")
 
         pass
     def Ansicht_reduzieren_DBimport(self):
@@ -3502,7 +3505,135 @@ class bestauftrag: # Calc
             self.t.set_spalte_sichtbar_i(10,False) #bestellt_am
             self.t.set_spalte_sichtbar_i(11,False) #geplanter_LT
             self.t.set_spalte_sichtbar_i(12,False) #Kommentar
+            self.t.set_spalte_sichtbar_i(15,False) #Änderungsdatum
             pass
+
+    def importiere_alle(self):
+                if self.t.tab_ist_leer() == False:
+                    # Wenn frisch, schreibe direkt hier rein
+                    msgbox(
+                        message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                        title="Warnung", 
+                        buttons=1, 
+                        type_msg="warningbox"
+                    )
+                    return
+                
+                # Verbindung zur Base-Datenbank herstellen
+                ctx = XSCRIPTCONTEXT.getComponentContext()
+                db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+                try:
+                    data_source = db_context.getByName(self.db_s)
+                    # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+                    verbindung = data_source.getConnection("", "") 
+                    statement = verbindung.createStatement()
+                except Exception as e:
+                    # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                    msgbox(
+                        message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
+                        title="Fehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+                    return
+                 # Name Ihrer Tabelle in LibreOffice Base
+                base_tabellen_name = "Bestellauftraege" 
+        
+                self.tabellen_formartieren_DBimport()
+        
+                # Daten der Tabelle:
+                try:
+                # SQL-Abfrage ausführen (vollst_geliefert = 0 entspricht FALSE)
+                    sql = (
+                        f'SELECT "ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer", "Lieferant", '
+                        f'"Einheit", "Laenge", "Breite", "zu_bestellen", "bestellt_am", "geplanter_LT", '
+                        f'"Kommentar", "ME_geliefert", "vollst_geliefert", "Aenderungsdatum" FROM "{base_tabellen_name}" '
+                        f'ORDER BY "Projekt" ASC, "BA" ASC'
+                    )
+                
+                    result_set = statement.executeQuery(sql)
+                
+                    # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
+                    zeile = 2
+                
+                    # Daten der Tabelle auslesen und in Calc eintragen
+                    while result_set.next():
+                        # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
+                        id_val          = result_set.getInt(1)
+                        projekt         = result_set.getString(2)
+                        ba              = result_set.getString(3)
+                        artikelbez      = result_set.getString(4)
+                        artikelnr       = result_set.getString(5)
+                        lieferant       = result_set.getString(6)
+                        einheit         = result_set.getString(7)
+                        laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
+                        breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
+                        zu_bestellen    = result_set.getInt(10)     # oder getDouble, falls Mengen dezimal sein können
+                        bestellt_am     = result_set.getString(11)  # Als Text oder Datumsstring
+                        geplanter_lt    = result_set.getString(12)  # Als Text oder Datumsstring
+                        kommentar       = result_set.getString(13)
+                        me_geliefert    = result_set.getInt(14)
+                        vollst_geliefert= result_set.getInt(15)
+                        Aenderungsdatum = result_set.getString(16)  # Als Text oder Datumsstring
+                    
+                        # Werte in die Calc-Zellen schreiben
+                        self.t.set_zelltext_s(f"A{zeile}", str(id_val))
+                        self.t.set_zelltext_s(f"B{zeile}", projekt)
+                        self.t.set_zelltext_s(f"C{zeile}", ba)
+                        self.t.set_zelltext_s(f"D{zeile}", artikelbez)
+                        self.t.set_zelltext_s(f"E{zeile}", artikelnr)
+                        self.t.set_zelltext_s(f"F{zeile}", lieferant)
+                        self.t.set_zelltext_s(f"G{zeile}", einheit)
+                        self.t.set_zellzahl_s(f"H{zeile}", laenge)
+                        self.t.set_zellzahl_s(f"I{zeile}", breite)
+                        self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
+                        self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
+                        self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
+                        self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+        
+                        # Datum für 'bestellt_am' (Spalte K) verarbeiten
+                        if bestellt_am:
+                            # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
+                            jahr, monat, tag = bestellt_am.split("-")
+                            self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
+                        else:
+                            self.t.set_zelltext_s(f"K{zeile}", "")
+        
+                        # Datum für 'geplanter_LT' (Spalte L) verarbeiten
+                        if geplanter_lt:
+                            jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
+                            self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
+                        else:
+                            self.t.set_zelltext_s(f"L{zeile}", "")
+
+                        # Datum für 'Änderungsdatum' (Spalte P) verarbeiten
+                        if Aenderungsdatum:
+                            # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
+                            jahr, monat, tag = Aenderungsdatum.split("-")
+                            self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                        else:
+                            self.t.set_zelltext_s(f"P{zeile}", "")
+                    
+                        # Nächste Zeile in Calc ansteuern
+                        zeile += 1
+                    
+                    result_set.close()
+        
+                    self.t.set_spalte_sichtbar_i(0,False) #ID
+        
+                except Exception as sql_e:
+                    msgbox(
+                        message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
+                        title="SQL Fehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+        
+                finally:
+                    # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
+                    statement.close()
+                    verbindung.close()
+                pass
     def importiere_offene(self):
         if self.t.tab_ist_leer() == False:
             # Wenn frisch, schreibe direkt hier rein
@@ -3542,7 +3673,7 @@ class bestauftrag: # Calc
             sql = (
                 f'SELECT "ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer", "Lieferant", '
                 f'"Einheit", "Laenge", "Breite", "zu_bestellen", "bestellt_am", "geplanter_LT", '
-                f'"Kommentar", "ME_geliefert", "vollst_geliefert" FROM "{base_tabellen_name}" '
+                f'"Kommentar", "ME_geliefert", "vollst_geliefert", "Aenderungsdatum" FROM "{base_tabellen_name}" '
                 f'WHERE "vollst_geliefert" = 0 '
                 f'ORDER BY "Projekt" ASC, "BA" ASC'
             )
@@ -3570,6 +3701,7 @@ class bestauftrag: # Calc
                 kommentar       = result_set.getString(13)
                 me_geliefert    = result_set.getInt(14)
                 vollst_geliefert= result_set.getInt(15)
+                Aenderungsdatum = result_set.getString(16)  # Als Text oder Datumsstring
             
                 # Werte in die Calc-Zellen schreiben
                 self.t.set_zelltext_s(f"A{zeile}", str(id_val))
@@ -3600,7 +3732,15 @@ class bestauftrag: # Calc
                     self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
                 else:
                     self.t.set_zelltext_s(f"L{zeile}", "")
-            
+
+                # Datum für 'Änderungsdatum' (Spalte P) verarbeiten
+                if Aenderungsdatum:
+                    # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
+                    jahr, monat, tag = Aenderungsdatum.split("-")
+                    self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"P{zeile}", "")
+                    
                 # Nächste Zeile in Calc ansteuern
                 zeile += 1
             
@@ -3660,7 +3800,7 @@ class bestauftrag: # Calc
             sql = (
                 f'SELECT "ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer", "Lieferant", '
                 f'"Einheit", "Laenge", "Breite", "zu_bestellen", "bestellt_am", "geplanter_LT", '
-                f'"Kommentar", "ME_geliefert", "vollst_geliefert" FROM "{base_tabellen_name}" '
+                f'"Kommentar", "ME_geliefert", "vollst_geliefert", "Aenderungsdatum" FROM "{base_tabellen_name}" '
                 f'WHERE "vollst_geliefert" = 0 '
                 f'AND "Laenge" IS NOT NULL AND "Laenge" > 0 '
                 f'AND "Breite" IS NOT NULL AND "Breite" > 0 '
@@ -3690,6 +3830,7 @@ class bestauftrag: # Calc
                 kommentar       = result_set.getString(13)
                 me_geliefert    = result_set.getInt(14)
                 vollst_geliefert= result_set.getInt(15)
+                Aenderungsdatum = result_set.getString(16)  # Als Text oder Datumsstring
             
                 # Werte in die Calc-Zellen schreiben
                 self.t.set_zelltext_s(f"A{zeile}", str(id_val))
@@ -3721,6 +3862,14 @@ class bestauftrag: # Calc
                 else:
                     self.t.set_zelltext_s(f"L{zeile}", "")
             
+                # Datum für 'Änderungsdatum' (Spalte P) verarbeiten
+                if Aenderungsdatum:
+                    # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
+                    jahr, monat, tag = Aenderungsdatum.split("-")
+                    self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"P{zeile}", "")
+                    
                 # Nächste Zeile in Calc ansteuern
                 zeile += 1
             
@@ -3781,7 +3930,7 @@ class bestauftrag: # Calc
             sql = (
                 f'SELECT "ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer", "Lieferant", '
                 f'"Einheit", "Laenge", "Breite", "zu_bestellen", "bestellt_am", "geplanter_LT", '
-                f'"Kommentar", "ME_geliefert", "vollst_geliefert" FROM "{base_tabellen_name}" '
+                f'"Kommentar", "ME_geliefert", "vollst_geliefert", "Aenderungsdatum" FROM "{base_tabellen_name}" '
                 f'WHERE "vollst_geliefert" = 0 '
                 f'AND "Laenge" IS NOT NULL AND "Laenge" = 0 '
                 f'AND "Breite" IS NOT NULL AND "Breite" = 0 '
@@ -3811,6 +3960,7 @@ class bestauftrag: # Calc
                 kommentar       = result_set.getString(13)
                 me_geliefert    = result_set.getInt(14)
                 vollst_geliefert= result_set.getInt(15)
+                Aenderungsdatum = result_set.getString(16)  # Als Text oder Datumsstring
             
                 # Werte in die Calc-Zellen schreiben
                 self.t.set_zelltext_s(f"A{zeile}", str(id_val))
@@ -3841,7 +3991,15 @@ class bestauftrag: # Calc
                     self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
                 else:
                     self.t.set_zelltext_s(f"L{zeile}", "")
-            
+
+                # Datum für 'Änderungsdatum' (Spalte P) verarbeiten
+                if Aenderungsdatum:
+                    # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
+                    jahr, monat, tag = Aenderungsdatum.split("-")
+                    self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"P{zeile}", "")
+                    
                 # Nächste Zeile in Calc ansteuern
                 zeile += 1
             
@@ -3864,123 +4022,7 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
-    def importiere_alle(self):
-            if self.t.tab_ist_leer() == False:
-                # Wenn frisch, schreibe direkt hier rein
-                msgbox(
-                    message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
-                    title="Warnung", 
-                    buttons=1, 
-                    type_msg="warningbox"
-                )
-                return
-            
-            # Verbindung zur Base-Datenbank herstellen
-            ctx = XSCRIPTCONTEXT.getComponentContext()
-            db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
-            try:
-                data_source = db_context.getByName(self.db_s)
-                # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
-                verbindung = data_source.getConnection("", "") 
-                statement = verbindung.createStatement()
-            except Exception as e:
-                # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
-                msgbox(
-                    message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
-                    title="Fehler", 
-                    buttons=1, 
-                    type_msg="errorbox"
-                )
-                return
-             # Name Ihrer Tabelle in LibreOffice Base
-            base_tabellen_name = "Bestellauftraege" 
-    
-            self.tabellen_formartieren_DBimport()
-    
-            # Daten der Tabelle:
-            try:
-            # SQL-Abfrage ausführen (vollst_geliefert = 0 entspricht FALSE)
-                sql = (
-                    f'SELECT "ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer", "Lieferant", '
-                    f'"Einheit", "Laenge", "Breite", "zu_bestellen", "bestellt_am", "geplanter_LT", '
-                    f'"Kommentar", "ME_geliefert", "vollst_geliefert" FROM "{base_tabellen_name}" '
-                    f'ORDER BY "Projekt" ASC, "BA" ASC'
-                )
-            
-                result_set = statement.executeQuery(sql)
-            
-                # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
-                zeile = 2
-            
-                # Daten der Tabelle auslesen und in Calc eintragen
-                while result_set.next():
-                    # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
-                    id_val          = result_set.getInt(1)
-                    projekt         = result_set.getString(2)
-                    ba              = result_set.getString(3)
-                    artikelbez      = result_set.getString(4)
-                    artikelnr       = result_set.getString(5)
-                    lieferant       = result_set.getString(6)
-                    einheit         = result_set.getString(7)
-                    laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
-                    breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
-                    zu_bestellen    = result_set.getInt(10)     # oder getDouble, falls Mengen dezimal sein können
-                    bestellt_am     = result_set.getString(11)  # Als Text oder Datumsstring
-                    geplanter_lt    = result_set.getString(12)  # Als Text oder Datumsstring
-                    kommentar       = result_set.getString(13)
-                    me_geliefert    = result_set.getInt(14)
-                    vollst_geliefert= result_set.getInt(15)
-                
-                    # Werte in die Calc-Zellen schreiben
-                    self.t.set_zelltext_s(f"A{zeile}", str(id_val))
-                    self.t.set_zelltext_s(f"B{zeile}", projekt)
-                    self.t.set_zelltext_s(f"C{zeile}", ba)
-                    self.t.set_zelltext_s(f"D{zeile}", artikelbez)
-                    self.t.set_zelltext_s(f"E{zeile}", artikelnr)
-                    self.t.set_zelltext_s(f"F{zeile}", lieferant)
-                    self.t.set_zelltext_s(f"G{zeile}", einheit)
-                    self.t.set_zellzahl_s(f"H{zeile}", laenge)
-                    self.t.set_zellzahl_s(f"I{zeile}", breite)
-                    self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
-                    self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
-                    self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
-                    self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
-    
-                    # Datum für 'bestellt_am' (Spalte K) verarbeiten
-                    if bestellt_am:
-                        # Erwartet Format 'YYYY-MM-DD' aus result_set.getString()
-                        jahr, monat, tag = bestellt_am.split("-")
-                        self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
-                    else:
-                        self.t.set_zelltext_s(f"K{zeile}", "")
-    
-                    # Datum für 'geplanter_LT' (Spalte L) verarbeiten
-                    if geplanter_lt:
-                        jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
-                        self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
-                    else:
-                        self.t.set_zelltext_s(f"L{zeile}", "")
-                
-                    # Nächste Zeile in Calc ansteuern
-                    zeile += 1
-                
-                result_set.close()
-    
-                self.t.set_spalte_sichtbar_i(0,False) #ID
-    
-            except Exception as sql_e:
-                msgbox(
-                    message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
-                    title="SQL Fehler", 
-                    buttons=1, 
-                    type_msg="errorbox"
-                )
-    
-            finally:
-                # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
-                statement.close()
-                verbindung.close()
-            pass
+
     def exportiere_Aenderungen_DBimport(self):
         # 1. Prüfe ob Tabellenkopf plausibel ist (Sicherheitscheck gegen falsche Registerkarte)
         erwartete_header = ["ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer"]
@@ -4141,110 +4183,199 @@ class bestauftrag: # Calc
 
             start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
             ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
-            if start_zeile == 0:
-                if ende_zeile == 0:
+            zeilenauswahl_valide = True
+            if start_zeile == 1:
+                if ende_zeile == 1:
                     msgbox(
                             message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
                             title="Auswahlfehler", 
                             buttons=1, 
                             type_msg="errorbox"
                         )
+                    zeilenauswahl_valide = False
+                    pass
                 else:
                     start_zeile = 2
 
-            try:
-                for zeile in range(start_zeile, ende_zeile + 1):
-                    # ID aus Spalte A auslesen
-                    id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
-                    
-                    # Wenn die ID leer ist, wird diese Zeile übersprungen
-                    if not id_val_str:
-                        continue
-                    
-                    try:
-                        id_val = int(id_val_str)
-                    except ValueError:
-                        msgbox(
-                            message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
-                            title="Datenfehler", 
-                            buttons=1, 
-                            type_msg="errorbox"
+            if zeilenauswahl_valide == True:
+                try:
+                    for zeile in range(start_zeile, ende_zeile + 1):
+                        # ID aus Spalte A auslesen
+                        id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
+                        
+                        # Wenn die ID leer ist, wird diese Zeile übersprungen
+                        if not id_val_str:
+                            continue
+                        
+                        try:
+                            id_val = int(id_val_str)
+                        except ValueError:
+                            msgbox(
+                                message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
+                                title="Datenfehler", 
+                                buttons=1, 
+                                type_msg="errorbox"
+                            )
+                            break
+
+                        # Werte aus den bearbeitbaren Calc-Spalten auslesen
+                        kommentar        = self.t.get_zelltext_s(f"M{zeile}")
+                        me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
+                        
+                        # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
+                        vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
+                        
+                        # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
+                        eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
+                        
+                        # Tolerante Prüfung auf WAHR / TRUE
+                        # Erkennt "x", "ja", "j", "1" und das Wort "true"
+                        if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
+                            vollst_geliefert_int = 1
+                        else:
+                            # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
+                            vollst_geliefert_int = 0
+
+                        # SQL-Update-Befehl vorbereiten
+                        kommentar_safe = kommentar.replace("'", "''")
+                        
+                        # Das Feld "Aenderungsdatum" wurde in das SQL-Statement integriert
+                        sql = (
+                            f"UPDATE \"{base_tabellen_name}\" SET "
+                            f"\"Kommentar\" = '{kommentar_safe}', "
+                            f"\"ME_geliefert\" = {int(me_geliefert)}, "
+                            f"\"vollst_geliefert\" = {vollst_geliefert_int}, "
+                            f"\"Aenderungsdatum\" = '{heute_str}' "
+                            f"WHERE \"ID\" = {id_val}"
                         )
-                        break
-
-                    # Werte aus den bearbeitbaren Calc-Spalten auslesen
-                    kommentar        = self.t.get_zelltext_s(f"M{zeile}")
-                    me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
-                    
-                    # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
-                    vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
-                    
-                    # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
-                    eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
-                    
-                    # Tolerante Prüfung auf WAHR / TRUE
-                    # Erkennt "x", "ja", "j", "1" und das Wort "true"
-                    if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
-                        vollst_geliefert_int = 1
-                    else:
-                        # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
-                        vollst_geliefert_int = 0
-
-                    # SQL-Update-Befehl vorbereiten
-                    kommentar_safe = kommentar.replace("'", "''")
-                    
-                    # Das Feld "Aenderungsdatum" wurde in das SQL-Statement integriert
-                    sql = (
-                        f"UPDATE \"{base_tabellen_name}\" SET "
-                        f"\"Kommentar\" = '{kommentar_safe}', "
-                        f"\"ME_geliefert\" = {int(me_geliefert)}, "
-                        f"\"vollst_geliefert\" = {vollst_geliefert_int}, "
-                        f"\"Aenderungsdatum\" = '{heute_str}' "
-                        f"WHERE \"ID\" = {id_val}"
+                        
+                        # Update ausführen
+                        statement.executeUpdate(sql)
+                        erfolgreiche_updates += 1
+        
+                    # Erfolgsmeldung ausgeben
+                    msgbox(
+                        message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
+                        title="Export abgeschlossen", 
+                        buttons=1, 
+                        type_msg="infobox"
                     )
-                    
-                    # Update ausführen
-                    statement.executeUpdate(sql)
-                    erfolgreiche_updates += 1
-    
-                # Erfolgsmeldung ausgeben
-                msgbox(
-                    message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
-                    title="Export abgeschlossen", 
-                    buttons=1, 
-                    type_msg="infobox"
-                )
-    
-            except Exception as sql_e:
-                msgbox(
-                    message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
-                    title="SQL Export Fehler", 
-                    buttons=1, 
-                    type_msg="errorbox"
-                )
-    
-            finally:
-                # Verbindung immer sauber schließen
-                statement.close()
-                verbindung.close()
+        
+                except Exception as sql_e:
+                    msgbox(
+                        message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
+                        title="SQL Export Fehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+        
+                finally:
+                    # Verbindung immer sauber schließen
+                    statement.close()
+                    verbindung.close()
             pass
     def Auswahl_ist_geliefert_DBimport(self):
         start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
         ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
-        if start_zeile == 0:
-            if ende_zeile == 0:
+        zeilenauswahl_valide = True
+        if start_zeile == 1:
+            if ende_zeile == 1:
                 msgbox(
                         message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
                         title="Auswahlfehler", 
                         buttons=1, 
                         type_msg="errorbox"
                     )
+                zeilenauswahl_valide = False
+                pass
             else:
                 start_zeile = 2
+                
+        if zeilenauswahl_valide == True:
+            for zeile in range(start_zeile, ende_zeile + 1):
+                self.t.set_zelltext_s(f"O{zeile}", "1")
+        return True # Erfolgreich
 
-        for zeile in range(start_zeile, ende_zeile + 1):
-            self.t.set_zelltext_s(f"O{zeile}", "1")
-        pass
+    def Auswahl_entf_aus_DBimport(self):
+        start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        zeilenauswahl_valide = True
+        if start_zeile == 1:
+            if ende_zeile == 1:
+                msgbox(
+                        message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
+                        title="Auswahlfehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+                zeilenauswahl_valide = False
+                pass
+            else:
+                start_zeile = 2
+                
+        if zeilenauswahl_valide == True:            
+            # Verbindung zur Base-Datenbank herstellen
+            ctx = XSCRIPTCONTEXT.getComponentContext()
+            db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
+            try:
+                data_source = db_context.getByName(self.db_s)
+                # Verbindung ohne Benutzer/Passwort öffnen (Standard bei lokaler HSQLDB)
+                verbindung = data_source.getConnection("", "") 
+                statement = verbindung.createStatement()
+            except Exception as e:
+                # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                msgbox(
+                    message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return
+            # Name Ihrer Tabelle in LibreOffice Base
+            base_tabellen_name = "Bestellauftraege" 
+
+            # Zähler für die Rückmeldung initialisieren
+            erfolg_zaehler = 0
+            fehler_zaehler = 0
+            
+            for zeile in range(start_zeile, ende_zeile + 1):
+                # ID-Nummer:
+                id_nummer = self.t.get_zelltext_s(f"A{zeile}")
+                # SQL-Query aufbauen"
+                sql = f"DELETE FROM \"{base_tabellen_name}\" WHERE \"ID\" = {id_nummer}"
+                try:
+                    # executeUpdate gibt die Anzahl der gelöschten Zeilen zurück
+                    betroffene_zeilen = statement.executeUpdate(sql)
+                    
+                    if betroffene_zeilen > 0:
+                        erfolg_zaehler += 1
+                    else:
+                        # Die ID existierte nicht in der Datenbank
+                        fehler_zaehler += 1
+                except Exception as e:
+                    # Ein echter Datenbankfehler (z.B. Verbindung verloren, Syntaxfehler)
+                    fehler_zaehler += 1
+                    continue
+
+            # Verbindung sauber schließen
+            statement.close()
+            verbindung.close()
+            # Rückmeldung an den Benutzer ausgeben
+            if fehler_zaehler == 0:
+                msgbox(
+                    message=f"Löschen erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen aus der Datenbanktebelle '{base_tabellen_name}' gelöscht.", 
+                    title="Erfolg", 
+                    buttons=1, 
+                    type_msg="infobox"
+                )
+            else:
+                msgbox(
+                    message=f"Löschen beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen fehlernder Primärschlüssel).", 
+                    title="Warnung", 
+                    buttons=1, 
+                    type_msg="warningbox"
+                )
+        return True # Erfolgreich
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 class baugrpetk_calc: # Calc
@@ -7166,8 +7297,13 @@ def SQL_BA_Lieferstatus_der_Auswahl_an_DB_senden(*event):
     pass
 def SQL_BA_Auswahl_ist_komplett_gelierfert(*event):
     best = bestauftrag()
-    best.Auswahl_ist_geliefert_DBimport()
-    best.exportiere_Aenderungen_Auswahl_DBimport()
+    if best.Auswahl_ist_geliefert_DBimport():
+        best.exportiere_Aenderungen_Auswahl_DBimport()
+    pass
+# vorhandene Daten in der Datenbank löschen:
+def SQL_BA_Auswahl_aus_der_DB_entfernen(*event):
+    best = bestauftrag()
+    best.Auswahl_entf_aus_DBimport()
     pass
 #---------
 def BA_tab_anlegen(*event):
