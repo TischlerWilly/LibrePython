@@ -3218,15 +3218,28 @@ class bestauftrag: # Calc
         self.grau = RGBTo32bitInt(204, 204, 204)  
         self.hellgrau = RGBTo32bitInt(221, 221, 221)  
 
+        # Neue Verbindungs-URL für MariaDB via JDBC
+        # Wichtig: Der MariaDB/MySQL JDBC-Treiber muss in LibreOffice hinterlegt sein!
+        self.db_url = "jdbc:mariadb://192.168.100.5:3306/nordic_db?useClientEnc=false"
+        self.db_user = "mitarbeiter"
+        self.db_password = "1104"
+
+        # Wichtige Voraussetzungen für LibreOfficeDamit LibreOffice diesen neuen String versteht, 
+        # müssen zwei Dinge auf den Client-PCs eingerichtet sein:Java-Laufzeitumgebung (JRE): 
+        # Unter Extras -> Optionen -> LibreOffice -> Erweitert muss eine JRE aktiviert sein.
+        # JDBC-Treiber: Laden Sie den offiziellen MariaDB Java Client (Connector/J) herunter und 
+        # fügen Sie die .jar-Datei in LibreOffice unter Extras -> Optionen -> LibreOffice -> Erweitert -> Klasenpfad... (Class Path) hinzu.
+
+        # Alte Verbindung zu
         # verzeichnis = os.path.expanduser("~/Desktop")
-        verzeichnis = os.path.expanduser("P:\Datenbanken")
-        db_pfad = os.path.join(verzeichnis, "Material_db.odb")
+        # verzeichnis = os.path.expanduser("P:\Datenbanken")
+        # db_pfad = os.path.join(verzeichnis, "Material_db.odb")
         # In URL-Format für die UNO-Schnittstelle konvertieren
-        if os.name == 'nt':  # Windows
-            db_url = "file:///" + db_pfad.replace("\\", "/")
-        else:  # Linux / macOS
-            db_url = "file://" + db_pfad
-        self.db_s = db_url
+        # if os.name == 'nt':  # Windows
+        #     db_url = "file:///" + db_pfad.replace("\\", "/")
+        # else:  # Linux / macOS
+        #     db_url = "file://" + db_pfad
+        # self.db_s = db_url
 
         pass
 
@@ -3298,7 +3311,7 @@ class bestauftrag: # Calc
         self.t.set_wiederholungszeilen_oben_i(0, 1)
 
         pass
-    def exportiere_auswahl_BA(self):
+    def exportiere_auswahl_BA_lokaleBaseDB(self):
             if not self.ist_bestellauftrag():
                 msgbox(
                     message=f"Dieses Tabellenblatt wurde nicht als Bestellauftrag erkannt.", 
@@ -3449,7 +3462,178 @@ class bestauftrag: # Calc
                     buttons=1, 
                     type_msg="warningbox"
                 )
+    def exportiere_auswahl_BA(self):
+                if not self.ist_bestellauftrag():
+                    msgbox(
+                        message=f"Dieses Tabellenblatt wurde nicht als Bestellauftrag erkannt.", 
+                        title="Fehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+                    return
+                # Exportiert die Daten aus der aktuellen Calc-Tabelle 
+                # in die zentrale MariaDB-Datenbank.
+                start_zeile = self.t.get_selection_zeile_start() 
+                ende_zeile = self.t.get_selection_zeile_ende() 
+                # Falls nur die Kopfzeile (Zeile 0 und 1) markiert ist, ab Zeile 2 starten
+                if start_zeile < 2:
+                    if ende_zeile < 2:
+                        msgbox(
+                                message=f"Sie haben nur den Tabellenkopf ausgewählt! Bitte wählen Sie eine oder mehrere Zeilen des Tabellenrumpfes aus.", 
+                                title="Auswahlfehler", 
+                                buttons=1, 
+                                type_msg="errorbox"
+                            )
+                        return
+                    else:
+                        start_zeile = 2
 
+                 # Verbindung zur MariaDB-Datenbank herstellen via JDBC
+                ctx = XSCRIPTCONTEXT.getComponentContext()
+                db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+                
+                try:
+                    import uno
+                    # Login-Daten festlegen
+                    prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                    prop_user.Name = "user"
+                    prop_user.Value = self.db_user
+
+                    prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                    prop_pass.Name = "password"
+                    prop_pass.Value = self.db_password
+
+                    # WICHTIG: Hier erzwingen wir die reine Java-Treiberklasse von MariaDB
+                    prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                    prop_class.Name = "JavaDriverClass"
+                    prop_class.Value = "org.mariadb.jdbc.Driver"
+
+                    props = (prop_user, prop_pass, prop_class)
+                    
+                    # Verbindung aufbauen
+                    verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+                    statement = verbindung.createStatement()
+                except Exception as e:
+                    # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                    msgbox(
+                        message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                        title="Fehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+                    return
+
+                # Name Ihrer Tabelle in MariaDB (Groß-/Kleinschreibung beachten!)
+                base_tabellen_name = "Bestellauftraege" 
+                
+                # Heutiges Datum im passenden SQL-Format 'YYYY-MM-DD' ermitteln
+                heute_str = datetime.date.today().isoformat()
+
+                # Daten sammeln und SQL-sicher machen
+                projekt = self.t.get_zelltext_s("A1").replace("'", "''")
+                bestellauftrag = self.t.get_zelltext_s("N1").replace("'", "''")
+
+                # Zähler für die Rückmeldung initialisieren
+                erfolg_zaehler = 0
+                fehler_zaehler = 0
+
+                for row in range(start_zeile, ende_zeile + 1):
+                    artBez_s = self.t.get_zelltext_i(row, 0).replace("'", "''")
+                    artNr_s = self.t.get_zelltext_i(row, 1).replace("'", "''")
+                    lieferant_s = self.t.get_zelltext_i(row, 2).replace("'", "''")
+                    preis_i = self.t.get_zellzahl_i(row, 3)
+                    ve_s = self.t.get_zelltext_i(row, 4).replace("'", "''")
+                    einheit_s = self.t.get_zelltext_i(row, 5).replace("'", "''")
+                    menge_i = self.t.get_zellzahl_i(row, 6)
+                    laenge_i = self.t.get_zellzahl_i(row, 7)
+                    breite_i = self.t.get_zellzahl_i(row, 8)
+                    auf_lager_i = self.t.get_zellzahl_i(row, 9)
+                    zu_bestellen_i = self.t.get_zellzahl_i(row, 10)
+                    bestellt_am = self.t.get_zelltext_datum_ISO_i(row, 11)
+                    geplanter_lt = self.t.get_zelltext_datum_ISO_i(row, 12)
+                    kommentar = self.t.get_zelltext_i(row, 13).replace("'", "''")
+
+                    # MariaDB nutzt 1 und 0 für Boolean (TinyInt)
+                    vollst_geliefert = "0"
+                    if(zu_bestellen_i <= 0):
+                        vollst_geliefert = "1"
+
+                    # Datumsfelder für SQL vorbereiten (Falls NULL zurückgegeben wird, ohne Hochkommata)
+                    sql_bestellt_am = "NULL" if bestellt_am == "NULL" else f"'{bestellt_am}'"
+                    sql_geplanter_lt = "NULL" if geplanter_lt == "NULL" else f"'{geplanter_lt}'"
+
+                    # SQL-Query angepasst an MariaDB-Syntax (ohne doppelte Anführungszeichen bei Spaltennamen)
+                    sql = f"""
+                    INSERT INTO {base_tabellen_name} 
+                    (Projekt, 
+                    BA, 
+                    Artikelbezeichnung, 
+                    Artikelnummer,
+                    Lieferant,
+                    Preis,
+                    VE,
+                    Einheit,
+                    ME,
+                    Laenge,
+                    Breite,
+                    auf_Lager,
+                    zu_bestellen,
+                    bestellt_am,
+                    geplanter_LT,
+                    Kommentar,
+                    vollst_geliefert,
+                    Aenderungsdatum) 
+                    VALUES 
+                    (
+                        '{projekt}', 
+                        '{bestellauftrag}', 
+                        '{artBez_s}', 
+                        '{artNr_s}', 
+                        '{lieferant_s}', 
+                        {preis_i}, 
+                        '{ve_s}', 
+                        '{einheit_s}', 
+                        {menge_i}, 
+                        {laenge_i}, 
+                        {breite_i},
+                        {auf_lager_i},
+                        {zu_bestellen_i},
+                        {sql_bestellt_am},
+                        {sql_geplanter_lt},
+                        '{kommentar}',
+                        {vollst_geliefert},
+                        '{heute_str}'
+                    )
+                    """        
+                    try:
+                        # Führt den Befehl aus und fügt eine neue Zeile an die Tabelle an
+                        statement.executeUpdate(sql)
+                        erfolg_zaehler += 1
+                    except Exception as e:
+                        # Falls eine Zeile fehlschlägt (z.B. Duplikat bei Primärschlüssel), mit der nächsten fortfahren
+                        fehler_zaehler += 1
+                        continue
+                        
+                # Verbindung sauber schließen
+                statement.close()
+                verbindung.close()
+
+                # Rückmeldung an den Benutzer ausgeben
+                if fehler_zaehler == 0:
+                    msgbox(
+                        message=f"Export erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen an die Tabelle '{base_tabellen_name}' übergeben.", 
+                        title="Erfolg", 
+                        buttons=1, 
+                        type_msg="infobox"
+                    )
+                else:
+                    msgbox(
+                        message=f"Export beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen doppelter Primärschlüssel).", 
+                        title="Export Warnung", 
+                        buttons=1, 
+                        type_msg="warningbox"
+                    )
+    
     def tabellen_formartieren_DBimport(self):
         # Tabellenkopf
         self.t.set_zelltext_s("A1", "ID")
@@ -3508,7 +3692,7 @@ class bestauftrag: # Calc
             self.t.set_spalte_sichtbar_i(15,False) #Änderungsdatum
             pass
 
-    def importiere_alle(self):
+    def importiere_alle_lokaleBaseDB(self):
                 if self.t.tab_ist_leer() == False:
                     # Wenn frisch, schreibe direkt hier rein
                     msgbox(
@@ -3634,7 +3818,146 @@ class bestauftrag: # Calc
                     statement.close()
                     verbindung.close()
                 pass
-    def importiere_offene(self):
+    def importiere_alle(self):
+        if self.t.tab_ist_leer() == False:
+            # Wenn frisch, schreibe direkt hier rein
+            msgbox(
+                message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                title="Warnung", 
+                buttons=1, 
+                type_msg="warningbox"
+            )
+            return
+        
+        # Verbindung zur MariaDB-Datenbank herstellen via JDBC
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+        try:
+            import uno
+            # Login-Daten festlegen
+            prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_user.Name = "user"
+            prop_user.Value = self.db_user
+
+            prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_pass.Name = "password"
+            prop_pass.Value = self.db_password
+
+            prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_class.Name = "JavaDriverClass"
+            prop_class.Value = "org.mariadb.jdbc.Driver"
+
+            props = (prop_user, prop_pass, prop_class)
+            
+            # Verbindung aufbauen
+            verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+            msgbox(
+                message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+            
+        # Name Ihrer Tabelle in MariaDB
+        base_tabellen_name = "Bestellauftraege" 
+
+        self.tabellen_formartieren_DBimport()
+
+        # Daten der Tabelle auslesen:
+        try:
+            # SQL-Abfrage angepasst an MariaDB-Syntax (ohne doppelte Anführungszeichen)
+            sql = f"""
+                SELECT ID, Projekt, BA, Artikelbezeichnung, Artikelnummer, Lieferant, 
+                Einheit, Laenge, Breite, zu_bestellen, bestellt_am, geplanter_LT, 
+                Kommentar, ME_geliefert, vollst_geliefert, Aenderungsdatum 
+                FROM {base_tabellen_name} 
+                ORDER BY Projekt ASC, BA ASC
+            """
+        
+            result_set = statement.executeQuery(sql)
+        
+            # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
+            zeile = 2
+        
+            # Daten der Tabelle auslesen und in Calc eintragen
+            while result_set.next():
+                # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
+                id_val          = result_set.getInt(1)
+                projekt         = result_set.getString(2)
+                ba              = result_set.getString(3)
+                artikelbez      = result_set.getString(4)
+                artikelnr       = result_set.getString(5)
+                lieferant       = result_set.getString(6)
+                einheit         = result_set.getString(7)
+                laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
+                breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
+                zu_bestellen    = result_set.getInt(10)     
+                kommentar       = result_set.getString(13)
+                me_geliefert    = result_set.getInt(14)
+                vollst_geliefert= result_set.getInt(15)
+            
+                # Werte in die Calc-Zellen schreiben
+                self.t.set_zelltext_s(f"A{zeile}", str(id_val))
+                self.t.set_zelltext_s(f"B{zeile}", projekt if projekt else "")
+                self.t.set_zelltext_s(f"C{zeile}", ba if ba else "")
+                self.t.set_zelltext_s(f"D{zeile}", artikelbez if artikelbez else "")
+                self.t.set_zelltext_s(f"E{zeile}", artikelnr if artikelnr else "")
+                self.t.set_zelltext_s(f"F{zeile}", lieferant if lieferant else "")
+                self.t.set_zelltext_s(f"G{zeile}", einheit if einheit else "")
+                self.t.set_zellzahl_s(f"H{zeile}", laenge)
+                self.t.set_zellzahl_s(f"I{zeile}", breite)
+                self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
+                self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
+                self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
+                self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+
+                # Datum für 'bestellt_am' (Spalte K) verarbeiten & gegen 0000-00-00 absichern
+                bestellt_am = result_set.getString(11)
+                if bestellt_am and bestellt_am != "0000-00-00" and not result_set.wasNull():
+                    jahr, monat, tag = bestellt_am.split("-")
+                    self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"K{zeile}", "")
+
+                # Datum für 'geplanter_LT' (Spalte L) verarbeiten & gegen 0000-00-00 absichern
+                geplanter_lt = result_set.getString(12)
+                if geplanter_lt and geplanter_lt != "0000-00-00" and not result_set.wasNull():
+                    jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
+                    self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
+                else:
+                    self.t.set_zelltext_s(f"L{zeile}", "")
+
+                # Datum für 'Änderungsdatum' (Spalte P) verarbeiten & gegen 0000-00-00 absichern
+                Aenderungsdatum = result_set.getString(16)
+                if Aenderungsdatum and Aenderungsdatum != "0000-00-00" and not result_set.wasNull():
+                    jahr, monat, tag = Aenderungsdatum.split("-")
+                    self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"P{zeile}", "")
+            
+                # Nächste Zeile in Calc ansteuern
+                zeile += 1
+            
+            result_set.close()
+            self.t.set_spalte_sichtbar_i(0, False) # ID ausblenden
+
+        except Exception as sql_e:
+            msgbox(
+                message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
+                title="SQL Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+
+        finally:
+            # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
+            statement.close()
+            verbindung.close()
+    def importiere_offene_lokaleBaseDB(self):
         if self.t.tab_ist_leer() == False:
             # Wenn frisch, schreibe direkt hier rein
             msgbox(
@@ -3761,7 +4084,147 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
-    def importiere_offene_nur_Platten(self):
+    def importiere_offene(self):
+            if self.t.tab_ist_leer() == False:
+                # Wenn frisch, schreibe direkt hier rein
+                msgbox(
+                    message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                    title="Warnung", 
+                    buttons=1, 
+                    type_msg="warningbox"
+                )
+                return
+            
+            # Verbindung zur MariaDB-Datenbank herstellen via JDBC
+            ctx = XSCRIPTCONTEXT.getComponentContext()
+            db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+            try:
+                import uno
+                # Login-Daten festlegen
+                prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                prop_user.Name = "user"
+                prop_user.Value = self.db_user
+
+                prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                prop_pass.Name = "password"
+                prop_pass.Value = self.db_password
+
+                prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                prop_class.Name = "JavaDriverClass"
+                prop_class.Value = "org.mariadb.jdbc.Driver"
+
+                props = (prop_user, prop_pass, prop_class)
+                
+                # Verbindung aufbauen
+                verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+                statement = verbindung.createStatement()
+            except Exception as e:
+                # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                msgbox(
+                    message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return
+                
+            # Name Ihrer Tabelle in MariaDB
+            base_tabellen_name = "Bestellauftraege" 
+
+            self.tabellen_formartieren_DBimport()
+
+            # Daten der Tabelle auslesen:
+            try:
+                # SQL-Abfrage angepasst an MariaDB-Syntax (ohne doppelte Anführungszeichen)
+                sql = f"""
+                    SELECT ID, Projekt, BA, Artikelbezeichnung, Artikelnummer, Lieferant, 
+                    Einheit, Laenge, Breite, zu_bestellen, bestellt_am, geplanter_LT, 
+                    Kommentar, ME_geliefert, vollst_geliefert, Aenderungsdatum 
+                    FROM {base_tabellen_name} 
+                    WHERE vollst_geliefert = 0 
+                    ORDER BY Projekt ASC, BA ASC
+                """
+            
+                result_set = statement.executeQuery(sql)
+            
+                # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
+                zeile = 2
+            
+                # Daten der Tabelle auslesen und in Calc eintragen
+                while result_set.next():
+                    # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
+                    id_val          = result_set.getInt(1)
+                    projekt         = result_set.getString(2)
+                    ba              = result_set.getString(3)
+                    artikelbez      = result_set.getString(4)
+                    artikelnr       = result_set.getString(5)
+                    lieferant       = result_set.getString(6)
+                    einheit         = result_set.getString(7)
+                    laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
+                    breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
+                    zu_bestellen    = result_set.getInt(10)     
+                    kommentar       = result_set.getString(13)
+                    me_geliefert    = result_set.getInt(14)
+                    vollst_geliefert= result_set.getInt(15)
+                
+                    # Werte in die Calc-Zellen schreiben
+                    self.t.set_zelltext_s(f"A{zeile}", str(id_val))
+                    self.t.set_zelltext_s(f"B{zeile}", projekt if projekt else "")
+                    self.t.set_zelltext_s(f"C{zeile}", ba if ba else "")
+                    self.t.set_zelltext_s(f"D{zeile}", artikelbez if artikelbez else "")
+                    self.t.set_zelltext_s(f"E{zeile}", artikelnr if artikelnr else "")
+                    self.t.set_zelltext_s(f"F{zeile}", lieferant if lieferant else "")
+                    self.t.set_zelltext_s(f"G{zeile}", einheit if einheit else "")
+                    self.t.set_zellzahl_s(f"H{zeile}", laenge)
+                    self.t.set_zellzahl_s(f"I{zeile}", breite)
+                    self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
+                    self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
+                    self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
+                    self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+
+                    # Datum für 'bestellt_am' (Spalte K) verarbeiten & gegen 0000-00-00 absichern
+                    bestellt_am = result_set.getString(11)
+                    if bestellt_am and bestellt_am != "0000-00-00" and not result_set.wasNull():
+                        jahr, monat, tag = bestellt_am.split("-")
+                        self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
+                    else:
+                        self.t.set_zelltext_s(f"K{zeile}", "")
+
+                    # Datum für 'geplanter_LT' (Spalte L) verarbeiten & gegen 0000-00-00 absichern
+                    geplanter_lt = result_set.getString(12)
+                    if geplanter_lt and geplanter_lt != "0000-00-00" and not result_set.wasNull():
+                        jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
+                        self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
+                    else:
+                        self.t.set_zelltext_s(f"L{zeile}", "")
+
+                    # Datum für 'Änderungsdatum' (Spalte P) verarbeiten & gegen 0000-00-00 absichern
+                    Aenderungsdatum = result_set.getString(16)
+                    if Aenderungsdatum and Aenderungsdatum != "0000-00-00" and not result_set.wasNull():
+                        jahr, monat, tag = Aenderungsdatum.split("-")
+                        self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                    else:
+                        self.t.set_zelltext_s(f"P{zeile}", "")
+                        
+                    # Nächste Zeile in Calc ansteuern
+                    zeile += 1
+                
+                result_set.close()
+                self.t.set_spalte_sichtbar_i(0, False) # ID ausblenden
+
+            except Exception as sql_e:
+                msgbox(
+                    message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
+                    title="SQL Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+
+            finally:
+                # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
+                statement.close()
+                verbindung.close()
+    def importiere_offene_nur_Platten_lokaleBaseDB(self):
         if self.t.tab_ist_leer() == False:
             # Wenn frisch, schreibe direkt hier rein
             msgbox(
@@ -3891,7 +4354,151 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
-    def importiere_offene_ohne_Platten(self):
+    def importiere_offene_nur_Platten(self):
+        if self.t.tab_ist_leer() == False:
+            # Wenn frisch, schreibe direkt hier rein
+            msgbox(
+                message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                title="Warnung", 
+                buttons=1, 
+                type_msg="warningbox"
+            )
+            return
+        
+        # Verbindung zur MariaDB-Datenbank herstellen via JDBC
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+        try:
+            import uno
+            # Login-Daten festlegen
+            prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_user.Name = "user"
+            prop_user.Value = self.db_user
+
+            prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_pass.Name = "password"
+            prop_pass.Value = self.db_password
+
+            prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_class.Name = "JavaDriverClass"
+            prop_class.Value = "org.mariadb.jdbc.Driver"
+
+            props = (prop_user, prop_pass, prop_class)
+            
+            # Verbindung aufbauen
+            verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+            msgbox(
+                message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+            
+         # Name Ihrer Tabelle in MariaDB
+        base_tabellen_name = "Bestellauftraege" 
+
+        self.tabellen_formartieren_DBimport()
+
+        # Daten der Tabelle auslesen:
+        try:
+            # SQL-Abfrage angepasst an MariaDB-Syntax (ohne doppelte Anführungszeichen)
+            sql = f"""
+                SELECT ID, Projekt, BA, Artikelbezeichnung, Artikelnummer, Lieferant, 
+                Einheit, Laenge, Breite, zu_bestellen, bestellt_am, geplanter_LT, 
+                Kommentar, ME_geliefert, vollst_geliefert, Aenderungsdatum 
+                FROM {base_tabellen_name} 
+                WHERE vollst_geliefert = 0 
+                AND Laenge IS NOT NULL AND Laenge > 0 
+                AND Breite IS NOT NULL AND Breite > 0 
+                ORDER BY Projekt ASC, BA ASC
+            """
+        
+            result_set = statement.executeQuery(sql)
+        
+            # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
+            zeile = 2
+        
+            # Daten der Tabelle auslesen und in Calc eintragen
+            while result_set.next():
+                # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
+                id_val          = result_set.getInt(1)
+                projekt         = result_set.getString(2)
+                ba              = result_set.getString(3)
+                artikelbez      = result_set.getString(4)
+                artikelnr       = result_set.getString(5)
+                lieferant       = result_set.getString(6)
+                einheit         = result_set.getString(7)
+                laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
+                breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
+                zu_bestellen    = result_set.getInt(10)     
+                kommentar       = result_set.getString(13)
+                me_geliefert    = result_set.getInt(14)
+                vollst_geliefert= result_set.getInt(15)
+            
+                # Werte in die Calc-Zellen schreiben
+                self.t.set_zelltext_s(f"A{zeile}", str(id_val))
+                self.t.set_zelltext_s(f"B{zeile}", projekt if projekt else "")
+                self.t.set_zelltext_s(f"C{zeile}", ba if ba else "")
+                self.t.set_zelltext_s(f"D{zeile}", artikelbez if artikelbez else "")
+                self.t.set_zelltext_s(f"E{zeile}", artikelnr if artikelnr else "")
+                self.t.set_zelltext_s(f"F{zeile}", lieferant if lieferant else "")
+                self.t.set_zelltext_s(f"G{zeile}", einheit if einheit else "")
+                self.t.set_zellzahl_s(f"H{zeile}", laenge)
+                self.t.set_zellzahl_s(f"I{zeile}", breite)
+                self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
+                self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
+                self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
+                self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+
+                # Datum für 'bestellt_am' (Spalte K) verarbeiten & gegen 0000-00-00 absichern
+                bestellt_am = result_set.getString(11)
+                if bestellt_am and bestellt_am != "0000-00-00" and not result_set.wasNull():
+                    jahr, monat, tag = bestellt_am.split("-")
+                    self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"K{zeile}", "")
+
+                # Datum für 'geplanter_LT' (Spalte L) verarbeiten & gegen 0000-00-00 absichern
+                geplanter_lt = result_set.getString(12)
+                if geplanter_lt and geplanter_lt != "0000-00-00" and not result_set.wasNull():
+                    jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
+                    self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
+                else:
+                    self.t.set_zelltext_s(f"L{zeile}", "")
+
+                # Datum für 'Änderungsdatum' (Spalte P) verarbeiten & gegen 0000-00-00 absichern
+                Aenderungsdatum = result_set.getString(16)
+                if Aenderungsdatum and Aenderungsdatum != "0000-00-00" and not result_set.wasNull():
+                    jahr, monat, tag = Aenderungsdatum.split("-")
+                    self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"P{zeile}", "")
+                    
+                # Nächste Zeile in Calc ansteuern
+                zeile += 1
+            
+            result_set.close()
+            
+            self.t.set_spalte_sichtbar_i(0, False) # ID ausblenden (Spalte A)
+            self.t.set_spalte_sichtbar_i(6, False) # Einheit ausblenden (Spalte G)
+
+        except Exception as sql_e:
+            msgbox(
+                message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
+                title="SQL Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+
+        finally:
+            # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
+            statement.close()
+            verbindung.close()
+    def importiere_offene_ohne_Platten_lokaleBaseDB(self):
         if self.t.tab_ist_leer() == False:
             # Wenn frisch, schreibe direkt hier rein
             msgbox(
@@ -4022,8 +4629,153 @@ class bestauftrag: # Calc
             statement.close()
             verbindung.close()
         pass
+    def importiere_offene_ohne_Platten(self):
+        if self.t.tab_ist_leer() == False:
+            # Wenn frisch, schreibe direkt hier rein
+            msgbox(
+                message=f"Diese Funktion kann nur in einer leeren Registerkarte verwendet werden", 
+                title="Warnung", 
+                buttons=1, 
+                type_msg="warningbox"
+            )
+            return
+        
+        # Verbindung zur MariaDB-Datenbank herstellen via JDBC
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+        try:
+            import uno
+            # Login-Daten festlegen
+            prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_user.Name = "user"
+            prop_user.Value = self.db_user
 
-    def exportiere_Aenderungen_DBimport(self):
+            prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_pass.Name = "password"
+            prop_pass.Value = self.db_password
+
+            prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_class.Name = "JavaDriverClass"
+            prop_class.Value = "org.mariadb.jdbc.Driver"
+
+            props = (prop_user, prop_pass, prop_class)
+            
+            # Verbindung aufbauen
+            verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+            msgbox(
+                message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+            
+         # Name Ihrer Tabelle in MariaDB
+        base_tabellen_name = "Bestellauftraege" 
+
+        self.tabellen_formartieren_DBimport()
+
+        # Daten der Tabelle auslesen:
+        try:
+            # SQL-Abfrage angepasst an MariaDB-Syntax (ohne doppelte Anführungszeichen)
+            sql = f"""
+                SELECT ID, Projekt, BA, Artikelbezeichnung, Artikelnummer, Lieferant, 
+                Einheit, Laenge, Breite, zu_bestellen, bestellt_am, geplanter_LT, 
+                Kommentar, ME_geliefert, vollst_geliefert, Aenderungsdatum 
+                FROM {base_tabellen_name} 
+                WHERE vollst_geliefert = 0 
+                AND Laenge IS NOT NULL AND Laenge = 0 
+                AND Breite IS NOT NULL AND Breite = 0 
+                ORDER BY Projekt ASC, BA ASC
+            """
+        
+            result_set = statement.executeQuery(sql)
+        
+            # Zeilenindex für Calc (wir starten bei Zeile 2, da Zeile 1 die Header sind)
+            zeile = 2
+        
+            # Daten der Tabelle auslesen und in Calc eintragen
+            while result_set.next():
+                # Daten aus der Datenbank lesen (Spaltenindizes starten bei 1)
+                id_val          = result_set.getInt(1)
+                projekt         = result_set.getString(2)
+                ba              = result_set.getString(3)
+                artikelbez      = result_set.getString(4)
+                artikelnr       = result_set.getString(5)
+                lieferant       = result_set.getString(6)
+                einheit         = result_set.getString(7)
+                laenge          = result_set.getDouble(8)   # getDouble für Dezimalzahlen/Maße
+                breite          = result_set.getDouble(9)   # getDouble für Dezimalzahlen/Maße
+                zu_bestellen    = result_set.getInt(10)     
+                kommentar       = result_set.getString(13)
+                me_geliefert    = result_set.getInt(14)
+                vollst_geliefert= result_set.getInt(15)
+            
+                # Werte in die Calc-Zellen schreiben
+                self.t.set_zelltext_s(f"A{zeile}", str(id_val))
+                self.t.set_zelltext_s(f"B{zeile}", projekt if projekt else "")
+                self.t.set_zelltext_s(f"C{zeile}", ba if ba else "")
+                self.t.set_zelltext_s(f"D{zeile}", artikelbez if artikelbez else "")
+                self.t.set_zelltext_s(f"E{zeile}", artikelnr if artikelnr else "")
+                self.t.set_zelltext_s(f"F{zeile}", lieferant if lieferant else "")
+                self.t.set_zelltext_s(f"G{zeile}", einheit if einheit else "")
+                self.t.set_zellzahl_s(f"H{zeile}", laenge)
+                self.t.set_zellzahl_s(f"I{zeile}", breite)
+                self.t.set_zellzahl_s(f"J{zeile}", zu_bestellen)                
+                self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
+                self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
+                self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+
+                # Datum für 'bestellt_am' (Spalte K) verarbeiten & gegen 0000-00-00 absichern
+                bestellt_am = result_set.getString(11)
+                if bestellt_am and bestellt_am != "0000-00-00" and not result_set.wasNull():
+                    jahr, monat, tag = bestellt_am.split("-")
+                    self.t.set_zelltext_datum_s(f"K{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"K{zeile}", "")
+
+                # Datum für 'geplanter_LT' (Spalte L) verarbeiten & gegen 0000-00-00 absichern
+                geplanter_lt = result_set.getString(12)
+                if geplanter_lt and geplanter_lt != "0000-00-00" and not result_set.wasNull():
+                    jahr_lt, monat_lt, tag_lt = geplanter_lt.split("-")
+                    self.t.set_zelltext_datum_s(f"L{zeile}", jahr_lt, monat_lt, tag_lt)
+                else:
+                    self.t.set_zelltext_s(f"L{zeile}", "")
+
+                # Datum für 'Änderungsdatum' (Spalte P) verarbeiten & gegen 0000-00-00 absichern
+                Aenderungsdatum = result_set.getString(16)
+                if Aenderungsdatum and Aenderungsdatum != "0000-00-00" and not result_set.wasNull():
+                    jahr, monat, tag = Aenderungsdatum.split("-")
+                    self.t.set_zelltext_datum_s(f"P{zeile}", jahr, monat, tag)
+                else:
+                    self.t.set_zelltext_s(f"P{zeile}", "")
+                    
+                # Nächste Zeile in Calc ansteuern
+                zeile += 1
+            
+            result_set.close()
+            
+            self.t.set_spalte_sichtbar_i(0, False) # ID ausblenden (Spalte A)
+            self.t.set_spalte_sichtbar_i(7, False) # Länge ausblenden (Spalte H)
+            self.t.set_spalte_sichtbar_i(8, False) # Breite ausblenden (Spalte I)
+
+        except Exception as sql_e:
+            msgbox(
+                message=f"Fehler beim Lesen der Formulardaten:\n{str(sql_e)}", 
+                title="SQL Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+
+        finally:
+            # Verbindung sauber schließen (wird auch im Fehlerfall ausgeführt)
+            statement.close()
+            verbindung.close()
+    
+    def exportiere_Aenderungen_Auswahl_DBimport_lokaleBaseDB(self):
         # 1. Prüfe ob Tabellenkopf plausibel ist (Sicherheitscheck gegen falsche Registerkarte)
         erwartete_header = ["ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer"]
         for i, header in enumerate(erwartete_header):
@@ -4063,217 +4815,248 @@ class bestauftrag: # Calc
         heute_str = datetime.date.today().isoformat()
 
         # 3. Daten zeilenweise zurückübertragen, bis eine leere ID gefunden wird
-        try:
-            while True:
-                # ID aus Spalte A auslesen
-                id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
-                
-                # Wenn die ID leer ist, beende die Übertragung
-                if not id_val_str:
-                    break
-                
-                try:
-                    id_val = int(id_val_str)
-                except ValueError:
-                    msgbox(
-                        message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
-                        title="Datenfehler", 
+
+        start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        zeilenauswahl_valide = True
+        if start_zeile == 1:
+            if ende_zeile == 1:
+                msgbox(
+                        message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
+                        title="Auswahlfehler", 
                         buttons=1, 
                         type_msg="errorbox"
                     )
-                    break
+                zeilenauswahl_valide = False
+                pass
+            else:
+                start_zeile = 2
 
-                # Werte aus den bearbeitbaren Calc-Spalten auslesen
-                kommentar        = self.t.get_zelltext_s(f"M{zeile}")
-                me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
-                
-                # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
-                vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
-                
-                # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
-                eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
-                
-                # Tolerante Prüfung auf WAHR / TRUE
-                # Erkennt "x", "ja", "j", "1" und das Wort "true"
-                if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
-                    vollst_geliefert_int = 1
-                else:
-                    # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
-                    vollst_geliefert_int = 0
+        if zeilenauswahl_valide == True:
+            try:
+                for zeile in range(start_zeile, ende_zeile + 1):
+                    # ID aus Spalte A auslesen
+                    id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
+                    
+                    # Wenn die ID leer ist, wird diese Zeile übersprungen
+                    if not id_val_str:
+                        continue
+                    
+                    try:
+                        id_val = int(id_val_str)
+                    except ValueError:
+                        msgbox(
+                            message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
+                            title="Datenfehler", 
+                            buttons=1, 
+                            type_msg="errorbox"
+                        )
+                        break
 
-                # SQL-Update-Befehl vorbereiten
-                kommentar_safe = kommentar.replace("'", "''")
-                
-                # Das Feld "Aenderungsdatum" wurde in das SQL-Statement integriert
-                sql = (
-                    f"UPDATE \"{base_tabellen_name}\" SET "
-                    f"\"Kommentar\" = '{kommentar_safe}', "
-                    f"\"ME_geliefert\" = {int(me_geliefert)}, "
-                    f"\"vollst_geliefert\" = {vollst_geliefert_int}, "
-                    f"\"Aenderungsdatum\" = '{heute_str}' "
-                    f"WHERE \"ID\" = {id_val}"
+                    # Werte aus den bearbeitbaren Calc-Spalten auslesen
+                    kommentar        = self.t.get_zelltext_s(f"M{zeile}")
+                    me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
+                    
+                    # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
+                    vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
+                    
+                    # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
+                    eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
+                    
+                    # Tolerante Prüfung auf WAHR / TRUE
+                    # Erkennt "x", "ja", "j", "1" und das Wort "true"
+                    if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
+                        vollst_geliefert_int = 1
+                    else:
+                        # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
+                        vollst_geliefert_int = 0
+
+                    # SQL-Update-Befehl vorbereiten
+                    kommentar_safe = kommentar.replace("'", "''")
+                    
+                    # Das Feld "Aenderungsdatum" wurde in das SQL-Statement integriert
+                    sql = (
+                        f"UPDATE \"{base_tabellen_name}\" SET "
+                        f"\"Kommentar\" = '{kommentar_safe}', "
+                        f"\"ME_geliefert\" = {int(me_geliefert)}, "
+                        f"\"vollst_geliefert\" = {vollst_geliefert_int}, "
+                        f"\"Aenderungsdatum\" = '{heute_str}' "
+                        f"WHERE \"ID\" = {id_val}"
+                    )
+                    
+                    # Update ausführen
+                    statement.executeUpdate(sql)
+                    erfolgreiche_updates += 1
+    
+                # Erfolgsmeldung ausgeben
+                msgbox(
+                    message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
+                    title="Export abgeschlossen", 
+                    buttons=1, 
+                    type_msg="infobox"
                 )
-                
-                # Update ausführen
-                statement.executeUpdate(sql)
-                erfolgreiche_updates += 1
-                zeile += 1
-
-            # Erfolgsmeldung ausgeben
-            msgbox(
-                message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
-                title="Export abgeschlossen", 
-                buttons=1, 
-                type_msg="infobox"
-            )
-
-        except Exception as sql_e:
-            msgbox(
-                message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
-                title="SQL Export Fehler", 
-                buttons=1, 
-                type_msg="errorbox"
-            )
-
-        finally:
-            # Verbindung immer sauber schließen
-            statement.close()
-            verbindung.close()
+    
+            except Exception as sql_e:
+                msgbox(
+                    message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
+                    title="SQL Export Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+    
+            finally:
+                # Verbindung immer sauber schließen
+                statement.close()
+                verbindung.close()
         pass
     def exportiere_Aenderungen_Auswahl_DBimport(self):
-            # 1. Prüfe ob Tabellenkopf plausibel ist (Sicherheitscheck gegen falsche Registerkarte)
-            erwartete_header = ["ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer"]
-            for i, header in enumerate(erwartete_header):
-                # Spalten A=0, B=1, C=2, D=3, E=4
-                zell_koordinate = f"{chr(65 + i)}1" 
-                if self.t.get_zelltext_s(zell_koordinate) != header:
-                    msgbox(
-                        message=f"Abbruch: Der Tabellenkopf in Zelle {zell_koordinate} entspricht nicht '{header}'.\n"
-                                f"Bitte stellen Sie sicher, dass Sie sich im richtigen Tabellenblatt befinden.", 
-                        title="Plausibilitätsfehler", 
-                        buttons=1, 
-                        type_msg="errorbox"
-                    )
-                    return
-    
-            # 2. Verbindung zur Base-Datenbank herstellen
-            ctx = XSCRIPTCONTEXT.getComponentContext()
-            db_context = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdb.DatabaseContext", ctx)
-            try:
-                data_source = db_context.getByName(self.db_s)
-                verbindung = data_source.getConnection("", "") 
-                statement = verbindung.createStatement()
-            except Exception as e:
+        # 1. Prüfe ob Tabellenkopf plausibel ist (Sicherheitscheck gegen falsche Registerkarte)
+        erwartete_header = ["ID", "Projekt", "BA", "Artikelbezeichnung", "Artikelnummer"]
+        for i, header in enumerate(erwartete_header):
+            # Spalten A=0, B=1, C=2, D=3, E=4
+            zell_koordinate = f"{chr(65 + i)}1" 
+            if self.t.get_zelltext_s(zell_koordinate) != header:
                 msgbox(
-                    message=f"Verbindung zur Datenbank fehlgeschlagen!\nDatei nicht gefunden oder blockiert:\n{self.db_s}", 
-                    title="Fehler", 
+                    message=f"Abbruch: Der Tabellenkopf in Zelle {zell_koordinate} entspricht nicht '{header}'.\n"
+                            f"Bitte stellen Sie sicher, dass Sie sich im richtigen Tabellenblatt befinden.", 
+                    title="Plausibilitätsfehler", 
                     buttons=1, 
                     type_msg="errorbox"
                 )
                 return
-    
-            base_tabellen_name = "Bestellauftraege"
-            zeile = 2  # Daten starten in Zeile 2
-            erfolgreiche_updates = 0
-    
-            # Heutiges Datum im passenden SQL-Format 'YYYY-MM-DD' ermitteln
-            heute_str = datetime.date.today().isoformat()
-    
-            # 3. Daten zeilenweise zurückübertragen, bis eine leere ID gefunden wird
 
-            start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
-            ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
-            zeilenauswahl_valide = True
-            if start_zeile == 1:
-                if ende_zeile == 1:
-                    msgbox(
-                            message="Sie haben nur den Tabellenkopf ausgewähl! Bitte wählen Sie eine oder mehrere Zeilen des tabellenrumpfes aus.", 
-                            title="Auswahlfehler", 
-                            buttons=1, 
-                            type_msg="errorbox"
-                        )
-                    zeilenauswahl_valide = False
-                    pass
-                else:
-                    start_zeile = 2
+        # 2. Verbindung zur MariaDB-Datenbank herstellen via JDBC
+        ctx = XSCRIPTCONTEXT.getComponentContext()
+        db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+        try:
+            import uno
+            # Login-Daten festlegen
+            prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_user.Name = "user"
+            prop_user.Value = self.db_user
 
-            if zeilenauswahl_valide == True:
-                try:
-                    for zeile in range(start_zeile, ende_zeile + 1):
-                        # ID aus Spalte A auslesen
-                        id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
-                        
-                        # Wenn die ID leer ist, wird diese Zeile übersprungen
-                        if not id_val_str:
-                            continue
-                        
-                        try:
-                            id_val = int(id_val_str)
-                        except ValueError:
-                            msgbox(
-                                message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
-                                title="Datenfehler", 
-                                buttons=1, 
-                                type_msg="errorbox"
-                            )
-                            break
+            prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_pass.Name = "password"
+            prop_pass.Value = self.db_password
 
-                        # Werte aus den bearbeitbaren Calc-Spalten auslesen
-                        kommentar        = self.t.get_zelltext_s(f"M{zeile}")
-                        me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
-                        
-                        # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
-                        vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
-                        
-                        # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
-                        eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
-                        
-                        # Tolerante Prüfung auf WAHR / TRUE
-                        # Erkennt "x", "ja", "j", "1" und das Wort "true"
-                        if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
-                            vollst_geliefert_int = 1
-                        else:
-                            # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
-                            vollst_geliefert_int = 0
+            prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            prop_class.Name = "JavaDriverClass"
+            prop_class.Value = "org.mariadb.jdbc.Driver"
 
-                        # SQL-Update-Befehl vorbereiten
-                        kommentar_safe = kommentar.replace("'", "''")
-                        
-                        # Das Feld "Aenderungsdatum" wurde in das SQL-Statement integriert
-                        sql = (
-                            f"UPDATE \"{base_tabellen_name}\" SET "
-                            f"\"Kommentar\" = '{kommentar_safe}', "
-                            f"\"ME_geliefert\" = {int(me_geliefert)}, "
-                            f"\"vollst_geliefert\" = {vollst_geliefert_int}, "
-                            f"\"Aenderungsdatum\" = '{heute_str}' "
-                            f"WHERE \"ID\" = {id_val}"
-                        )
-                        
-                        # Update ausführen
-                        statement.executeUpdate(sql)
-                        erfolgreiche_updates += 1
-        
-                    # Erfolgsmeldung ausgeben
-                    msgbox(
-                        message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
-                        title="Export abgeschlossen", 
-                        buttons=1, 
-                        type_msg="infobox"
-                    )
-        
-                except Exception as sql_e:
-                    msgbox(
-                        message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
-                        title="SQL Export Fehler", 
+            props = (prop_user, prop_pass, prop_class)
+            
+            # Verbindung aufbauen
+            verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+            statement = verbindung.createStatement()
+        except Exception as e:
+            msgbox(
+                message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                title="Fehler", 
+                buttons=1, 
+                type_msg="errorbox"
+            )
+            return
+
+        # Name Ihrer Tabelle in MariaDB
+        base_tabellen_name = "Bestellauftraege"
+        zeile = 2  # Daten starten in Zeile 2
+        erfolgreiche_updates = 0
+
+        # Heutiges Datum im passenden SQL-Format 'YYYY-MM-DD' ermitteln
+        heute_str = datetime.date.today().isoformat()
+
+        # 3. Daten zeilenweise zurückübertragen, bis eine leere ID gefunden wird
+        start_zeile = self.t.get_selection_zeile_start() + 1 # +1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        ende_zeile = self.t.get_selection_zeile_ende() + 1 # +1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        zeilenauswahl_valide = True
+        if start_zeile == 1:
+            if ende_zeile == 1:
+                msgbox(
+                        message="Sie haben nur den Tabellenkopf ausgewählt! Bitte wählen Sie eine oder mehrere Zeilen des Tabellenrumpfes aus.", 
+                        title="Auswahlfehler", 
                         buttons=1, 
                         type_msg="errorbox"
                     )
-        
-                finally:
-                    # Verbindung immer sauber schließen
-                    statement.close()
-                    verbindung.close()
-            pass
+                zeilenauswahl_valide = False
+            else:
+                start_zeile = 2
+
+        if zeilenauswahl_valide == True:
+            try:
+                for zeile in range(start_zeile, ende_zeile + 1):
+                    # ID aus Spalte A auslesen
+                    id_val_str = self.t.get_zelltext_s(f"A{zeile}").strip()
+                    
+                    # Wenn die ID leer ist, wird diese Zeile übersprungen
+                    if not id_val_str:
+                        continue
+                    
+                    try:
+                        id_val = int(id_val_str)
+                    except ValueError:
+                        msgbox(
+                            message=f"Fehler in Zeile {zeile}: Die ID '{id_val_str}' ist keine gültige Ganzzahl. Der Export wird abgebrochen.", 
+                            title="Datenfehler", 
+                            buttons=1, 
+                            type_msg="errorbox"
+                        )
+                        break
+
+                    # Werte aus den bearbeitbaren Calc-Spalten auslesen
+                    kommentar        = self.t.get_zelltext_s(f"M{zeile}")
+                    me_geliefert     = self.t.get_zellzahl_s(f"N{zeile}")     # Nutzt get_zellzahl_s für numerische Mengen
+                    
+                    # Spalte O als Text einlesen, um flexible Usereingaben ("x", "ja", "1") zu erlauben
+                    vollst_eingabe_raw = self.t.get_zelltext_s(f"O{zeile}")
+                    
+                    # Eingabe bereinigen: Leerzeichen entfernen und in Kleinbuchstaben umwandeln
+                    eingabe_bereinigt = vollst_eingabe_raw.strip().lower()
+                    
+                    # Tolerante Prüfung auf WAHR / TRUE
+                    # Erkennt "x", "ja", "j", "1" und das Wort "true"
+                    if eingabe_bereinigt in ["x", "ja", "j", "1", "true"]:
+                        vollst_geliefert_int = 1
+                    else:
+                        # Alles andere (0, "nein", leere Zelle, Fehlplatzierungen) wird als FALSCH (0) gewertet
+                        vollst_geliefert_int = 0
+
+                    # SQL-Update-Befehl vorbereiten
+                    kommentar_safe = kommentar.replace("'", "''")
+                    
+                    # SQL-Statement angepasst an MariaDB (ohne doppelte Anführungszeichen)
+                    sql = (
+                        f"UPDATE {base_tabellen_name} SET "
+                        f"Kommentar = '{kommentar_safe}', "
+                        f"ME_geliefert = {int(me_geliefert)}, "
+                        f"vollst_geliefert = {vollst_geliefert_int}, "
+                        f"Aenderungsdatum = '{heute_str}' "
+                        f"WHERE ID = {id_val}"
+                    )
+                    
+                    # Update ausführen
+                    statement.executeUpdate(sql)
+                    erfolgreiche_updates += 1
+    
+                # Erfolgsmeldung ausgeben
+                msgbox(
+                    message=f"Export erfolgreich beendet.\nEs wurden {erfolgreiche_updates} Datensätze in der Datenbank aktualisiert.", 
+                    title="Export abgeschlossen", 
+                    buttons=1, 
+                    type_msg="infobox"
+                )
+    
+            except Exception as sql_e:
+                msgbox(
+                    message=f"Fehler bei der Datenübertragung in Zeile {zeile}:\n{str(sql_e)}", 
+                    title="SQL Export Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+    
+            finally:
+                # Verbindung immer sauber schließen
+                statement.close()
+                verbindung.close()
     def Auswahl_ist_geliefert_DBimport(self):
         start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
         ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
@@ -4295,8 +5078,8 @@ class bestauftrag: # Calc
             for zeile in range(start_zeile, ende_zeile + 1):
                 self.t.set_zelltext_s(f"O{zeile}", "1")
         return True # Erfolgreich
-
-    def Auswahl_entf_aus_DBimport(self):
+    
+    def Auswahl_entf_aus_DBimport_lokaleBaseDB(self):
         start_zeile = self.t.get_selection_zeile_start()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
         ende_zeile = self.t.get_selection_zeile_ende()+1 #+1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
         zeilenauswahl_valide = True
@@ -4371,6 +5154,107 @@ class bestauftrag: # Calc
             else:
                 msgbox(
                     message=f"Löschen beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen fehlernder Primärschlüssel).", 
+                    title="Warnung", 
+                    buttons=1, 
+                    type_msg="warningbox"
+                )
+        return True # Erfolgreich
+    def Auswahl_entf_aus_DBimport(self):
+        start_zeile = self.t.get_selection_zeile_start() + 1 # +1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        ende_zeile = self.t.get_selection_zeile_ende() + 1 # +1 weil die Zugriffe über die alphabetischen Zelladresse erfolgen (A1 == Zeile 0)
+        zeilenauswahl_valide = True
+        if start_zeile == 1:
+            if ende_zeile == 1:
+                msgbox(
+                        message="Sie haben nur den Tabellenkopf ausgewählt! Bitte wählen Sie eine oder mehrere Zeilen des Tabellenrumpfes aus.", 
+                        title="Auswahlfehler", 
+                        buttons=1, 
+                        type_msg="errorbox"
+                    )
+                zeilenauswahl_valide = False
+            else:
+                start_zeile = 2
+                
+        if zeilenauswahl_valide == True:            
+            # Verbindung zur MariaDB-Datenbank herstellen via JDBC
+            ctx = XSCRIPTCONTEXT.getComponentContext()
+            db_mgr = ctx.ServiceManager.createInstanceWithContext("com.sun.star.sdbc.DriverManager", ctx)
+            try:
+                import uno
+                # Login-Daten festlegen
+                prop_user = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                prop_user.Name = "user"
+                prop_user.Value = self.db_user
+
+                prop_pass = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                prop_pass.Name = "password"
+                prop_pass.Value = self.db_password
+
+                prop_class = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+                prop_class.Name = "JavaDriverClass"
+                prop_class.Value = "org.mariadb.jdbc.Driver"
+
+                props = (prop_user, prop_pass, prop_class)
+                
+                # Verbindung aufbauen
+                verbindung = db_mgr.getConnectionWithInfo(self.db_url, props) 
+                statement = verbindung.createStatement()
+            except Exception as e:
+                # Fehler beim Verbindungsaufbau -> Nachricht an Nutzer
+                msgbox(
+                    message=f"Verbindung zur MariaDB fehlgeschlagen!\nServer nicht erreichbar oder Logindaten falsch.\n\nDetails: {str(e)}", 
+                    title="Fehler", 
+                    buttons=1, 
+                    type_msg="errorbox"
+                )
+                return False
+                
+            # Name Ihrer Tabelle in MariaDB
+            base_tabellen_name = "Bestellauftraege" 
+
+            # Zähler für die Rückmeldung initialisieren
+            erfolg_zaehler = 0
+            fehler_zaehler = 0
+            
+            for zeile in range(start_zeile, ende_zeile + 1):
+                # ID-Nummer auslesen
+                id_nummer = self.t.get_zelltext_s(f"A{zeile}")
+                
+                # Falls die Zeile leer ist, einfach überspringen
+                if not id_nummer.strip():
+                    continue
+                    
+                # SQL-Query angepasst an MariaDB (ohne doppelte Anführungszeichen)
+                sql = f"DELETE FROM {base_tabellen_name} WHERE ID = {id_nummer}"
+                try:
+                    # executeUpdate gibt die Anzahl der gelöschten Zeilen zurück
+                    betroffene_zeilen = statement.executeUpdate(sql)
+                    
+                    if betroffene_zeilen > 0:
+                        erfolg_zaehler += 1
+                    else:
+                        # Die ID existierte nicht in der Datenbank
+                        fehler_zaehler += 1
+                except Exception as e:
+                    # Ein database Fehler (z.B. Verbindung verloren, Syntaxfehler)
+                    fehler_zaehler += 1
+                    continue
+
+            # Verbindung sauber schließen
+            statement.close()
+            verbindung.close()
+            
+            # Rückmeldung an den Benutzer ausgeben
+            if fehler_zaehler == 0:
+                msgbox(
+                    message=f"Löschen erfolgreich abgeschlossen!\n\nEs wurden {erfolg_zaehler} Zeilen aus der Datenbanktabelle '{base_tabellen_name}' gelöscht.", 
+                    title="Erfolg", 
+                    buttons=1, 
+                    type_msg="infobox"
+                )
+            else:
+                msgbox(
+                    message=f"Löschen beendet mit Einschränkungen.\n\nErfolgreich: {erfolg_zaehler} Zeilen.\nFehlgeschlagen: {fehler_zaehler} Zeilen (z.B. wegen fehlender Primärschlüssel).", 
                     title="Warnung", 
                     buttons=1, 
                     type_msg="warningbox"
