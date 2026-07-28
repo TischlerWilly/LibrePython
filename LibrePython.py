@@ -3229,6 +3229,7 @@ class bestauftrag: # Calc
         # Unter Extras -> Optionen -> LibreOffice -> Erweitert muss eine JRE aktiviert sein.
         # JDBC-Treiber: Laden Sie den offiziellen MariaDB Java Client (Connector/J) herunter und 
         # fügen Sie die .jar-Datei in LibreOffice unter Extras -> Optionen -> LibreOffice -> Erweitert -> Klasenpfad... (Class Path) hinzu.
+        # diese Datei ablegen und mit Klassenpfad hinzufügen: mariadb-java-client-2.7.0.jar
 
         # Alte Verbindung zu
         # verzeichnis = os.path.expanduser("~/Desktop")
