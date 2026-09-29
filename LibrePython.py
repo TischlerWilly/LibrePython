@@ -3867,6 +3867,15 @@ class bestauftrag: # Calc
         base_tabellen_name = "Bestellauftraege" 
 
         self.tabellen_formartieren_DBimport()
+        # Preisspalte ergänzen:
+        self.t.set_zelltext_s("Q1", "Preis")
+        self.t.set_SchriftFett_s("Q1:Q1", True)
+        self.t.set_zellfarbe_s("Q1:Q1", self.grau) #Tabellenkopf
+        self.t.set_Rahmen_komplett_s("Q1:Q999", 20)
+        for zeile in range(1,999,2):
+            self.t.set_zellfarbe_s(f"Q{zeile}:Q{zeile}", self.hellgrau)
+            pass
+
 
         # Daten der Tabelle auslesen:
         try:
@@ -3874,7 +3883,7 @@ class bestauftrag: # Calc
             sql = f"""
                 SELECT ID, Projekt, BA, Artikelbezeichnung, Artikelnummer, Lieferant, 
                 Einheit, Laenge, Breite, zu_bestellen, bestellt_am, geplanter_LT, 
-                Kommentar, ME_geliefert, vollst_geliefert, Aenderungsdatum 
+                Kommentar, ME_geliefert, vollst_geliefert, Aenderungsdatum, Preis 
                 FROM {base_tabellen_name} 
                 ORDER BY Projekt ASC, BA ASC
             """
@@ -3900,6 +3909,7 @@ class bestauftrag: # Calc
                 kommentar       = result_set.getString(13)
                 me_geliefert    = result_set.getInt(14)
                 vollst_geliefert= result_set.getInt(15)
+                preis           = result_set.getDouble(17) # getDouble für Dezimalzahlen/Maße
             
                 # Werte in die Calc-Zellen schreiben
                 self.t.set_zelltext_s(f"A{zeile}", str(id_val))
@@ -3915,6 +3925,7 @@ class bestauftrag: # Calc
                 self.t.set_zelltext_s(f"M{zeile}", kommentar if kommentar else "")
                 self.t.set_zellzahl_s(f"N{zeile}", me_geliefert)
                 self.t.set_zellzahl_s(f"O{zeile}", vollst_geliefert)
+                self.t.set_zellzahl_s(f"Q{zeile}", preis)
 
                 # Datum für 'bestellt_am' (Spalte K) verarbeiten & gegen 0000-00-00 absichern
                 bestellt_am = result_set.getString(11)
